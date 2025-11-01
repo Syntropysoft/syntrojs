@@ -248,6 +248,8 @@ For a deeper dive, see our [ARCHITECTURE.md](./ARCHITECTURE.md) document.
 
 **HTTP Methods**
 - ✅ GET, POST, PUT, PATCH, DELETE
+- ✅ HEAD
+- ✅ OPTIONS
 - ✅ WebSockets
 
 **Request Handling**
@@ -296,8 +298,9 @@ For a deeper dive, see our [ARCHITECTURE.md](./ARCHITECTURE.md) document.
 ### 🎯 v0.4.0 - REST Completion (Next Release)
 
 **HTTP Methods** (Quick Wins)
-- [ ] HEAD method - Add `.head()` public method
-- [ ] OPTIONS method - Add `.options()` public method + auto-OPTIONS for CORS
+- [x] HEAD method - `.head()` public method ✅
+- [x] OPTIONS method - `.options()` public method ✅
+- [ ] Auto-OPTIONS for CORS preflight
 
 **File Handling** (High Priority)
 - [ ] File downloads - Helper for `Content-Disposition` headers
@@ -391,8 +394,8 @@ For a deeper dive, see our [ARCHITECTURE.md](./ARCHITECTURE.md) document.
 
 | Feature | Status | Priority | Target Version |
 |---------|--------|----------|----------------|
-| HEAD method | 🔴 Missing | High | v0.4.0 |
-| OPTIONS method | 🔴 Missing | High | v0.4.0 |
+| HEAD method | ✅ Done | High | v0.3.13 |
+| OPTIONS method | ✅ Done | High | v0.3.13 |
 | File downloads | 🔴 Missing | High | v0.4.0 |
 | Static files | 🟡 Partial | High | v0.4.0 |
 | File uploads | 🔴 Missing | High | v0.4.0 |
@@ -411,16 +414,17 @@ For a deeper dive, see our [ARCHITECTURE.md](./ARCHITECTURE.md) document.
 
 ### 🎯 Immediate Next Steps (v0.4.0)
 
-1. **Add HEAD method** - 1 day
-2. **Add OPTIONS method** - 1 day
+1. ~~**Add HEAD method**~~ - ✅ Done
+2. ~~**Add OPTIONS method**~~ - ✅ Done
 3. **File downloads helper** - 2 days
 4. **Static file serving** - 2 days
 5. **Redirect helper** - 1 day
 6. **File uploads** - 3 days
 7. **Form data support** - 2 days
 8. **Content negotiation** - 2 days
+9. **Auto-OPTIONS for CORS** - 1 day
 
-**Total estimate: ~2 weeks**
+**Total estimate: ~2 weeks** (2 days completed ✅)
 
 ---
 

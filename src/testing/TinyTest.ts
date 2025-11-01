@@ -173,7 +173,10 @@ export class TinyTest extends SyntroJS {
     let data: T;
     const contentType = response.headers.get('content-type');
 
-    if (contentType?.includes('application/json')) {
+    // HEAD requests should not have a body - only return headers
+    if (method === 'HEAD') {
+      data = null as any;
+    } else if (contentType?.includes('application/json')) {
       data = (await response.json()) as T;
     } else {
       data = (await response.text()) as any;

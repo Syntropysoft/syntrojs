@@ -42,6 +42,8 @@ export interface RouteDefinition {
     put?: RouteConfig<unknown, unknown, unknown, unknown>;
     delete?: RouteConfig<unknown, unknown, unknown, unknown>;
     patch?: RouteConfig<unknown, unknown, unknown, unknown>;
+    head?: RouteConfig<unknown, unknown, unknown, unknown>;
+    options?: RouteConfig<unknown, unknown, unknown, unknown>;
   };
 }
 
@@ -409,6 +411,57 @@ export class SyntroJS {
     config: RouteConfig<TParams, TQuery, TBody, TResponse>,
   ): this {
     return this.registerRoute('PATCH', path, config);
+  }
+
+  /**
+   * Registers a HEAD route
+   *
+   * HEAD is identical to GET but only returns headers (no body).
+   * Useful for checking if a resource exists or getting metadata without downloading the full response.
+   *
+   * @param path - Route path
+   * @param config - Route configuration
+   * @returns this (for chaining)
+   *
+   * @example
+   * ```typescript
+   * app.head('/users/:id', {
+   *   params: z.object({ id: z.string() }),
+   *   handler: ({ params }) => ({ exists: true })
+   * });
+   * ```
+   */
+  head<TParams = unknown, TQuery = unknown, TBody = unknown, TResponse = unknown>(
+    path: string,
+    config: RouteConfig<TParams, TQuery, TBody, TResponse>,
+  ): this {
+    return this.registerRoute('HEAD', path, config);
+  }
+
+  /**
+   * Registers an OPTIONS route
+   *
+   * OPTIONS returns the allowed HTTP methods for a resource.
+   * Primarily used for CORS preflight requests.
+   *
+   * @param path - Route path
+   * @param config - Route configuration
+   * @returns this (for chaining)
+   *
+   * @example
+   * ```typescript
+   * app.options('/users/:id', {
+   *   handler: () => ({
+   *     allow: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS']
+   *   })
+   * });
+   * ```
+   */
+  options<TParams = unknown, TQuery = unknown, TBody = unknown, TResponse = unknown>(
+    path: string,
+    config: RouteConfig<TParams, TQuery, TBody, TResponse>,
+  ): this {
+    return this.registerRoute('OPTIONS', path, config);
   }
 
   /**
