@@ -57,7 +57,7 @@
 *   **Custom Exception Handlers**: Fixed critical bug where custom handlers registered with `.register()` were being ignored.
     - Custom handlers now have PRIORITY 1 (executed first)
     - Built-in handlers are PRIORITY 2 (fallback)
-    - Follows NestJS-style exception filter pattern
+    - Follows exception filter pattern
     - Users can now override ANY exception behavior
     - Fixed 6 previously failing tests
 
