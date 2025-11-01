@@ -8,6 +8,7 @@ export * from './SchemaValidator';
 export * from './ErrorHandler';
 export * from './ErrorResponseBuilder';
 export * from './OpenAPIGenerator';
+export * from './AutoOptionsGenerator';
 export * from './DocsRenderer';
 export * from './DependencyInjector';
 export * from './BackgroundTasks';

@@ -300,7 +300,7 @@ For a deeper dive, see our [ARCHITECTURE.md](./ARCHITECTURE.md) document.
 **HTTP Methods** (Quick Wins)
 - [x] HEAD method - `.head()` public method ✅
 - [x] OPTIONS method - `.options()` public method ✅
-- [ ] Auto-OPTIONS for CORS preflight
+- [x] Auto-OPTIONS for CORS preflight ✅
 
 **File Handling** (High Priority)
 - [ ] File downloads - Helper for `Content-Disposition` headers
@@ -416,15 +416,15 @@ For a deeper dive, see our [ARCHITECTURE.md](./ARCHITECTURE.md) document.
 
 1. ~~**Add HEAD method**~~ - ✅ Done
 2. ~~**Add OPTIONS method**~~ - ✅ Done
-3. **File downloads helper** - 2 days
-4. **Static file serving** - 2 days
-5. **Redirect helper** - 1 day
-6. **File uploads** - 3 days
-7. **Form data support** - 2 days
-8. **Content negotiation** - 2 days
-9. **Auto-OPTIONS for CORS** - 1 day
+3. ~~**Auto-OPTIONS for CORS**~~ - ✅ Done
+4. **File downloads helper** - 2 days
+5. **Static file serving** - 2 days
+6. **Redirect helper** - 1 day
+7. **File uploads** - 3 days
+8. **Form data support** - 2 days
+9. **Content negotiation** - 2 days
 
-**Total estimate: ~2 weeks** (2 days completed ✅)
+**Total estimate: ~2 weeks** (3 days completed ✅)
 
 ---
 
