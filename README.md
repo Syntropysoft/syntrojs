@@ -24,10 +24,59 @@
 
 ---
 
-## 🎯 Recent Fixes (v0.3.12-alpha)
+## 🎯 Recent Changes (v0.3.13-alpha)
 
-*   **Fix**: Corrected issues in error handling (`handlerError`) and updated the `README.md`. 
-*   **Chore**: Incremented project version.
+### ✨ New Features
+
+*   **HEAD Method**: Added `.head()` public method for checking resource existence without downloading body.
+    - Full Zod validation support
+    - Custom headers support
+    - OpenAPI/Swagger documentation
+    - TinyTest integration (14 tests passing)
+
+*   **OPTIONS Method**: Added `.options()` public method for CORS preflight and allowed methods discovery.
+    - Returns allowed HTTP methods for resources
+    - CORS preflight support
+    - OpenAPI/Swagger documentation
+    - TinyTest integration (14 tests passing)
+
+*   **Auto-OPTIONS Generator**: Pure functional generator for automatic CORS preflight responses.
+    - `getAllowedMethods()` - Discovers allowed methods from registered routes
+    - `generateOptionsHeaders()` - Creates CORS headers immutably
+    - `generateOptionsResponse()` - Complete OPTIONS response builder
+    - 100% functional programming (no mutations, Object.freeze)
+    - 16 tests passing
+
+*   **OpenAPI Generator**: Updated to fully support HEAD and OPTIONS methods.
+    - HEAD and OPTIONS appear in Swagger UI
+    - Full metadata support (summary, description, tags, etc.)
+    - 8 tests passing
+
+### 🐛 Bug Fixes
+
+*   **Custom Exception Handlers**: Fixed critical bug where custom handlers registered with `.register()` were being ignored.
+    - Custom handlers now have PRIORITY 1 (executed first)
+    - Built-in handlers are PRIORITY 2 (fallback)
+    - Follows NestJS-style exception filter pattern
+    - Users can now override ANY exception behavior
+    - Fixed 6 previously failing tests
+
+### 📚 Documentation
+
+*   **Comprehensive REST Roadmap**: Added detailed feature roadmap with status tracking.
+    - Current features (v0.3.x) documented
+    - v0.4.0 REST Completion plan
+    - v0.5.0 Advanced features plan
+    - v1.0.0 Production ready plan
+    - Feature comparison table with priorities
+    - Time estimates for each feature
+
+### 📊 Progress
+
+*   **Tests**: 593/596 passing (99.5% pass rate)
+*   **Coverage**: All new features fully tested
+*   **Code Style**: 100% functional programming (pure functions, immutability)
+*   **v0.4.0 Progress**: 3/14 days completed (21%)
 
 ---
 
