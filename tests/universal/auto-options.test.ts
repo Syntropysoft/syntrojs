@@ -19,18 +19,13 @@ describe('Auto-OPTIONS Generator', () => {
     app = new SyntroJS({ title: 'Test API' });
   });
 
-  afterEach(() => {
-    // Clear routes between tests since RouteRegistry is a singleton
-    RouteRegistry.clear();
-  });
-
   describe('getAllowedMethods', () => {
     it('should return allowed methods for a path with multiple routes', () => {
-      app.get('/users', { handler: () => ({ users: [] }) });
-      app.post('/users', { handler: ({ body }) => ({ created: true }) });
-      app.delete('/users', { handler: () => ({ deleted: true }) });
+      app.get('/auto-users', { handler: () => ({ users: [] }) });
+      app.post('/auto-users', { handler: ({ body }) => ({ created: true }) });
+      app.delete('/auto-users', { handler: () => ({ deleted: true }) });
 
-      const methods = getAllowedMethods(RouteRegistry, '/users');
+      const methods = getAllowedMethods(RouteRegistry, '/auto-users');
 
       expect(methods).toContain('GET');
       expect(methods).toContain('POST');
@@ -39,16 +34,16 @@ describe('Auto-OPTIONS Generator', () => {
     });
 
     it('should handle path parameters correctly', () => {
-      app.get('/users/:id', {
+      app.get('/auto-accounts/:id', {
         params: z.object({ id: z.string() }),
         handler: ({ params }) => ({ id: params.id }),
       });
-      app.put('/users/:id', {
+      app.put('/auto-accounts/:id', {
         params: z.object({ id: z.string() }),
         handler: ({ params }) => ({ updated: true }),
       });
 
-      const methods = getAllowedMethods(RouteRegistry, '/users/123');
+      const methods = getAllowedMethods(RouteRegistry, '/auto-accounts/123');
 
       expect(methods).toContain('GET');
       expect(methods).toContain('PUT');
@@ -56,19 +51,19 @@ describe('Auto-OPTIONS Generator', () => {
     });
 
     it('should return empty array for non-existent path', () => {
-      app.get('/users', { handler: () => ({ users: [] }) });
+      app.get('/auto-something', { handler: () => ({ users: [] }) });
 
-      const methods = getAllowedMethods(RouteRegistry, '/posts');
+      const methods = getAllowedMethods(RouteRegistry, '/auto-nonexistent');
 
       expect(methods).toEqual([]);
     });
 
     it('should include HEAD and OPTIONS methods', () => {
-      app.get('/resource', { handler: () => ({ data: 'test' }) });
-      app.head('/resource', { handler: () => ({ exists: true }) });
-      app.options('/resource', { handler: () => ({ allow: ['GET', 'HEAD', 'OPTIONS'] }) });
+      app.get('/auto-resource', { handler: () => ({ data: 'test' }) });
+      app.head('/auto-resource', { handler: () => ({ exists: true }) });
+      app.options('/auto-resource', { handler: () => ({ allow: ['GET', 'HEAD', 'OPTIONS'] }) });
 
-      const methods = getAllowedMethods(RouteRegistry, '/resource');
+      const methods = getAllowedMethods(RouteRegistry, '/auto-resource');
 
       expect(methods).toContain('GET');
       expect(methods).toContain('HEAD');
@@ -76,12 +71,12 @@ describe('Auto-OPTIONS Generator', () => {
     });
 
     it('should return sorted methods', () => {
-      app.delete('/users', { handler: () => ({ deleted: true }) });
-      app.post('/users', { handler: ({ body }) => ({ created: true }) });
-      app.get('/users', { handler: () => ({ users: [] }) });
-      app.put('/users', { handler: ({ body }) => ({ updated: true }) });
+      app.delete('/auto-sorted', { handler: () => ({ deleted: true }) });
+      app.post('/auto-sorted', { handler: ({ body }) => ({ created: true }) });
+      app.get('/auto-sorted', { handler: () => ({ users: [] }) });
+      app.put('/auto-sorted', { handler: ({ body }) => ({ updated: true }) });
 
-      const methods = getAllowedMethods(RouteRegistry, '/users');
+      const methods = getAllowedMethods(RouteRegistry, '/auto-sorted');
 
       // Should be alphabetically sorted
       const expected = ['DELETE', 'GET', 'OPTIONS', 'POST', 'PUT'];
@@ -143,10 +138,10 @@ describe('Auto-OPTIONS Generator', () => {
 
   describe('generateOptionsResponse', () => {
     it('should generate complete OPTIONS response', () => {
-      app.get('/users', { handler: () => ({ users: [] }) });
-      app.post('/users', { handler: ({ body }) => ({ created: true }) });
+      app.get('/auto-response', { handler: () => ({ users: [] }) });
+      app.post('/auto-response', { handler: ({ body }) => ({ created: true }) });
 
-      const response = generateOptionsResponse(RouteRegistry, '/users');
+      const response = generateOptionsResponse(RouteRegistry, '/auto-response');
 
       expect(response.status).toBe(204);
       expect(response.body).toBeNull();
@@ -156,18 +151,18 @@ describe('Auto-OPTIONS Generator', () => {
     });
 
     it('should return 404 for non-existent path', () => {
-      app.get('/users', { handler: () => ({ users: [] }) });
+      app.get('/auto-existing', { handler: () => ({ users: [] }) });
 
-      const response = generateOptionsResponse(RouteRegistry, '/posts');
+      const response = generateOptionsResponse(RouteRegistry, '/auto-notfound');
 
       expect(response.status).toBe(404);
       expect(response.body).toEqual({ error: 'Not Found' });
     });
 
     it('should use custom configuration', () => {
-      app.get('/users', { handler: () => ({ users: [] }) });
+      app.get('/auto-config', { handler: () => ({ users: [] }) });
 
-      const response = generateOptionsResponse(RouteRegistry, '/users', {
+      const response = generateOptionsResponse(RouteRegistry, '/auto-config', {
         origin: 'https://example.com',
         maxAge: 7200,
         additionalHeaders: { 'X-API-Version': '1.0' },
@@ -179,16 +174,16 @@ describe('Auto-OPTIONS Generator', () => {
     });
 
     it('should handle paths with parameters', () => {
-      app.get('/users/:id', {
+      app.get('/auto-items/:id', {
         params: z.object({ id: z.string() }),
         handler: () => ({ id: '123' }),
       });
-      app.put('/users/:id', {
+      app.put('/auto-items/:id', {
         params: z.object({ id: z.string() }),
         handler: () => ({ updated: true }),
       });
 
-      const response = generateOptionsResponse(RouteRegistry, '/users/123');
+      const response = generateOptionsResponse(RouteRegistry, '/auto-items/123');
 
       expect(response.status).toBe(204);
       expect(response.headers.Allow).toContain('GET');
@@ -199,28 +194,28 @@ describe('Auto-OPTIONS Generator', () => {
 
   describe('Integration', () => {
     it('should work for RESTful resource with all methods', () => {
-      app.get('/users/:id', {
+      app.get('/auto-restful/:id', {
         params: z.object({ id: z.string() }),
         handler: () => ({ id: '1', name: 'John' }),
       });
-      app.put('/users/:id', {
+      app.put('/auto-restful/:id', {
         params: z.object({ id: z.string() }),
         handler: () => ({ updated: true }),
       });
-      app.patch('/users/:id', {
+      app.patch('/auto-restful/:id', {
         params: z.object({ id: z.string() }),
         handler: () => ({ patched: true }),
       });
-      app.delete('/users/:id', {
+      app.delete('/auto-restful/:id', {
         params: z.object({ id: z.string() }),
         handler: () => ({ deleted: true }),
       });
-      app.head('/users/:id', {
+      app.head('/auto-restful/:id', {
         params: z.object({ id: z.string() }),
         handler: () => ({ exists: true }),
       });
 
-      const response = generateOptionsResponse(RouteRegistry, '/users/123');
+      const response = generateOptionsResponse(RouteRegistry, '/auto-restful/123');
 
       expect(response.status).toBe(204);
       expect(response.headers.Allow).toContain('GET');
