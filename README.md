@@ -244,13 +244,183 @@ For a deeper dive, see our [ARCHITECTURE.md](./ARCHITECTURE.md) document.
 
 ## 🗺️ Roadmap
 
-### v1.0.0 - Production Ready
+### ✅ Current Features (v0.3.x - Alpha)
 
-- [ ] Database integration (ORM/ODM adapters)
+**HTTP Methods**
+- ✅ GET, POST, PUT, PATCH, DELETE
+- ✅ WebSockets
+
+**Request Handling**
+- ✅ Path parameters with Zod validation
+- ✅ Query parameters with Zod validation
+- ✅ JSON body with Zod validation
+- ✅ Headers
+- ✅ Cookies
+
+**Response Handling**
+- ✅ JSON responses
+- ✅ HTML responses (string)
+- ✅ Custom status codes
+- ✅ Custom headers
+
+**Validation & Error Handling**
+- ✅ Automatic Zod validation
+- ✅ HTTPException with custom errors
+- ✅ Error handlers per route
+- ✅ Pagination helpers
+- ✅ Sorting helpers
+
+**Security & Middleware**
+- ✅ CORS plugin
+- ✅ Helmet (security headers)
+- ✅ Rate limiting
+- ✅ Compression
+- ✅ Bearer token auth (HTTPBearer, OAuth2PasswordBearer)
+- ✅ API Key auth (header, query, cookie)
+- ✅ HTTP Basic auth
+- ✅ Global & route-specific middlewares
+
+**Developer Experience**
+- ✅ Automatic OpenAPI/Swagger documentation
+- ✅ Interactive API docs (Swagger UI + ReDoc)
+- ✅ Beautiful landing page
+- ✅ Route groups
+- ✅ Dependency injection
+- ✅ Background tasks
+- ✅ Dual runtime (Node.js + Bun)
+- ✅ TinyTest for easy testing
+- ✅ SmartMutator for mutation testing
+
+---
+
+### 🎯 v0.4.0 - REST Completion (Next Release)
+
+**HTTP Methods** (Quick Wins)
+- [ ] HEAD method - Add `.head()` public method
+- [ ] OPTIONS method - Add `.options()` public method + auto-OPTIONS for CORS
+
+**File Handling** (High Priority)
+- [ ] File downloads - Helper for `Content-Disposition` headers
+- [ ] Static file serving - Expose `@fastify/static` integration
+- [ ] File uploads - Multipart form data support (`@fastify/multipart`)
+- [ ] Streaming responses - For large files
+
+**Request Body Formats**
+- [ ] Form data (`application/x-www-form-urlencoded`)
+- [ ] Multipart form data (`multipart/form-data`)
+- [ ] XML body parsing
+- [ ] Raw text/binary support
+
+**Response Types**
+- [ ] Redirects (301, 302, 307, 308) - `.redirect()` helper
+- [ ] XML responses
+- [ ] File download responses
+
+**HTTP Features**
+- [ ] Content negotiation (Accept headers)
+- [ ] ETags / Cache headers
+- [ ] Partial responses (Range headers)
+- [ ] Conditional requests (If-Modified-Since, If-None-Match)
+
+---
+
+### 🚀 v0.5.0 - Advanced Features
+
+**Security**
+- [ ] CSRF protection
+- [ ] Session management (`@fastify/session`)
+- [ ] Cookie-based authentication
+- [ ] JWT refresh tokens
+- [ ] OAuth2 flows (authorization code, client credentials)
+
+**Real-time Communication**
+- [ ] Server-Sent Events (SSE)
+- [ ] WebSocket rooms/namespaces
+- [ ] WebSocket authentication
+- [ ] WebSocket middleware
+
+**Template & Views**
+- [ ] Template rendering (`@fastify/view`)
+- [ ] Support for major engines (EJS, Pug, Handlebars)
+- [ ] Layouts and partials
+
+---
+
+### 🏗️ v1.0.0 - Production Ready
+
+**Database Integration**
+- [ ] ORM adapters (Prisma, TypeORM, Drizzle)
+- [ ] ODM adapters (Mongoose)
+- [ ] Query builder integration
+- [ ] Transaction support
+- [ ] Database migrations helper
+
+**API Features**
 - [ ] GraphQL support
-- [ ] File uploads & static file serving
-- [ ] Official CLI tools
-- [ ] Comprehensive documentation and migration guides
+- [ ] API versioning
+- [ ] Request/Response transformation hooks
+- [ ] Custom serializers
+- [ ] Response compression strategies
+
+**Developer Tools**
+- [ ] Official CLI (`create-syntrojs`)
+- [ ] Code generation for CRUD
+- [ ] Migration tools from Express/Fastify
+- [ ] VSCode extension
+- [ ] Debug tools
+
+**Production Features**
+- [ ] Graceful shutdown
+- [ ] Health checks endpoint
+- [ ] Metrics/Prometheus integration
+- [ ] Distributed tracing (OpenTelemetry)
+- [ ] Load balancing helpers
+- [ ] Clustering support
+
+**Documentation**
+- [ ] Comprehensive guides
+- [ ] Video tutorials
+- [ ] Recipe book
+- [ ] Migration guides
+- [ ] Best practices guide
+- [ ] Performance tuning guide
+
+---
+
+### 📊 Feature Comparison
+
+| Feature | Status | Priority | Target Version |
+|---------|--------|----------|----------------|
+| HEAD method | 🔴 Missing | High | v0.4.0 |
+| OPTIONS method | 🔴 Missing | High | v0.4.0 |
+| File downloads | 🔴 Missing | High | v0.4.0 |
+| Static files | 🟡 Partial | High | v0.4.0 |
+| File uploads | 🔴 Missing | High | v0.4.0 |
+| Redirects | 🔴 Missing | High | v0.4.0 |
+| Form data | 🔴 Missing | Medium | v0.4.0 |
+| Content negotiation | 🔴 Missing | Medium | v0.4.0 |
+| ETags | 🔴 Missing | Medium | v0.4.0 |
+| SSE | 🔴 Missing | Medium | v0.5.0 |
+| CSRF | 🔴 Missing | Medium | v0.5.0 |
+| Sessions | 🔴 Missing | Medium | v0.5.0 |
+| Templates | 🔴 Missing | Low | v0.5.0 |
+| GraphQL | 🔴 Missing | Low | v1.0.0 |
+| ORM integration | 🔴 Missing | Low | v1.0.0 |
+
+---
+
+### 🎯 Immediate Next Steps (v0.4.0)
+
+1. **Add HEAD method** - 1 day
+2. **Add OPTIONS method** - 1 day
+3. **File downloads helper** - 2 days
+4. **Static file serving** - 2 days
+5. **Redirect helper** - 1 day
+6. **File uploads** - 3 days
+7. **Form data support** - 2 days
+8. **Content negotiation** - 2 days
+
+**Total estimate: ~2 weeks**
 
 ---
 
