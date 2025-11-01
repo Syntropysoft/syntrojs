@@ -37,6 +37,8 @@ interface PathItem {
   put?: OperationObject;
   delete?: OperationObject;
   patch?: OperationObject;
+  head?: OperationObject;
+  options?: OperationObject;
 }
 
 /**
@@ -186,7 +188,9 @@ class OpenAPIGeneratorImpl {
         method === 'post' ||
         method === 'put' ||
         method === 'delete' ||
-        method === 'patch'
+        method === 'patch' ||
+        method === 'head' ||
+        method === 'options'
       ) {
         pathItem[method] = this.buildOperation(route);
       }
