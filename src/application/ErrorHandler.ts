@@ -74,6 +74,14 @@ class ErrorHandlerImpl {
       throw new Error('Context is required');
     }
 
+    // PRIORITY 1: Check for custom handlers registered with .register()
+    // This allows users to override default behavior (NestJS style)
+    const customHandler = this.findHandler(error);
+    if (customHandler) {
+      return await customHandler(context, error);
+    }
+
+    // PRIORITY 2: Default handlers for built-in exceptions
     // NestJS-style: Check specific exceptions FIRST (most specific to least specific)
     // This ensures child classes are handled before parent classes
     // Use both instanceof AND constructor name check for reliability across module boundaries
