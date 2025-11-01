@@ -4,6 +4,7 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { TinyTest } from '../../src/testing/TinyTest';
+import { inject } from '../../src/application/DependencyInjector';
 import { z } from 'zod';
 
 describe('HEAD HTTP Method', () => {
@@ -76,13 +77,12 @@ describe('HEAD HTTP Method', () => {
     expect(response.headers['x-cache-status']).toBe('HIT');
   });
 
-  it.skip('should work with dependency injection', async () => {
-    // TODO: Fix dependency injection for sync functions
+  it('should work with dependency injection', async () => {
     const getCurrentUser = () => ({ id: '123', name: 'Test User' });
 
     api.head('/profile', {
       dependencies: {
-        user: getCurrentUser(),
+        user: inject(getCurrentUser),
       },
       handler: ({ dependencies }) => ({
         userId: dependencies.user.id,
@@ -206,17 +206,16 @@ describe('OPTIONS HTTP Method', () => {
     expect(response.status).toBe(422);
   });
 
-  it.skip('should work with dependency injection', async () => {
-    // TODO: Fix dependency injection for sync functions
-    const permissions = {
+  it('should work with dependency injection', async () => {
+    const getPermissions = () => ({
       canRead: true,
       canWrite: false,
       canDelete: false,
-    };
+    });
 
     api.options('/resource', {
       dependencies: {
-        permissions,
+        permissions: inject(getPermissions),
       },
       handler: ({ dependencies }) => {
         const methods = ['OPTIONS'];
