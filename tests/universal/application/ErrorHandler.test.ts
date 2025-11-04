@@ -222,10 +222,11 @@ describe('ErrorHandler', () => {
       expect(handler.hasHandler(CustomError)).toBe(true);
     });
 
-    it('should return true for default handlers', () => {
-      expect(handler.hasHandler(HTTPException)).toBe(true);
-      expect(handler.hasHandler(ValidationException)).toBe(true);
-      expect(handler.hasHandler(Error)).toBe(true);
+    it('should return false for exceptions without registered handlers', () => {
+      // No default handlers registered - uses structural typing with statusCode instead
+      expect(handler.hasHandler(HTTPException)).toBe(false);
+      expect(handler.hasHandler(ValidationException)).toBe(false);
+      expect(handler.hasHandler(Error)).toBe(false);
     });
 
     it('should return false for unregistered handlers', () => {
@@ -240,12 +241,11 @@ describe('ErrorHandler', () => {
   });
 
   describe('getRegisteredErrorClasses', () => {
-    it('should return all registered error classes', () => {
+    it('should return empty array when no handlers registered', () => {
       const classes = handler.getRegisteredErrorClasses();
 
-      expect(classes).toContain(HTTPException);
-      expect(classes).toContain(ValidationException);
-      expect(classes).toContain(Error);
+      // No default handlers - uses structural typing instead
+      expect(classes).toEqual([]);
     });
 
     it('should include custom registered classes', () => {
@@ -271,7 +271,7 @@ describe('ErrorHandler', () => {
   });
 
   describe('clearCustomHandlers', () => {
-    it('should clear custom handlers but keep defaults', () => {
+    it('should clear custom handlers', () => {
       class CustomError extends Error {}
 
       handler.register(CustomError, () => ({}) as any);
@@ -281,8 +281,9 @@ describe('ErrorHandler', () => {
       handler.clearCustomHandlers();
 
       expect(handler.hasHandler(CustomError)).toBe(false);
-      expect(handler.hasHandler(HTTPException)).toBe(true);
-      expect(handler.hasHandler(Error)).toBe(true);
+      // No default handlers - uses structural typing with statusCode
+      expect(handler.hasHandler(HTTPException)).toBe(false);
+      expect(handler.hasHandler(Error)).toBe(false);
     });
   });
 

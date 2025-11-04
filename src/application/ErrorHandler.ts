@@ -30,8 +30,10 @@ class ErrorHandlerImpl {
   private readonly handlers = new Map<new (...args: any[]) => Error, ExceptionHandler>();
 
   constructor() {
-    // Register default handlers on initialization
-    this.registerDefaultHandlers();
+    // No default handlers registered
+    // We use structural typing (statusCode check) instead for reliability
+    // Custom handlers can be registered via .register() for overrides
+    // This avoids the instanceof paradox with dynamic imports
   }
 
   /**
@@ -76,15 +78,50 @@ class ErrorHandlerImpl {
 
     // PRIORITY 1: Check for custom handlers registered with .register()
     // This allows users to override default behavior (NestJS style)
-    const customHandler = this.findHandler(error);
+    // Uses findHandlerByNameOrInstance which works with both instanceof AND class name matching
+    // This handles dynamic imports by matching class names when instanceof fails
+    const customHandler = this.findHandlerByNameOrInstance(error);
     if (customHandler) {
       return await customHandler(context, error);
     }
 
-    // PRIORITY 2: Default handlers for built-in exceptions
-    // NestJS-style: Check specific exceptions FIRST (most specific to least specific)
-    // This ensures child classes are handled before parent classes
-    // Use both instanceof AND constructor name check for reliability across module boundaries
+    // PRIORITY 2: Check for HTTPException with statusCode (NestJS-style)
+    // This handles ALL HTTPException subclasses when no custom handler is registered
+    // CRITICAL: Structural typing works across module boundaries
+    // Dynamic imports break instanceof checks, so we rely on statusCode property
+    if ((error as any).statusCode !== undefined) {
+      const httpError = error as HTTPException;
+      
+      // Check if it's ValidationException (has errors array)
+      if (
+        error.name === 'ValidationException' ||
+        error.constructor?.name === 'ValidationException' ||
+        (httpError as any).errors
+      ) {
+        const validationError = error as ValidationException;
+        return {
+          status: 422,
+          body: {
+            detail: validationError.detail,
+            errors: validationError.errors,
+            path: context.path,
+          },
+        };
+      }
+      
+      // Generic HTTPException (uses statusCode)
+      return {
+        status: httpError.statusCode,
+        body: {
+          detail: httpError.detail,
+          path: context.path,
+        },
+        headers: httpError.headers,
+      };
+    }
+
+    // PRIORITY 3: Fallback instanceof checks for specific exceptions
+    // Note: These may fail with dynamic imports, but kept for backward compatibility
     
     // 422 - ValidationException (most specific, has special errors array)
     if (
@@ -249,7 +286,35 @@ class ErrorHandlerImpl {
   }
 
   /**
-   * Finds the appropriate handler for an error
+   * Finds handler by name or instanceof (for dynamic import compatibility)
+   * 
+   * Strategy: Try instanceof first, then fallback to class name matching
+   * This handles both regular imports and dynamic imports
+   *
+   * @param error - Error instance
+   * @returns Handler if found, undefined otherwise
+   */
+  private findHandlerByNameOrInstance(error: Error): ExceptionHandler | undefined {
+    // First try: instanceof (works for regular imports)
+    const instanceofMatch = this.findHandler(error);
+    if (instanceofMatch) {
+      return instanceofMatch;
+    }
+
+    // Second try: Match by class name (works for dynamic imports)
+    const errorClassName = error.constructor?.name || error.name;
+    
+    for (const [errorClass, handler] of this.handlers.entries()) {
+      if (errorClass.name === errorClassName) {
+        return handler;
+      }
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Finds the appropriate handler for an error using instanceof
    *
    * Pure function: searches for handler without side effects
    * Finds the MOST SPECIFIC handler in the inheritance chain
@@ -340,21 +405,11 @@ class ErrorHandlerImpl {
    * Called on initialization
    */
   private registerDefaultHandlers(): void {
-    // IMPORTANT: Register most specific handlers FIRST (child classes before parent classes)
-    // The findHandler will automatically select the most specific handler using instanceof
-    
-    // 422 - ValidationException (has special errors array)
-    this.register(ValidationException, (context, error) => {
-      const validationError = error as ValidationException;
-      return {
-        status: 422,
-        body: {
-          detail: validationError.detail,
-          errors: validationError.errors,
-          path: context.path,
-        },
-      };
-    });
+    // DISABLED: Default handlers removed to avoid instanceof paradox with dynamic imports
+    // We use structural typing (statusCode check) instead, which works reliably
+    // Custom handlers can still be registered via .register() for overrides
+    // All handler logic is now in the handle() method using statusCode property
+    return;
 
     // 400 - BadRequestException
     this.register(BadRequestException, (context, error) => {

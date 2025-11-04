@@ -3,6 +3,7 @@
  * Domain layer - no external dependencies
  */
 
+import type { Readable } from 'node:stream';
 import type { ZodSchema } from 'zod';
 
 /**
@@ -19,6 +20,32 @@ export type HttpStatusCode = number;
  * Generic record type for headers, query params, etc.
  */
 export type StringRecord = Record<string, string>;
+
+/**
+ * Uploaded file from multipart form data
+ */
+export interface UploadedFile {
+  /** Original filename from client */
+  filename: string;
+
+  /** MIME type (e.g., 'image/png', 'application/pdf') */
+  mimetype: string;
+
+  /** File encoding (e.g., '7bit', 'base64') */
+  encoding: string;
+
+  /** File size in bytes */
+  size: number;
+
+  /** Field name from form */
+  fieldname: string;
+
+  /** Readable stream of file data */
+  data: Readable;
+
+  /** Save file to disk */
+  toBuffer(): Promise<Buffer>;
+}
 
 /**
  * Request context passed to route handlers
@@ -72,6 +99,12 @@ export interface RequestContext<
       },
     ) => void;
   };
+
+  /** Uploaded files (multipart/form-data only) */
+  files?: UploadedFile[];
+
+  /** Form fields (multipart/form-data only) */
+  fields?: StringRecord;
 }
 
 /**
@@ -129,6 +162,12 @@ export interface RouteConfig<
 
 /**
  * Route handler function type
+ * 
+ * Supports multiple response types:
+ * - TResponse: JSON objects, strings, numbers, etc. (validated by Zod if schema provided)
+ * - Readable: Node.js streams for large files or streaming data
+ * - Buffer: Binary data (images, PDFs, etc.)
+ * - RouteResponse: Full control with status, body, headers
  */
 export type RouteHandler<
   TParams = unknown,
@@ -138,7 +177,7 @@ export type RouteHandler<
   TDependencies = Record<string, unknown>,
 > = (
   context: RequestContext<TParams, TQuery, TBody, StringRecord, TDependencies>,
-) => TResponse | Promise<TResponse>;
+) => TResponse | Promise<TResponse> | Readable | Buffer | RouteResponse<TResponse>;
 
 /**
  * Exception handler function type

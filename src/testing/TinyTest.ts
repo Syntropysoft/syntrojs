@@ -153,18 +153,14 @@ export class TinyTest extends SyntroJS {
       url += `?${queryString}`;
     }
 
-    // Build fetch options
+    // Functional: Build request configuration
+    const { body, headers } = this.buildRequestConfig(options.body, options.headers);
+
     const fetchOptions: RequestInit = {
       method,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
+      headers,
+      body,
     };
-
-    if (options.body) {
-      fetchOptions.body = JSON.stringify(options.body);
-    }
 
     // Make request
     const response = await fetch(url, fetchOptions);
@@ -186,6 +182,59 @@ export class TinyTest extends SyntroJS {
       status: response.status,
       data,
       headers: Object.fromEntries(response.headers.entries()),
+    };
+  }
+
+  /**
+   * Build request configuration based on body type
+   * 
+   * Pure function: Returns new config without side effects
+   * Guard clauses: Handles all body types
+   * 
+   * @param body - Request body (FormData, object, or undefined)
+   * @param customHeaders - Custom headers to merge
+   * @returns Configuration object with body and headers
+   */
+  private buildRequestConfig(
+    body: unknown,
+    customHeaders?: Record<string, string>,
+  ): { body?: FormData | string; headers: Record<string, string> } {
+    // Default headers
+    const headers: Record<string, string> = customHeaders ? { ...customHeaders } : {};
+
+    // Guard clause: No body
+    if (!body) {
+      return {
+        headers: { 'Content-Type': 'application/json', ...headers },
+      };
+    }
+
+    // Guard clause: FormData (multipart/form-data)
+    if (body instanceof FormData) {
+      // Let fetch auto-set Content-Type with boundary
+      return {
+        body,
+        headers, // Don't set Content-Type for multipart
+      };
+    }
+
+    // Guard clause: String body (form-urlencoded or raw text)
+    if (typeof body === 'string') {
+      // Use provided Content-Type or default to form-urlencoded if looks like form data
+      const isFormUrlencoded = headers['Content-Type']?.includes('form-urlencoded') || body.includes('=');
+      
+      return {
+        body,
+        headers: isFormUrlencoded 
+          ? { 'Content-Type': 'application/x-www-form-urlencoded', ...headers }
+          : { 'Content-Type': 'text/plain', ...headers },
+      };
+    }
+
+    // Default: JSON body
+    return {
+      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'application/json', ...headers },
     };
   }
 

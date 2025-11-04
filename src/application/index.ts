@@ -12,3 +12,6 @@ export * from './AutoOptionsGenerator';
 export * from './DocsRenderer';
 export * from './DependencyInjector';
 export * from './BackgroundTasks';
+export * from './FileValidator';
+export * from './MultipartParser';
+export * from './StreamingResponseHandler';

@@ -11,11 +11,14 @@ interface Bun {
     fetch(request: Request): Promise<Response>;
   }): BunServer;
 }
+import type { Readable } from 'node:stream';
 import { DependencyInjector } from '../application/DependencyInjector';
 import type { DependencyMetadata } from '../application/DependencyInjector';
 import { ErrorHandler } from '../application/ErrorHandler';
 import type { MiddlewareRegistry } from '../application/MiddlewareRegistry';
+import { MultipartParser } from '../application/MultipartParser';
 import { SchemaValidator } from '../application/SchemaValidator';
+import { StreamingResponseHandler } from '../application/StreamingResponseHandler';
 import type { Route } from '../domain/Route';
 import type { RequestContext } from '../domain/types';
 
@@ -154,7 +157,12 @@ class BunAdapterImpl {
       if (route.config.query) {
         context.query = SchemaValidator.validateOrThrow(route.config.query, context.query);
       }
-      if (route.config.body && ['POST', 'PUT', 'PATCH'].includes(method)) {
+
+      // Parse multipart form data if present (Dependency Inversion: use service)
+      await MultipartParser.parseBun(request, context);
+
+      // Parse JSON body if not multipart
+      if (!context.files && route.config.body && ['POST', 'PUT', 'PATCH'].includes(method)) {
         const body = await request.json();
         context.body = SchemaValidator.validateOrThrow(route.config.body, body);
       }
@@ -162,8 +170,26 @@ class BunAdapterImpl {
       // Execute handler
       const result = await route.handler(context);
 
+      // STREAMING SUPPORT: Check if result is a Stream (Node.js Readable)
+      if (StreamingResponseHandler.isReadableStream(result)) {
+        // Bun supports streaming via Response with stream body
+        // Convert Node.js Readable to Web Streams API ReadableStream
+        return new Response(result as any, {
+          status: route.config.status ?? 200,
+        });
+      }
+
+      // BUFFER SUPPORT: Check if result is a Buffer
+      if (Buffer.isBuffer(result)) {
+        // Bun handles buffers natively
+        return new Response(result, {
+          status: route.config.status ?? 200,
+        });
+      }
+
       // Return JSON response
       return new Response(JSON.stringify(result), {
+        status: route.config.status ?? 200,
         headers: { 'Content-Type': 'application/json' },
       });
     } catch (error) {

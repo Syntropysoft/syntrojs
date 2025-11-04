@@ -10,7 +10,12 @@
  */
 
 import Fastify, { type FastifyInstance, type FastifyRequest, type FastifyReply } from 'fastify';
+import formbody from '@fastify/formbody';
+import multipart from '@fastify/multipart';
+import type { Readable } from 'node:stream';
 import type { MiddlewareRegistry } from '../application/MiddlewareRegistry';
+import { MultipartParser } from '../application/MultipartParser';
+import { StreamingResponseHandler } from '../application/StreamingResponseHandler';
 import type { Route } from '../domain/Route';
 import type {
   DependencyResolverFactory,
@@ -302,7 +307,26 @@ export class FluentAdapter {
   }
 
   private async registerPlugins(fastify: FastifyInstance): Promise<void> {
-    // Solo registrar plugins que están habilitados
+    // Always register formbody for application/x-www-form-urlencoded (core feature)
+    try {
+      await fastify.register(formbody);
+    } catch {
+      // Formbody no disponible
+    }
+
+    // Always register multipart for file uploads (core feature)
+    try {
+      await fastify.register(multipart, {
+        limits: {
+          fileSize: 50 * 1024 * 1024, // 50MB default
+          files: 10, // Max 10 files per request
+        },
+      });
+    } catch {
+      // Multipart no disponible
+    }
+
+    // Solo registrar otros plugins si están habilitados
     if (this.config.compression) {
       try {
         await fastify.register(import('@fastify/compress'));
@@ -378,6 +402,9 @@ export class FluentAdapter {
         },
       };
 
+      // Parse multipart form data if present (Dependency Inversion: use service)
+      await MultipartParser.parseFastify(request, context);
+
       // Ejecutar middleware si está habilitado
       if (this.config.middleware && this.middlewareRegistry) {
         const middlewares = this.middlewareRegistry.getMiddlewares(route.path, route.method);
@@ -406,7 +433,32 @@ export class FluentAdapter {
         // Ejecutar handler
         const result = await route.handler(context);
 
+        // STREAMING SUPPORT: Check if result is a Stream (Node.js Readable)
+        if (StreamingResponseHandler.isReadableStream(result)) {
+          // Cleanup dependencies before streaming
+          if (cleanupFn) {
+            setImmediate(() => cleanupFn!());
+          }
+
+          // Send stream directly - Fastify handles Transfer-Encoding automatically
+          const statusCode = route.config.status ?? 200;
+          return reply.status(statusCode).send(result as Readable);
+        }
+
+        // BUFFER SUPPORT: Check if result is a Buffer
+        if (Buffer.isBuffer(result)) {
+          // Cleanup dependencies
+          if (cleanupFn) {
+            setImmediate(() => cleanupFn!());
+          }
+
+          // Send buffer directly - Fastify handles Content-Length automatically
+          const statusCode = route.config.status ?? 200;
+          return reply.status(statusCode).send(result);
+        }
+
         // VALIDACIÓN DE RESPUESTA - Solo si está habilitada
+        // Skip validation for streams and buffers (already handled above)
         if (this.config.validation && route.config.response) {
           const validatedResult = route.config.response.parse(result);
           const statusCode = route.config.status ?? 200;

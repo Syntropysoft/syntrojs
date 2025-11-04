@@ -9,6 +9,8 @@
  */
 
 import Fastify, { type FastifyInstance, type FastifyRequest, type FastifyReply } from 'fastify';
+import type { Readable } from 'node:stream';
+import { StreamingResponseHandler } from '../application/StreamingResponseHandler';
 import type { Route } from '../domain/Route';
 import type { HttpMethod } from '../domain/types';
 
@@ -64,7 +66,19 @@ class UltraMinimalAdapterImpl {
         // DIRECT handler execution
         const result = await route.handler(context);
 
-        // MINIMAL response validation
+        // STREAMING SUPPORT: Check if result is a Stream
+        if (StreamingResponseHandler.isReadableStream(result)) {
+          const statusCode = route.config.status ?? 200;
+          return reply.status(statusCode).send(result as Readable);
+        }
+
+        // BUFFER SUPPORT: Check if result is a Buffer
+        if (Buffer.isBuffer(result)) {
+          const statusCode = route.config.status ?? 200;
+          return reply.status(statusCode).send(result);
+        }
+
+        // MINIMAL response validation (skip para streams/buffers)
         if (route.config.response) {
           const validatedResult = route.config.response.parse(result);
           const statusCode = route.config.status ?? 200;
@@ -80,6 +94,7 @@ class UltraMinimalAdapterImpl {
       }
     });
   }
+
 }
 
 export const UltraMinimalAdapter = new UltraMinimalAdapterImpl();

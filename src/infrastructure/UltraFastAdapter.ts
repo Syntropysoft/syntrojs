@@ -10,7 +10,9 @@
  */
 
 import Fastify, { type FastifyInstance, type FastifyRequest, type FastifyReply } from 'fastify';
+import type { Readable } from 'node:stream';
 import { z } from 'zod';
+import { StreamingResponseHandler } from '../application/StreamingResponseHandler';
 import type { Route } from '../domain/Route';
 import type { HttpMethod } from '../domain/types';
 
@@ -182,7 +184,19 @@ class UltraFastAdapterImpl {
         // Ejecutar handler
         const result = await route.handler(context);
 
-        // Validación de respuesta ultra-rápida
+        // STREAMING SUPPORT: Check if result is a Stream
+        if (StreamingResponseHandler.isReadableStream(result)) {
+          const statusCode = route.config.status ?? 200;
+          return reply.status(statusCode).send(result as Readable);
+        }
+
+        // BUFFER SUPPORT: Check if result is a Buffer
+        if (Buffer.isBuffer(result)) {
+          const statusCode = route.config.status ?? 200;
+          return reply.status(statusCode).send(result);
+        }
+
+        // Validación de respuesta ultra-rápida (skip para streams/buffers)
         if (compiledResponse) {
           const validatedResult = (compiledResponse as any).quickValidate?.(result) ?? result;
           const statusCode = route.config.status ?? 200;
@@ -201,6 +215,7 @@ class UltraFastAdapterImpl {
       }
     });
   }
+
 }
 
 export const UltraFastAdapter = new UltraFastAdapterImpl();

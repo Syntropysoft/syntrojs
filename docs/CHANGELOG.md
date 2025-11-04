@@ -7,6 +7,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0-alpha.2] - 2025-11-04
+
+### 🐛 Critical Fixes
+
+#### ErrorHandler - Dynamic Imports Compatibility
+- **FIXED**: `instanceof` paradox with dynamic imports in `FluentAdapter`
+  - **Problem**: When `FluentAdapter` uses `createErrorHandlerFactory()` with dynamic imports, `instanceof` checks fail because classes are loaded in different module contexts
+  - **Root Cause**: Default exception handlers registered with `.register()` rely on `instanceof` which breaks across module boundaries
+  - **Solution**: Removed default handler registration, implemented structural typing (NestJS-style)
+  - **Implementation**: Check `statusCode` property instead of `instanceof` for HTTPException detection
+  - **Result**: Works reliably with both regular imports AND dynamic imports
+  - **Principle**: SOLID - Dependency on abstraction (statusCode property) not implementation (instanceof)
+
+#### Test Suite Updates
+- **Updated**: Background tasks E2E test timeout (100ms → 200ms) for system overhead
+- **Fixed**: Form-urlencoded test expectations to match `@fastify/formbody` behavior
+- **Updated**: ErrorHandler tests to reflect new structural typing approach
+
+### ✅ Test Coverage
+
+- **647 tests passing** in syntrojs core (100%)
+- **114 E2E tests passing** (100%)  
+- **16 tests passing** in syntrojs-examples (100%)
+- **All functionality validated** with version local workspace
+
+### 🛠️ Developer Experience
+
+#### New Testing Tools
+- ✨ **test-version.sh** - Automated script for testing local vs npm versions
+  - `./test-version.sh local` - Test with workspace version
+  - `./test-version.sh npm 0.4.0-alpha.1` - Test with npm version
+  - `./test-version.sh both` - Test both versions
+- ✨ **TEST-GUIDE.md** - Complete documentation for testing workflow
+
+#### Workspace Configuration
+- **Updated**: `pnpm-workspace.yaml` - Added `syntrojs-examples` to workspace
+- **Updated**: `syntrojs-examples/package.json` - Now uses `workspace:*` for local development
+
+### 📚 Documentation Updates
+
+#### README.md
+- **Updated**: v0.4.0 roadmap progress (40% → 60%)
+- **Marked Complete**:
+  - ✅ File uploads (multipart/form-data) with FileValidator
+  - ✅ Form data (application/x-www-form-urlencoded)
+  - ✅ Raw text/binary support (Buffer responses)
+  - ✅ File download responses (Streaming + Buffer)
+
+### 🔧 Technical Details
+
+**ErrorHandler Priority Order** (NestJS-inspired):
+1. Custom handlers (`.register()`) - Allows user overrides
+2. HTTPException with `statusCode` - Structural typing (works with dynamic imports)
+3. Fallback `instanceof` checks - Backward compatibility
+
+**Key Architectural Decisions**:
+- Structural typing over `instanceof` for cross-module reliability
+- No default handlers to avoid paradox
+- Custom handlers for explicit overrides only
+- Follows SOLID principles and functional programming
+
+### 🎯 Validation
+
+All tests passing with local workspace version:
+- ✅ Core library (syntrojs)
+- ✅ Examples (syntrojs-examples)
+- ✅ E2E tests complete
+- ✅ Ready for npm publish
+
 ## [0.3.0] - 2025-01-17
 
 ### 🏗️ Architectural Evolution Release

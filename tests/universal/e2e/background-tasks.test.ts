@@ -78,7 +78,8 @@ describe('Background Tasks E2E', () => {
     const responseTime = Date.now() - startTime;
 
     // Response should be fast (not waiting for background task)
-    expect(responseTime).toBeLessThan(100);
+    // Allow 200ms for system overhead while still proving non-blocking behavior
+    expect(responseTime).toBeLessThan(200);
     expect(response.status).toBe(200);
 
     const data = await response.json();

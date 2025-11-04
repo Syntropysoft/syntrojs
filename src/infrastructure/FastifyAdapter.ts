@@ -7,12 +7,17 @@
  */
 
 import Fastify, { type FastifyInstance, type FastifyRequest, type FastifyReply } from 'fastify';
+import formbody from '@fastify/formbody';
+import multipart from '@fastify/multipart';
+import type { Readable } from 'node:stream';
 import { BackgroundTasks } from '../application/BackgroundTasks';
 import { DependencyInjector } from '../application/DependencyInjector';
 import type { DependencyMetadata } from '../application/DependencyInjector';
 import { ErrorHandler } from '../application/ErrorHandler';
 import type { MiddlewareRegistry } from '../application/MiddlewareRegistry';
+import { MultipartParser } from '../application/MultipartParser';
 import { SchemaValidator } from '../application/SchemaValidator';
+import { StreamingResponseHandler } from '../application/StreamingResponseHandler';
 import type { Route } from '../domain/Route';
 import type { HttpMethod, RequestContext } from '../domain/types';
 import { type LoggerIntegrationConfig, integrateLogger } from './LoggerIntegration';
@@ -48,6 +53,17 @@ class FastifyAdapterImpl {
     const instance = Fastify({
       logger: config.logger ?? false,
       disableRequestLogging: config.disableRequestLogging ?? true,
+    });
+
+    // Register formbody plugin for application/x-www-form-urlencoded
+    instance.register(formbody);
+
+    // Register multipart plugin for file uploads
+    instance.register(multipart, {
+      limits: {
+        fileSize: 50 * 1024 * 1024, // 50MB default max file size
+        files: 10, // Max 10 files per request
+      },
     });
 
     // Integrate @syntrojs/logger if enabled
@@ -96,6 +112,9 @@ class FastifyAdapterImpl {
         // Build request context from Fastify request
         const context = this.buildContext(request);
 
+        // Parse multipart form data if present (Dependency Inversion: use service)
+        await MultipartParser.parseFastify(request, context);
+
         // Execute middlewares if registry is available
         if (this.middlewareRegistry) {
           const middlewares = this.middlewareRegistry.getMiddlewares(route.path, route.method);
@@ -135,7 +154,32 @@ class FastifyAdapterImpl {
         // Execute handler
         const result = await route.handler(context);
 
+        // STREAMING SUPPORT: Check if result is a Stream (Node.js Readable)
+        if (StreamingResponseHandler.isReadableStream(result)) {
+          // Cleanup dependencies before streaming
+          if (cleanup) {
+            await cleanup();
+          }
+
+          // Send stream directly - Fastify handles Transfer-Encoding automatically
+          const statusCode = route.config.status ?? 200;
+          return reply.status(statusCode).send(result as Readable);
+        }
+
+        // BUFFER SUPPORT: Check if result is a Buffer
+        if (Buffer.isBuffer(result)) {
+          // Cleanup dependencies
+          if (cleanup) {
+            await cleanup();
+          }
+
+          // Send buffer directly - Fastify handles Content-Length automatically
+          const statusCode = route.config.status ?? 200;
+          return reply.status(statusCode).send(result);
+        }
+
         // Validate response if schema exists
+        // Skip validation for streams and buffers (already handled above)
         if (route.config.response) {
           SchemaValidator.validateOrThrow(route.config.response, result);
         }

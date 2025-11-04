@@ -1,4 +1,5 @@
 packages:
   - '.'
   - '../syntrojs-logger'
+  - '../syntrojs-examples'
 

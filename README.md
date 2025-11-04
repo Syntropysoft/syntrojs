@@ -39,7 +39,7 @@
     - CORS preflight support
     - OpenAPI/Swagger documentation
     - TinyTest integration (14 tests passing)
-
+  
 *   **Auto-OPTIONS Generator**: Pure functional generator for automatic CORS preflight responses.
     - `getAllowedMethods()` - Discovers allowed methods from registered routes
     - `generateOptionsHeaders()` - Creates CORS headers immutably
@@ -281,13 +281,13 @@ const app = new SyntroJS({
 
 ### Comprehensive Examples
 
-For production-ready examples, including microservices, benchmarks, and security patterns, see our dedicated **[Examples Repository](https://github.com/Syntropysoft/syntrojs-examples)**.
+For production-ready examples, including microservices, benchmarks, and security patterns, see our dedicated **[Examples Repository](https://github.com/Syntropysoft/syntrojs-example)**.
 
 ### Architecture
 
 SyntroJS follows **Domain-Driven Design (DDD)** and **SOLID** principles to ensure a clean, maintainable, and testable codebase. Key design principles include Simplicity, Type-Safety, and Quality First.
 
-For a deeper dive, see our [ARCHITECTURE.md](./ARCHITECTURE.md) document.
+For a deeper dive, see our [ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md) document.
 
 ---
 
@@ -313,6 +313,8 @@ For a deeper dive, see our [ARCHITECTURE.md](./ARCHITECTURE.md) document.
 - ✅ HTML responses (string)
 - ✅ Custom status codes
 - ✅ Custom headers
+- ✅ Streaming responses (Node.js Readable)
+- ✅ Buffer responses (binary data)
 
 **Validation & Error Handling**
 - ✅ Automatic Zod validation
@@ -352,21 +354,21 @@ For a deeper dive, see our [ARCHITECTURE.md](./ARCHITECTURE.md) document.
 - [x] Auto-OPTIONS for CORS preflight ✅
 
 **File Handling** (High Priority)
+- [x] Streaming responses - For large files ✅ v0.4.0-alpha.1
 - [ ] File downloads - Helper for `Content-Disposition` headers
 - [ ] Static file serving - Expose `@fastify/static` integration
-- [ ] File uploads - Multipart form data support (`@fastify/multipart`)
-- [ ] Streaming responses - For large files
+- [x] File uploads - Multipart form data support (`@fastify/multipart`) ✅ v0.4.0-alpha.1
 
 **Request Body Formats**
-- [ ] Form data (`application/x-www-form-urlencoded`)
-- [ ] Multipart form data (`multipart/form-data`)
+- [x] Form data (`application/x-www-form-urlencoded`) ✅ v0.4.0-alpha.1
+- [x] Multipart form data (`multipart/form-data`) ✅ v0.4.0-alpha.1
 - [ ] XML body parsing
-- [ ] Raw text/binary support
+- [x] Raw text/binary support ✅ v0.4.0-alpha.1 (Buffer responses)
 
 **Response Types**
 - [ ] Redirects (301, 302, 307, 308) - `.redirect()` helper
 - [ ] XML responses
-- [ ] File download responses
+- [x] File download responses ✅ v0.4.0-alpha.1 (Streaming + Buffer support)
 
 **HTTP Features**
 - [ ] Content negotiation (Accept headers)
@@ -445,6 +447,7 @@ For a deeper dive, see our [ARCHITECTURE.md](./ARCHITECTURE.md) document.
 |---------|--------|----------|----------------|
 | HEAD method | ✅ Done | High | v0.3.13 |
 | OPTIONS method | ✅ Done | High | v0.3.13 |
+| Streaming responses | ✅ Done | High | v0.4.0-alpha.1 |
 | File downloads | 🔴 Missing | High | v0.4.0 |
 | Static files | 🟡 Partial | High | v0.4.0 |
 | File uploads | 🔴 Missing | High | v0.4.0 |
@@ -463,23 +466,24 @@ For a deeper dive, see our [ARCHITECTURE.md](./ARCHITECTURE.md) document.
 
 ### 🎯 Immediate Next Steps (v0.4.0)
 
-1. ~~**Add HEAD method**~~ - ✅ Done
-2. ~~**Add OPTIONS method**~~ - ✅ Done
-3. ~~**Auto-OPTIONS for CORS**~~ - ✅ Done
-4. **File downloads helper** - 2 days
-5. **Static file serving** - 2 days
-6. **Redirect helper** - 1 day
-7. **File uploads** - 3 days
-8. **Form data support** - 2 days
-9. **Content negotiation** - 2 days
+1. ~~**Add HEAD method**~~ - ✅ Done (v0.3.13)
+2. ~~**Add OPTIONS method**~~ - ✅ Done (v0.3.13)
+3. ~~**Auto-OPTIONS for CORS**~~ - ✅ Done (v0.3.13)
+4. ~~**Streaming responses**~~ - ✅ Done (v0.4.0-alpha.1)
+5. **File downloads helper** - 2 days
+6. **Static file serving** - 2 days
+7. **Redirect helper** - 1 day
+8. ~~**File uploads**~~ - ✅ Done (v0.4.0-alpha.1) - Multipart/form-data with FileValidator
+9. ~~**Form data support**~~ - ✅ Done (v0.4.0-alpha.1) - application/x-www-form-urlencoded
+10. **Content negotiation** - 2 days
 
-**Total estimate: ~2 weeks** (3 days completed ✅)
+**Total estimate: ~2 weeks** (6/10 completed - 60% ✅)
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for details on how to set up your development environment and run tests.
+We welcome contributions! Check out our [GitHub repository](https://github.com/Syntropysoft/sintrojs) for details on how to contribute.
 
 ## 📄 License
 
