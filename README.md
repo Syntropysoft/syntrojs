@@ -84,6 +84,7 @@ It's designed for developers who value **verifiable quality**, providing a power
 - **🚀 Dual Runtime Support**: Write once, run on both Node.js and Bun with auto-optimization. Zero code changes required.
 - **🔥 FastAPI-like Developer Experience**: Get automatic validation with Zod, full TypeScript type safety, and elegant error handling (`HTTPException`).
 - **🎨 Automatic Interactive Docs**: Just like FastAPI, get a beautiful landing page and interactive Swagger UI + ReDoc documentation out of the box at `/docs`.
+- **💰 TOON Format Support (Coming v0.5.0)**: First framework with hybrid JSON/TOON support. **40-60% payload reduction** = massive cost savings for microservices. 1M tx/hour = $200-500/month saved in infrastructure costs. Game changer for high-scale APIs, LLMs, and mobile apps.
 - **🧪 The Testing Superpower**: A uniquely powerful testing suite featuring `TinyTest` for effortless API testing, built-in boundary and contract testing, and `SmartMutator` for mutation testing in seconds, not hours.
 - **🔌 Rich Ecosystem**: Includes a functional middleware system, WebSocket support, simple dependency injection, background tasks, and seamless integration with `@syntrojs/logger` for structured logging.
 - **🔒 Security First**: Production-ready configurations to easily disable documentation (`docs: false`), plus built-in support for JWT, OAuth2, API Keys, and other security plugins.
@@ -300,12 +301,13 @@ For a deeper dive, see our [ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md
 - ✅ Cookies
 
 **Response Handling**
-- ✅ JSON responses
+- ✅ JSON responses (default)
 - ✅ HTML responses (string)
 - ✅ Custom status codes
 - ✅ Custom headers
 - ✅ Streaming responses (Node.js Readable)
 - ✅ Buffer responses (binary data)
+- 🔜 TOON responses (40-60% payload reduction - game changer for microservices & LLMs)
 
 **Validation & Error Handling**
 - ✅ Automatic Zod validation
@@ -351,12 +353,16 @@ For a deeper dive, see our [ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md
 - [x] File uploads - Multipart form data support (`@fastify/multipart`) ✅ v0.4.0-alpha.1
 
 **Request Body Formats**
+- [x] JSON (default) ✅
 - [x] Form data (`application/x-www-form-urlencoded`) ✅ v0.4.0-alpha.1
 - [x] Multipart form data (`multipart/form-data`) ✅ v0.4.0-alpha.1
-- [ ] XML body parsing
 - [x] Raw text/binary support ✅ v0.4.0-alpha.1 (Buffer responses)
+- [ ] TOON (`application/toon`) - 40-60% smaller payloads (microservices, LLMs, mobile)
+- [ ] XML body parsing
 
 **Response Types**
+- [x] JSON (default) ✅
+- [ ] TOON - Content negotiation for payload efficiency (40-60% reduction = cost savings)
 - [ ] Redirects (301, 302, 307, 308) - `.redirect()` helper
 - [ ] XML responses
 - [x] File download responses ✅ v0.4.0-alpha.1 (Streaming + Buffer support)
@@ -370,6 +376,27 @@ For a deeper dive, see our [ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md
 ---
 
 ### 🚀 v0.5.0 - Advanced Features
+
+**TOON Format Support** (New! 🎯 Game Changer for Microservices)
+- [ ] Hybrid REST API - JSON by default, TOON on demand
+  - Parse requests with `Content-Type: application/toon`
+  - Respond with TOON based on `Accept: application/toon` header
+  - Automatic content negotiation (transparent to business logic)
+  - **40-60% payload reduction** vs JSON
+  - Integration with [@toon-format/toon](https://github.com/toon-format/toon)
+  
+- [ ] **Use Cases & ROI:**
+  - **Microservices**: 1M tx/hour = 720GB/month saved = $200-500/month infrastructure cost reduction
+  - **LLM APIs**: 40-60% token cost reduction (OpenAI, Claude, etc.)
+  - **High-frequency APIs**: Lower latency, less CPU overhead
+  - **Mobile apps**: Reduced data usage for users
+  - **IoT**: Minimal bandwidth for embedded devices
+  
+- [ ] **Implementation:**
+  - Content negotiation with `Accept` header
+  - Benchmarks: TOON vs JSON (payload size, parse time, serialize time)
+  - Documentation with cost-benefit analysis
+  - Real-world examples (microservices, LLM prompts, mobile apps)
 
 **Security**
 - [ ] CSRF protection
