@@ -10,7 +10,7 @@
 [![⚡ Bun Performance](https://img.shields.io/badge/⚡-3.8x%20Faster%20than%20Fastify-green.svg)](https://github.com/Syntropysoft/sintrojs)
 [![🚀 Node.js Performance](https://img.shields.io/badge/🚀-89.3%25%20of%20Fastify-blue.svg)](https://github.com/Syntropysoft/sintrojs)
 [![Coverage](https://img.shields.io/badge/coverage-80.54%25-brightgreen)](./coverage)
-[![Tests](https://img.shields.io/badge/tests-552%20passing-brightgreen)](./tests)
+[![Tests](https://img.shields.io/badge/tests-647%20passing-brightgreen)](./tests)
 
 ---
 
@@ -24,59 +24,50 @@
 
 ---
 
-## 🎯 Recent Changes (v0.3.13-alpha)
+## 🎯 Recent Changes (v0.4.0-alpha.2)
+
+### 🐛 Critical Fixes
+
+*   **ErrorHandler - Dynamic Imports Compatibility**: Fixed `instanceof` paradox with dynamic imports in `FluentAdapter`.
+    - **Problem**: `instanceof` checks fail across module boundaries when using dynamic imports
+    - **Solution**: Implemented structural typing (NestJS-style) - check `statusCode` property first
+    - **Result**: Works reliably with both regular imports AND dynamic imports
+    - **Principle**: SOLID - Depend on abstraction (statusCode) not implementation (instanceof)
 
 ### ✨ New Features
 
-*   **HEAD Method**: Added `.head()` public method for checking resource existence without downloading body.
-    - Full Zod validation support
-    - Custom headers support
-    - OpenAPI/Swagger documentation
-    - TinyTest integration (14 tests passing)
+*   **File Uploads**: Complete multipart/form-data support with validation.
+    - `@fastify/multipart` integration
+    - `FileValidator` for size, mimetype, and extension validation
+    - Multiple file uploads support
+    - Form fields + files parsing
+    - 7 E2E tests passing
 
-*   **OPTIONS Method**: Added `.options()` public method for CORS preflight and allowed methods discovery.
-    - Returns allowed HTTP methods for resources
-    - CORS preflight support
-    - OpenAPI/Swagger documentation
-    - TinyTest integration (14 tests passing)
-  
-*   **Auto-OPTIONS Generator**: Pure functional generator for automatic CORS preflight responses.
-    - `getAllowedMethods()` - Discovers allowed methods from registered routes
-    - `generateOptionsHeaders()` - Creates CORS headers immutably
-    - `generateOptionsResponse()` - Complete OPTIONS response builder
-    - 100% functional programming (no mutations, Object.freeze)
-    - 16 tests passing
+*   **Form Data**: Full application/x-www-form-urlencoded support.
+    - `@fastify/formbody` integration
+    - Automatic parsing to `ctx.body`
+    - Works with Zod validation
+    - 10 E2E tests passing
 
-*   **OpenAPI Generator**: Updated to fully support HEAD and OPTIONS methods.
-    - HEAD and OPTIONS appear in Swagger UI
-    - Full metadata support (summary, description, tags, etc.)
-    - 8 tests passing
+*   **Streaming & Buffer Responses**: Raw data support for files and binary content.
+    - Stream responses (Node.js Readable)
+    - Buffer responses (binary data)
+    - Custom status codes + headers
+    - Validation bypass for streams
+    - 11 tests passing
 
-### 🐛 Bug Fixes
-
-*   **Custom Exception Handlers**: Fixed critical bug where custom handlers registered with `.register()` were being ignored.
-    - Custom handlers now have PRIORITY 1 (executed first)
-    - Built-in handlers are PRIORITY 2 (fallback)
-    - Follows exception filter pattern
-    - Users can now override ANY exception behavior
-    - Fixed 6 previously failing tests
-
-### 📚 Documentation
-
-*   **Comprehensive REST Roadmap**: Added detailed feature roadmap with status tracking.
-    - Current features (v0.3.x) documented
-    - v0.4.0 REST Completion plan
-    - v0.5.0 Advanced features plan
-    - v1.0.0 Production ready plan
-    - Feature comparison table with priorities
-    - Time estimates for each feature
+*   **Developer Experience**: New testing tools for local/npm validation.
+    - `test-version.sh` - Automated script for testing local vs npm versions
+    - `TEST-GUIDE.md` - Complete testing workflow documentation
+    - Workspace integration for `syntrojs-examples`
 
 ### 📊 Progress
 
-*   **Tests**: 593/596 passing (99.5% pass rate)
+*   **Tests**: 647/647 passing (100% pass rate) ✅
+*   **E2E Tests**: 114 tests passing (100%) ✅
 *   **Coverage**: All new features fully tested
-*   **Code Style**: 100% functional programming (pure functions, immutability)
-*   **v0.4.0 Progress**: 3/14 days completed (21%)
+*   **Code Style**: 100% SOLID + DDD + Functional programming
+*   **v0.4.0 Progress**: 60% complete (6/10 features done)
 
 ---
 
@@ -448,11 +439,12 @@ For a deeper dive, see our [ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md
 | HEAD method | ✅ Done | High | v0.3.13 |
 | OPTIONS method | ✅ Done | High | v0.3.13 |
 | Streaming responses | ✅ Done | High | v0.4.0-alpha.1 |
+| File uploads | ✅ Done | High | v0.4.0-alpha.1 |
+| Form data | ✅ Done | Medium | v0.4.0-alpha.1 |
+| Buffer responses | ✅ Done | Medium | v0.4.0-alpha.1 |
 | File downloads | 🔴 Missing | High | v0.4.0 |
 | Static files | 🟡 Partial | High | v0.4.0 |
-| File uploads | 🔴 Missing | High | v0.4.0 |
 | Redirects | 🔴 Missing | High | v0.4.0 |
-| Form data | 🔴 Missing | Medium | v0.4.0 |
 | Content negotiation | 🔴 Missing | Medium | v0.4.0 |
 | ETags | 🔴 Missing | Medium | v0.4.0 |
 | SSE | 🔴 Missing | Medium | v0.5.0 |
@@ -470,14 +462,21 @@ For a deeper dive, see our [ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md
 2. ~~**Add OPTIONS method**~~ - ✅ Done (v0.3.13)
 3. ~~**Auto-OPTIONS for CORS**~~ - ✅ Done (v0.3.13)
 4. ~~**Streaming responses**~~ - ✅ Done (v0.4.0-alpha.1)
-5. **File downloads helper** - 2 days
-6. **Static file serving** - 2 days
-7. **Redirect helper** - 1 day
-8. ~~**File uploads**~~ - ✅ Done (v0.4.0-alpha.1) - Multipart/form-data with FileValidator
-9. ~~**Form data support**~~ - ✅ Done (v0.4.0-alpha.1) - application/x-www-form-urlencoded
-10. **Content negotiation** - 2 days
+5. ~~**File uploads**~~ - ✅ Done (v0.4.0-alpha.1) - Multipart/form-data with FileValidator
+6. ~~**Form data support**~~ - ✅ Done (v0.4.0-alpha.1) - application/x-www-form-urlencoded
+7. **File downloads helper** - 2 days (Content-Disposition headers)
+8. **Static file serving** - 2 days (@fastify/static integration)
+9. **Redirect helper** - 1 day (301, 302, 307, 308)
+10. **Content negotiation** - 2 days (Accept headers)
 
 **Total estimate: ~2 weeks** (6/10 completed - 60% ✅)
+
+**Completed in alpha releases:**
+- ✅ HEAD & OPTIONS methods (v0.3.13)
+- ✅ Streaming responses + Buffer support (v0.4.0-alpha.1)
+- ✅ File uploads with validation (v0.4.0-alpha.1)
+- ✅ Form data parsing (v0.4.0-alpha.1)
+- ✅ ErrorHandler fix for dynamic imports (v0.4.0-alpha.2)
 
 ---
 
