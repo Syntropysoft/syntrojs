@@ -465,10 +465,10 @@ For a deeper dive, see our [ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md
 |---------|--------|----------|----------------|
 | HEAD method | ✅ Done | High | v0.3.13 |
 | OPTIONS method | ✅ Done | High | v0.3.13 |
-| Streaming responses | ✅ Done | High | v0.4.0-alpha.1 |
-| File uploads | ✅ Done | High | v0.4.0-alpha.1 |
-| Form data | ✅ Done | Medium | v0.4.0-alpha.1 |
-| Buffer responses | ✅ Done | Medium | v0.4.0-alpha.1 |
+| Streaming responses | ✅ Done | High | v0.4.0-alpha.2 |
+| File uploads | ✅ Done | High | v0.4.0-alpha.2 |
+| Form data | ✅ Done | Medium | v0.4.0-alpha.2 |
+| Buffer responses | ✅ Done | Medium | v0.4.0-alpha.2 |
 | File downloads | 🔴 Missing | High | v0.4.0 |
 | Static files | 🟡 Partial | High | v0.4.0 |
 | Redirects | 🔴 Missing | High | v0.4.0 |
