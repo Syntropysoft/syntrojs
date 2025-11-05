@@ -23,6 +23,8 @@
 - ⚠️ **API may change** - Breaking changes are expected in future versions.
 - ⚠️ **Not production-ready** - Missing features, optimizations, and stability improvements.
 
+**Latest Release**: v0.4.0-alpha.3 - File downloads, critical bug fixes, SOLID refactoring ([CHANGELOG](./docs/CHANGELOG.md))
+
 ---
 
 ## 🎯 What is SyntroJS?
@@ -212,52 +214,6 @@ const app = new SyntroJS({
 - **Examples Repository**: [syntrojs-example](https://github.com/Syntropysoft/syntrojs-example)
 - **Architecture**: [ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md)
 - **Full Documentation**: Coming soon
-
----
-
-## 🎯 Recent Changes (v0.4.0-alpha.3)
-
-### ✨ Highlights
-
-- **File Downloads**: `ctx.download()` helper with security (path traversal protection)
-- **SOLID Refactoring**: Complete DDD overhaul with Dependency Injection
-- **Critical Bugs Fixed**: Path parameters + port detection (116 tests recovered)
-- **TinyTest**: Added `rawRequest()` for low-level HTTP testing
-- **Code Quality**: 100% SOLID + DDD + Functional + Pure Functions + Guard Clauses
-
-### 📊 Impact
-
-- **Tests recovered**: 116 (from 142 failing → 26 failing)
-- **Node.js compatibility**: 100% (728/728 tests)
-- **Bun compatibility**: 94% (458/487 tests)
-- **Backward compatible**: 0 tests broken
-
-<details>
-<summary><b>🐛 Technical Details: Critical Bugs Fixed</b></summary>
-
-### Bug #1: Path Parameters Never Worked in Bun 🚨
-
-- **Problem**: Routes like `/users/:id` returned empty params `{}`
-- **Root Cause**: `buildContext()` didn't receive route parameter
-- **Impact**: 100% of dynamic routes broken in Bun
-- **Fix**: Pure function `extractPathParams(pathname, routePath)` with route injection
-- **Result**: 13 tests recovered ✅
-
-### Bug #2: Port Detection Broken 🚨
-
-- **Problem**: `TinyTest` couldn't connect (ConnectionRefused errors)
-- **Root Cause**: Returned input port (0) instead of actual assigned port
-- **Impact**: 103 E2E tests failing
-- **Fix**: Use `this.server.port` (actual port from Bun)
-- **Result**: 103 tests recovered ✅
-
-### Architectural Debt: SOLID Violations 🏗️
-
-- **Problem**: God method (8 responsibilities), tight coupling
-- **Fix**: Interfaces (`IRequestParser`, `IValidator`, `IResponseSerializer`), DI, Strategy Pattern
-- **Result**: Infinite extensibility, 0 tests broken ✅
-
-</details>
 
 ---
 
