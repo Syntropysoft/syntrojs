@@ -29,4 +29,3 @@ export interface IResponseSerializer {
    */
   serialize(result: any, statusCode: number): Response;
 }
-

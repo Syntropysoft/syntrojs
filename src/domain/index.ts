@@ -4,6 +4,6 @@
  */
 
 export * from './HTTPException';
+export * from './interfaces';
 export * from './Route';
 export * from './types';
-export * from './interfaces';

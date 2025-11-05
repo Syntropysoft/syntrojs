@@ -3,8 +3,7 @@
  * Strategy Pattern implementations
  */
 
-export * from './FileDownloadSerializer';
-export * from './StreamSerializer';
 export * from './BufferSerializer';
+export * from './FileDownloadSerializer';
 export * from './JsonSerializer';
-
+export * from './StreamSerializer';

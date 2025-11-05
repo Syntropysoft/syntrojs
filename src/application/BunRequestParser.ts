@@ -6,8 +6,8 @@
  */
 
 import type { IRequestParser } from '../domain/interfaces';
-import type { RequestContext } from '../domain/types';
 import type { Route } from '../domain/Route';
+import type { RequestContext } from '../domain/types';
 import { createFileDownload } from '../infrastructure/FileDownloadHelper';
 
 /**
@@ -170,4 +170,3 @@ export class BunRequestParser implements IRequestParser {
     };
   }
 }
-

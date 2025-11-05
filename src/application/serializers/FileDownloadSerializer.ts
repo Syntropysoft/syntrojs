@@ -46,4 +46,3 @@ export class FileDownloadSerializer implements IResponseSerializer {
     });
   }
 }
-

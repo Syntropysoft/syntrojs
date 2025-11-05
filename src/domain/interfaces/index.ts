@@ -4,6 +4,5 @@
  */
 
 export * from './IRequestParser';
-export * from './IValidator';
 export * from './IResponseSerializer';
-
+export * from './IValidator';

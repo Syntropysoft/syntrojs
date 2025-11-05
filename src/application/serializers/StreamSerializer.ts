@@ -38,4 +38,3 @@ export class StreamSerializer implements IResponseSerializer {
     });
   }
 }
-

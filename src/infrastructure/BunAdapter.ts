@@ -22,10 +22,10 @@ interface Bun {
 import type { DependencyMetadata } from '../application/DependencyInjector';
 import { DependencyInjector } from '../application/DependencyInjector';
 import { ErrorHandler } from '../application/ErrorHandler';
-import { MultipartParser } from '../application/MultipartParser';
 import type { MiddlewareRegistry } from '../application/MiddlewareRegistry';
-import type { Route } from '../domain/Route';
+import { MultipartParser } from '../application/MultipartParser';
 import type { IRequestParser, IResponseSerializer, IValidator } from '../domain/interfaces';
+import type { Route } from '../domain/Route';
 
 /**
  * BunAdapter Implementation
@@ -40,7 +40,7 @@ class BunAdapterImpl {
   constructor(
     private requestParser: IRequestParser,
     private validator: IValidator,
-    private responseSerializers: IResponseSerializer[]
+    private responseSerializers: IResponseSerializer[],
   ) {}
 
   /**
@@ -144,7 +144,7 @@ class BunAdapterImpl {
     const routeKey = `${method}:${pathname}`;
 
     // Try exact match first
-    let route = this.routes.get(routeKey);
+    const route = this.routes.get(routeKey);
     if (route) return route;
 
     // Try pattern matching for dynamic routes
@@ -182,7 +182,7 @@ class BunAdapterImpl {
     if (route.config.dependencies) {
       const { resolved } = await DependencyInjector.resolve(
         route.config.dependencies as Record<string, DependencyMetadata<unknown>>,
-        context
+        context,
       );
       context.dependencies = resolved;
     } else {
@@ -276,7 +276,7 @@ export class BunAdapter {
   static createWithDependencies(
     requestParser: IRequestParser,
     validator: IValidator,
-    serializers: IResponseSerializer[]
+    serializers: IResponseSerializer[],
   ): BunAdapterImpl {
     return new BunAdapterImpl(requestParser, validator, serializers);
   }
@@ -306,7 +306,7 @@ export class BunAdapter {
           new StreamSerializer(),
           new BufferSerializer(),
           new JsonSerializer(), // Must be last (default)
-        ]
+        ],
       );
     }
     return BunAdapter.instance;
@@ -333,4 +333,3 @@ export class BunAdapter {
     return BunAdapter.getInstance().close(server);
   }
 }
-

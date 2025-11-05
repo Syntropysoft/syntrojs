@@ -33,4 +33,3 @@ export interface IValidator {
    */
   isValid(schema: ZodSchema, data: unknown): boolean;
 }
-

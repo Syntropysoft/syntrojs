@@ -5,6 +5,7 @@
 
 export * from './AutoOptionsGenerator';
 export * from './BackgroundTasks';
+export * from './BunRequestParser';
 export * from './DependencyInjector';
 export * from './DocsRenderer';
 export * from './ErrorHandler';
@@ -15,5 +16,4 @@ export * from './OpenAPIGenerator';
 export * from './RouteRegistry';
 export * from './SchemaValidator';
 export * from './StreamingResponseHandler';
-export * from './BunRequestParser';
 export * from './serializers';

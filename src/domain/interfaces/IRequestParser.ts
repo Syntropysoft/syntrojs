@@ -5,8 +5,8 @@
  * Infrastructure components depend on this abstraction, not concrete implementations
  */
 
-import type { RequestContext } from '../types';
 import type { Route } from '../Route';
+import type { RequestContext } from '../types';
 
 /**
  * Request Parser Interface
@@ -44,4 +44,3 @@ export interface IRequestParser {
    */
   buildContext(request: any, url: URL, route: Route): Promise<RequestContext>;
 }
-

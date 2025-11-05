@@ -40,4 +40,3 @@ export class JsonSerializer implements IResponseSerializer {
     });
   }
 }
-
