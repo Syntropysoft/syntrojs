@@ -869,8 +869,6 @@ export class SyntroJS {
 
     try {
       // Try to dynamically import package - will fail if not installed
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error - Package might not be installed
       await import('redoc');
       redocInstalled = true;
     } catch {

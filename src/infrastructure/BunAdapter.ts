@@ -28,6 +28,7 @@ import type { RequestContext } from '../domain/types';
  */
 
 class BunAdapterImpl {
+  private isRunning = false;
   private server: BunServer | null = null;
   private routes: Map<string, Route> = new Map();
   private middlewareRegistry?: MiddlewareRegistry;
