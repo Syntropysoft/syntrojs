@@ -16,21 +16,29 @@ npm run benchmark:final
 - ✅ Improvement analysis and ratios
 - ✅ Final performance ranking
 
-## 📊 Final Results
+## 📊 Final Results (Latest Run)
 
-### 🏆 Performance Ranking
-1. **🥇 Fastify**: 5,200 req/sec average
-2. **🥈 SyntroJS UltraFast**: 4,454 req/sec average (**89.3% of Fastify**)
-3. **🥉 Express**: 2,469 req/sec average
+### 🏆 Performance Ranking (Node.js)
+1. **🥇 Fastify**: 6,505 req/sec average
+2. **🥈 SyntroJS Standard**: 5,819 req/sec average (**89.5% of Fastify**)
+3. **🥉 Express**: 3,987 req/sec average
+
+### 🚀 UltraFast Optimizations
+**SyntroJS UltraFast vs Fastify** (ultrafast-optimization-benchmark):
+- 10 concurrent: 92.7% of Fastify
+- 100 concurrent: 93.3% of Fastify
+- 1000 concurrent: 88.9% of Fastify
+- **Average: 91.6% of Fastify** ⚡
 
 ### 📈 Key Metrics
-- **SyntroJS vs Fastify**: 89.3% performance (only 11% overhead)
-- **SyntroJS vs Express**: 325% faster (3.25x performance)
-- **UltraFast optimizations**: 183.9% improvement over standard SyntroJS
+- **SyntroJS Standard vs Fastify**: 89.5% performance (only 10.5% overhead)
+- **SyntroJS UltraFast vs Fastify**: 91.6% performance (only 8.4% overhead)
+- **SyntroJS vs Express**: 146% faster (syntrojs-vs-express benchmark)
+- **UltraFast optimizations**: 223.6% improvement over original
 
 ### 🎯 Performance Analysis
-- ✅ **Competitive with Fastify**: Only 11% overhead for full feature set
-- ✅ **Significantly faster than Express**: 325% performance improvement
+- ✅ **Competitive with Fastify**: UltraFast at 91.6%, Standard at 89.5%
+- ✅ **Significantly faster than Express**: 146-264% improvement
 - ✅ **Scales well**: Performance improves with higher concurrency
 - ✅ **Production ready**: Excellent performance for real-world applications
 

@@ -2,13 +2,13 @@
   <img src="https://raw.githubusercontent.com/Syntropysoft/sintrojs/main/assets/beaconLog-2.png" alt="SyntroJS Logo" width="170"/>
   <h1 align="center">SyntroJS 🚀</h1>
   <p align="center"><b>FastAPI for Node.js & Bun</b></p>
-  <p align="center">⚡ <b>3.8x faster with Bun</b> | 🚀 <b>89.3% of Fastify with Node.js</b></p>
+  <p align="center">⚡ <b>3.8x faster with Bun</b> | 🚀 <b>89.5% of Fastify with Node.js</b></p>
 </p>
 
 [![npm version](https://img.shields.io/npm/v/syntrojs.svg)](https://www.npmjs.com/package/syntrojs)
 [![🚀 DUAL RUNTIME](https://img.shields.io/badge/🚀-DUAL%20RUNTIME-red.svg)](https://github.com/Syntropysoft/sintrojs)
 [![⚡ Bun Performance](https://img.shields.io/badge/⚡-3.8x%20Faster%20than%20Fastify-green.svg)](https://github.com/Syntropysoft/sintrojs)
-[![🚀 Node.js Performance](https://img.shields.io/badge/🚀-89.3%25%20of%20Fastify-blue.svg)](https://github.com/Syntropysoft/sintrojs)
+[![🚀 Node.js Performance](https://img.shields.io/badge/🚀-89.5%25%20of%20Fastify-blue.svg)](https://github.com/Syntropysoft/sintrojs)
 [![Coverage](https://img.shields.io/badge/coverage-77.14%25-brightgreen)](./coverage)
 [![Mutation Score](https://img.shields.io/badge/mutation%20score-58.72%25-yellow)](./reports/mutation)
 [![Tests](https://img.shields.io/badge/tests-728%20passing-brightgreen)](./tests)
@@ -91,8 +91,8 @@ bun app.js
 
 | Runtime | Performance | Tests Passing | Use Case |
 |---------|-------------|---------------|----------|
-| **Node.js** | 89.3% of Fastify | 728/728 (100%) | Production, plugins |
-| **Bun** | 3.8x faster | 458/487 (94%) | Maximum speed |
+| **Node.js** | 89.5% of Fastify (5,819 req/s) | 728/728 (100%) | Production, plugins |
+| **Bun** | 3.8x faster (~22,000 req/s) | 458/487 (94%) | Maximum speed |
 
 ### Bun Limitations
 
