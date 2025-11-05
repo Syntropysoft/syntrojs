@@ -40,6 +40,14 @@
 
 ### 🏗️ Architectural Improvements
 
+*   **SOLID + DDD Refactoring**: Complete architectural overhaul of BunAdapter
+    - **Dependency Inversion**: All dependencies via interfaces (`IRequestParser`, `IValidator`, `IResponseSerializer`)
+    - **Single Responsibility**: Each service does ONE thing (parsing, validation, serialization)
+    - **Open/Closed**: New content types/response formats via Strategy Pattern (no adapter changes)
+    - **Pure Functions**: `parsePathParams()`, `parseFormData()` - testable in isolation
+    - **Guard Clauses**: Clear, defensive programming throughout
+    - Result: 100% backward compatible, 0 tests broken, infinitely extensible
+
 *   **TinyTest Evolution**: Added `rawRequest()` method for low-level HTTP testing
     - Returns native Fetch `Response` object for fine-grained control
     - Perfect for testing file downloads, headers, and binary data

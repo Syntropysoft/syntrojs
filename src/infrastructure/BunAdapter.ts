@@ -1,7 +1,14 @@
-// Bun types are only available when running in Bun runtime
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+/**
+ * BunAdapter - Refactored with SOLID + DDD + Dependency Injection
+ *
+ * Infrastructure Layer (Dependency Inversion Principle)
+ * Depends on abstractions (interfaces), not concrete implementations
+ */
+
+// Bun types
 interface BunServer {
   stop(): void;
+  port: number;
 }
 
 interface Bun {
@@ -15,73 +22,59 @@ interface Bun {
 import type { DependencyMetadata } from '../application/DependencyInjector';
 import { DependencyInjector } from '../application/DependencyInjector';
 import { ErrorHandler } from '../application/ErrorHandler';
-import type { MiddlewareRegistry } from '../application/MiddlewareRegistry';
 import { MultipartParser } from '../application/MultipartParser';
-import { SchemaValidator } from '../application/SchemaValidator';
-import { StreamingResponseHandler } from '../application/StreamingResponseHandler';
+import type { MiddlewareRegistry } from '../application/MiddlewareRegistry';
 import type { Route } from '../domain/Route';
-import type { RequestContext } from '../domain/types';
-import { createFileDownload, isFileDownloadResponse } from './FileDownloadHelper';
+import type { IRequestParser, IResponseSerializer, IValidator } from '../domain/interfaces';
 
 /**
- * Bun-specific adapter for maximum performance
- * Uses Bun's native HTTP server instead of Fastify
+ * BunAdapter Implementation
+ * Uses Dependency Injection for all services
  */
-
 class BunAdapterImpl {
   private server: BunServer | null = null;
   private routes: Map<string, Route> = new Map();
   private middlewareRegistry?: MiddlewareRegistry;
 
+  // DEPENDENCY INJECTION: Services injected via constructor
+  constructor(
+    private requestParser: IRequestParser,
+    private validator: IValidator,
+    private responseSerializers: IResponseSerializer[]
+  ) {}
+
   /**
-   * Set middleware registry for this adapter
+   * Set middleware registry
    */
   setMiddlewareRegistry(registry: MiddlewareRegistry): void {
     this.middlewareRegistry = registry;
   }
 
   /**
-   * Creates a Bun native server adapter
-   *
-   * @returns Server adapter instance
+   * Create server adapter
    */
   create(): unknown {
-    // Bun adapter doesn't create server until listen() is called
     return {
-      type: 'bun',
-      routes: this.routes,
+      adapter: 'bun',
+      version: '1.0.0',
     };
   }
 
   /**
-   * Registers a route with Bun server
-   *
-   * @param server - Server instance
-   * @param route - Route to register
+   * Register route
    */
-  registerRoute(_server: unknown, route: Route): void {
-    // Store route for later use
-    const key = `${route.method}:${route.path}`;
-    this.routes.set(key, route);
+  registerRoute(server: unknown, route: Route): void {
+    const routeKey = `${route.method}:${route.path}`;
+    this.routes.set(routeKey, route);
   }
 
   /**
-   * Starts Bun native HTTP server
-   *
-   * @param server - Server instance
-   * @param port - Port to listen on
-   * @param host - Host to bind to
-   * @returns Server address
+   * Start Bun server
    */
   async listen(server: unknown, port: number, host = '::'): Promise<string> {
     // Guard clauses
-    if (!server) {
-      throw new Error('Server instance is required');
-    }
-
-    if (port < 0 || port > 65535) {
-      throw new Error('Valid port number is required (0-65535)');
-    }
+    if (!server) throw new Error('Server instance is required');
+    if (port < 0 || port > 65535) throw new Error('Valid port number is required (0-65535)');
 
     // Check if we're in Bun runtime
     if (typeof (globalThis as { Bun?: unknown }).Bun === 'undefined') {
@@ -105,271 +98,146 @@ class BunAdapterImpl {
   }
 
   /**
-   * Handles incoming HTTP requests
+   * Handle incoming HTTP request
+   * Orchestrates the request pipeline
    *
-   * @param request - Incoming request
-   * @returns Response
+   * SOLID: Each step delegates to specialized services
    */
   private async handleRequest(request: Request): Promise<Response> {
     try {
       const url = new URL(request.url);
       const method = request.method as string;
-      const routeKey = `${method}:${url.pathname}`;
 
-      // Find matching route
-      let route = this.routes.get(routeKey);
-
-      // Try to match with params (e.g., /users/:id)
-      if (!route) {
-        route = this.findRouteByPattern(method, url.pathname);
-      }
-
+      // 1. ROUTING: Find matching route
+      const route = this.findRoute(method, url.pathname);
       if (!route) {
         return new Response('Not Found', { status: 404 });
       }
 
-      // Build request context
-      const context = await this.buildContext(request, url, route);
+      // 2. CONTEXT BUILDING: Delegate to RequestParser (Dependency Inversion)
+      const context = await this.requestParser.buildContext(request, url, route);
 
-      // Execute middlewares if registry is available
-      if (this.middlewareRegistry) {
-        const middlewares = this.middlewareRegistry.getMiddlewares(route.path, route.method);
-        if (middlewares.length > 0) {
-          await this.middlewareRegistry.executeMiddlewares(middlewares, context);
-        }
-      }
+      // 3. MIDDLEWARE: Execute if available
+      await this.executeMiddlewares(route, context);
 
-      // Resolve dependencies if specified
-      if (route.config.dependencies) {
-        const { resolved } = await DependencyInjector.resolve(
-          route.config.dependencies as Record<string, DependencyMetadata<unknown>>,
-          context,
-        );
-        context.dependencies = resolved;
-      } else {
-        context.dependencies = {};
-      }
+      // 4. DEPENDENCY INJECTION: Resolve dependencies if specified
+      await this.resolveDependencies(route, context);
 
-      // Validate params, query, body if schemas exist
-      if (route.config.params) {
-        context.params = SchemaValidator.validateOrThrow(route.config.params, context.params);
-      }
-      if (route.config.query) {
-        context.query = SchemaValidator.validateOrThrow(route.config.query, context.query);
-      }
+      // 5. VALIDATION: Delegate to Validator (Dependency Inversion)
+      await this.validateRequest(route, request, context);
 
-      // Parse multipart form data if present (Dependency Inversion: use service)
-      await MultipartParser.parseBun(request, context);
-
-      // Parse request body based on Content-Type (if not multipart)
-      // Guard clause: Only for methods that expect body
-      if (!context.files && route.config.body && ['POST', 'PUT', 'PATCH'].includes(method)) {
-        const contentType = request.headers.get('content-type') || '';
-        
-        let body: any;
-        
-        // Guard clause: application/x-www-form-urlencoded
-        if (contentType.includes('application/x-www-form-urlencoded')) {
-          const formData = await request.formData();
-          body = this.parseFormData(formData);  // Use pure function
-        } 
-        // Guard clause: application/json (default)
-        else {
-          body = await request.json();
-        }
-        
-        context.body = SchemaValidator.validateOrThrow(route.config.body, body);
-      }
-
-      // Execute handler
+      // 6. HANDLER: Execute business logic
       const result = await route.handler(context);
 
-      // FILE DOWNLOAD SUPPORT: Check if result is a file download response
-      // Pattern: { data: Buffer|Stream|string, headers: { 'Content-Disposition': ... } }
-      // Priority: Check BEFORE Stream/Buffer to allow custom headers
-      if (isFileDownloadResponse(result)) {
-        // Extract headers (immutable)
-        const headers = new Headers();
-        for (const [key, value] of Object.entries(result.headers)) {
-          headers.set(key, value);
-        }
-
-        // Send file data with custom headers and status
-        return new Response(result.data as any, {
-          status: result.statusCode,
-          headers,
-        });
-      }
-
-      // STREAMING SUPPORT: Check if result is a Stream (Node.js Readable)
-      if (StreamingResponseHandler.isReadableStream(result)) {
-        // Bun supports streaming via Response with stream body
-        // Convert Node.js Readable to Web Streams API ReadableStream
-        return new Response(result as any, {
-          status: route.config.status ?? 200,
-        });
-      }
-
-      // BUFFER SUPPORT: Check if result is a Buffer
-      if (Buffer.isBuffer(result)) {
-        // Bun handles buffers natively
-        return new Response(result, {
-          status: route.config.status ?? 200,
-        });
-      }
-
-      // Return JSON response
-      return new Response(JSON.stringify(result), {
-        status: route.config.status ?? 200,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      // 7. SERIALIZATION: Delegate to Response Serializers (Strategy Pattern + Open/Closed)
+      return this.serializeResponse(result, route.config.status ?? 200);
     } catch (error) {
-      // Handle errors
       return await this.handleError(error);
     }
   }
 
   /**
-   * Finds route by pattern matching
-   *
-   * @param method - HTTP method
-   * @param pathname - Request path
-   * @returns Matching route or undefined
+   * Find route by method and path
+   * Uses pattern matching for dynamic routes
    */
-  private findRouteByPattern(method: string, pathname: string): Route | undefined {
-    for (const route of this.routes.values()) {
-      if (route.method.toLowerCase() !== method.toLowerCase()) {
-        continue;
-      }
+  private findRoute(method: string, pathname: string): Route | undefined {
+    const routeKey = `${method}:${pathname}`;
 
-      // Simple pattern matching (e.g., /users/:id)
-      const pattern = route.path.replace(/:\w+/g, '([^/]+)');
+    // Try exact match first
+    let route = this.routes.get(routeKey);
+    if (route) return route;
+
+    // Try pattern matching for dynamic routes
+    for (const r of this.routes.values()) {
+      if (r.method.toLowerCase() !== method.toLowerCase()) continue;
+
+      const pattern = r.path.replace(/:\w+/g, '([^/]+)');
       const regex = new RegExp(`^${pattern}$`);
       if (regex.test(pathname)) {
-        return route;
+        return r;
       }
     }
+
     return undefined;
   }
 
   /**
-   * Parse FormData to plain object
-   * Pure function: No side effects, returns new object
-   *
-   * @param formData - FormData instance from request
-   * @returns Plain object with parsed data
+   * Execute middlewares
+   * Guard clause: Only if middleware registry exists
    */
-  private parseFormData(formData: FormData): Record<string, any> {
-    const body: Record<string, any> = {};
+  private async executeMiddlewares(route: Route, context: any): Promise<void> {
+    if (!this.middlewareRegistry) return;
 
-    for (const [key, value] of formData.entries()) {
-      // Guard clause: Handle arrays (e.g., tags[]=value1&tags[]=value2)
-      if (key.endsWith('[]')) {
-        const cleanKey = key.slice(0, -2);
-        if (!body[cleanKey]) {
-          body[cleanKey] = [];
-        }
-        body[cleanKey].push(value);
-        continue;
+    const middlewares = this.middlewareRegistry.getMiddlewares(route.path, route.method);
+    if (middlewares.length > 0) {
+      await this.middlewareRegistry.executeMiddlewares(middlewares, context);
+    }
+  }
+
+  /**
+   * Resolve dependencies
+   * Guard clause: Only if route has dependencies
+   */
+  private async resolveDependencies(route: Route, context: any): Promise<void> {
+    if (route.config.dependencies) {
+      const { resolved } = await DependencyInjector.resolve(
+        route.config.dependencies as Record<string, DependencyMetadata<unknown>>,
+        context
+      );
+      context.dependencies = resolved;
+    } else {
+      context.dependencies = {};
+    }
+  }
+
+  /**
+   * Validate request
+   * Delegates to Validator service (Dependency Inversion)
+   */
+  private async validateRequest(route: Route, request: Request, context: any): Promise<void> {
+    // Validate params
+    if (route.config.params) {
+      context.params = this.validator.validateOrThrow(route.config.params, context.params);
+    }
+
+    // Validate query
+    if (route.config.query) {
+      context.query = this.validator.validateOrThrow(route.config.query, context.query);
+    }
+
+    // Parse multipart form data
+    await MultipartParser.parseBun(request, context);
+
+    // Parse and validate body
+    if (!context.files && route.config.body && ['POST', 'PUT', 'PATCH'].includes(request.method)) {
+      const contentType = request.headers.get('content-type') || '';
+      const body = await this.requestParser.parseBody(request, contentType);
+      context.body = this.validator.validateOrThrow(route.config.body, body);
+    }
+  }
+
+  /**
+   * Serialize response
+   * Strategy Pattern: Uses first serializer that can handle the result
+   * Open/Closed: New serializers can be added without modifying this code
+   */
+  private serializeResponse(result: any, defaultStatus: number): Response {
+    // Find first serializer that can handle this result
+    for (const serializer of this.responseSerializers) {
+      if (serializer.canSerialize(result)) {
+        return serializer.serialize(result, defaultStatus);
       }
-
-      // Default: Simple key-value
-      body[key] = value;
     }
 
-    return body;
-  }
-
-  /**
-   * Extract path parameters from pathname using route pattern
-   * Pure function: No side effects, returns new object
-   *
-   * @param pathname - Actual request path (e.g., /users/123)
-   * @param routePath - Route pattern (e.g., /users/:id)
-   * @returns Object with extracted params
-   */
-  private extractPathParams(pathname: string, routePath: string): Record<string, string> {
-    const params: Record<string, string> = {};
-
-    // Guard clause: No params in route
-    if (!routePath.includes(':')) {
-      return params;
-    }
-
-    // Extract param names from route pattern
-    const paramNames: string[] = [];
-    const pattern = routePath.replace(/:(\w+)/g, (_, name) => {
-      paramNames.push(name);
-      return '([^/]+)';
+    // Fallback: Should never reach here if JsonSerializer is last
+    return new Response(JSON.stringify(result), {
+      status: defaultStatus,
+      headers: { 'Content-Type': 'application/json' },
     });
-
-    // Match pathname against pattern
-    const regex = new RegExp(`^${pattern}$`);
-    const match = pathname.match(regex);
-
-    // Guard clause: No match
-    if (!match) {
-      return params;
-    }
-
-    // Extract values (skip first element which is the full match)
-    for (let i = 0; i < paramNames.length; i++) {
-      params[paramNames[i]] = match[i + 1];
-    }
-
-    return params;
   }
 
   /**
-   * Builds request context from Bun request
-   * Pure function approach: Extract data, return new object
-   *
-   * @param request - Bun request
-   * @param url - Request URL
-   * @param route - Matched route (needed for path params extraction)
-   * @returns Request context
-   */
-  private async buildContext(request: Request, url: URL, route: Route): Promise<RequestContext> {
-    // Extract path params using pure function
-    const params = this.extractPathParams(url.pathname, route.path);
-
-    // Extract query params (functional)
-    const query: Record<string, string> = {};
-    for (const [key, value] of url.searchParams.entries()) {
-      query[key] = value;
-    }
-
-    // Extract headers (functional)
-    const headers: Record<string, string> = {};
-    for (const [key, value] of request.headers.entries()) {
-      headers[key] = value;
-    }
-
-    // Return immutable context object
-    return {
-      method: request.method as any,
-      path: url.pathname,
-      params,
-      query,
-      body: {},
-      headers,
-      cookies: {},
-      correlationId: headers['x-correlation-id'] || this.generateId(),
-      timestamp: new Date(),
-      dependencies: {},
-      background: {
-        addTask: (task) => setImmediate(task),
-      },
-      // File download helper (functional)
-      download: (data, options) => createFileDownload(data, options),
-    };
-  }
-
-  /**
-   * Handles errors
-   *
-   * @param error - Error to handle
-   * @returns Error response
+   * Handle errors
    */
   private async handleError(error: unknown): Promise<Response> {
     const errorObj = error instanceof Error ? error : new Error(String(error));
@@ -382,24 +250,10 @@ class BunAdapterImpl {
   }
 
   /**
-   * Generates a unique correlation ID
-   *
-   * @returns Correlation ID
-   */
-  private generateId(): string {
-    return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-  }
-
-  /**
-   * Stops Bun server
-   *
-   * @param server - Server instance
+   * Stop Bun server
    */
   async close(server: unknown): Promise<void> {
-    // Guard clause
-    if (!server) {
-      throw new Error('Server instance is required');
-    }
+    if (!server) throw new Error('Server instance is required');
 
     if (this.server) {
       this.server.stop();
@@ -409,28 +263,74 @@ class BunAdapterImpl {
 }
 
 /**
- * Exported class (static methods for compatibility)
+ * BunAdapter Factory
+ * Creates BunAdapter with default dependencies
  */
 export class BunAdapter {
-  private static instance: BunAdapterImpl = new BunAdapterImpl();
+  private static instance: BunAdapterImpl | null = null;
 
+  /**
+   * Create BunAdapter with dependency injection
+   * Factory Method Pattern
+   */
+  static createWithDependencies(
+    requestParser: IRequestParser,
+    validator: IValidator,
+    serializers: IResponseSerializer[]
+  ): BunAdapterImpl {
+    return new BunAdapterImpl(requestParser, validator, serializers);
+  }
+
+  /**
+   * Get or create default instance
+   * Uses default dependencies
+   */
+  private static getInstance(): BunAdapterImpl {
+    if (!BunAdapter.instance) {
+      // Import default implementations
+      const { BunRequestParser } = require('../application/BunRequestParser');
+      const { SchemaValidator } = require('../application/SchemaValidator');
+      const {
+        FileDownloadSerializer,
+        StreamSerializer,
+        BufferSerializer,
+        JsonSerializer,
+      } = require('../application/serializers');
+
+      // Create with default dependencies
+      BunAdapter.instance = new BunAdapterImpl(
+        new BunRequestParser(),
+        SchemaValidator, // Singleton
+        [
+          new FileDownloadSerializer(),
+          new StreamSerializer(),
+          new BufferSerializer(),
+          new JsonSerializer(), // Must be last (default)
+        ]
+      );
+    }
+    return BunAdapter.instance;
+  }
+
+  // Static methods for backward compatibility
   static setMiddlewareRegistry(registry: any): void {
-    BunAdapter.instance.setMiddlewareRegistry(registry);
+    BunAdapter.getInstance().setMiddlewareRegistry(registry);
   }
 
   static create(): unknown {
-    return BunAdapter.instance.create();
+    return BunAdapter.getInstance().create();
   }
 
   static registerRoute(server: unknown, route: any): void {
-    BunAdapter.instance.registerRoute(server, route);
+    BunAdapter.getInstance().registerRoute(server, route);
   }
 
   static async listen(server: unknown, port: number, host = '::'): Promise<string> {
-    return BunAdapter.instance.listen(server, port, host);
+    return BunAdapter.getInstance().listen(server, port, host);
   }
 
   static async close(server: unknown): Promise<void> {
-    return BunAdapter.instance.close(server);
+    return BunAdapter.getInstance().close(server);
   }
 }
+
