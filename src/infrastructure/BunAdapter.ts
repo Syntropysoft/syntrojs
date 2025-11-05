@@ -99,7 +99,9 @@ class BunAdapterImpl {
       },
     });
 
-    return `http://[${host}]:${port}`;
+    // Use the actual port assigned by Bun (important when port = 0)
+    const actualPort = this.server.port;
+    return `http://[${host}]:${actualPort}`;
   }
 
   /**
