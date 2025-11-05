@@ -129,7 +129,7 @@ class BunAdapterImpl {
       }
 
       // Build request context
-      const context = await this.buildContext(request, url);
+      const context = await this.buildContext(request, url, route);
 
       // Execute middlewares if registry is available
       if (this.middlewareRegistry) {
@@ -161,9 +161,23 @@ class BunAdapterImpl {
       // Parse multipart form data if present (Dependency Inversion: use service)
       await MultipartParser.parseBun(request, context);
 
-      // Parse JSON body if not multipart
+      // Parse request body based on Content-Type (if not multipart)
+      // Guard clause: Only for methods that expect body
       if (!context.files && route.config.body && ['POST', 'PUT', 'PATCH'].includes(method)) {
-        const body = await request.json();
+        const contentType = request.headers.get('content-type') || '';
+        
+        let body: any;
+        
+        // Guard clause: application/x-www-form-urlencoded
+        if (contentType.includes('application/x-www-form-urlencoded')) {
+          const formData = await request.formData();
+          body = this.parseFormData(formData);  // Use pure function
+        } 
+        // Guard clause: application/json (default)
+        else {
+          body = await request.json();
+        }
+        
         context.body = SchemaValidator.validateOrThrow(route.config.body, body);
       }
 
@@ -239,29 +253,99 @@ class BunAdapterImpl {
   }
 
   /**
+   * Parse FormData to plain object
+   * Pure function: No side effects, returns new object
+   *
+   * @param formData - FormData instance from request
+   * @returns Plain object with parsed data
+   */
+  private parseFormData(formData: FormData): Record<string, any> {
+    const body: Record<string, any> = {};
+
+    for (const [key, value] of formData.entries()) {
+      // Guard clause: Handle arrays (e.g., tags[]=value1&tags[]=value2)
+      if (key.endsWith('[]')) {
+        const cleanKey = key.slice(0, -2);
+        if (!body[cleanKey]) {
+          body[cleanKey] = [];
+        }
+        body[cleanKey].push(value);
+        continue;
+      }
+
+      // Default: Simple key-value
+      body[key] = value;
+    }
+
+    return body;
+  }
+
+  /**
+   * Extract path parameters from pathname using route pattern
+   * Pure function: No side effects, returns new object
+   *
+   * @param pathname - Actual request path (e.g., /users/123)
+   * @param routePath - Route pattern (e.g., /users/:id)
+   * @returns Object with extracted params
+   */
+  private extractPathParams(pathname: string, routePath: string): Record<string, string> {
+    const params: Record<string, string> = {};
+
+    // Guard clause: No params in route
+    if (!routePath.includes(':')) {
+      return params;
+    }
+
+    // Extract param names from route pattern
+    const paramNames: string[] = [];
+    const pattern = routePath.replace(/:(\w+)/g, (_, name) => {
+      paramNames.push(name);
+      return '([^/]+)';
+    });
+
+    // Match pathname against pattern
+    const regex = new RegExp(`^${pattern}$`);
+    const match = pathname.match(regex);
+
+    // Guard clause: No match
+    if (!match) {
+      return params;
+    }
+
+    // Extract values (skip first element which is the full match)
+    for (let i = 0; i < paramNames.length; i++) {
+      params[paramNames[i]] = match[i + 1];
+    }
+
+    return params;
+  }
+
+  /**
    * Builds request context from Bun request
+   * Pure function approach: Extract data, return new object
    *
    * @param request - Bun request
    * @param url - Request URL
+   * @param route - Matched route (needed for path params extraction)
    * @returns Request context
    */
-  private async buildContext(request: Request, url: URL): Promise<RequestContext> {
-    // Parse path params (simple implementation)
-    const params: Record<string, string> = {};
-    const _pathSegments = url.pathname.split('/').filter(Boolean);
+  private async buildContext(request: Request, url: URL, route: Route): Promise<RequestContext> {
+    // Extract path params using pure function
+    const params = this.extractPathParams(url.pathname, route.path);
 
-    // Extract query params
+    // Extract query params (functional)
     const query: Record<string, string> = {};
     for (const [key, value] of url.searchParams.entries()) {
       query[key] = value;
     }
 
-    // Extract headers
+    // Extract headers (functional)
     const headers: Record<string, string> = {};
     for (const [key, value] of request.headers.entries()) {
       headers[key] = value;
     }
 
+    // Return immutable context object
     return {
       method: request.method as any,
       path: url.pathname,
