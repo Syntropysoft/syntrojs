@@ -25,107 +25,20 @@
 
 ---
 
-## 🎯 Recent Changes (v0.4.0-alpha.3)
-
-### ✨ New Features
-
-*   **File Downloads Helper**: Ergonomic API for serving file downloads with proper HTTP headers.
-    - `createFileDownload()` - Pure function with guard clauses and MIME type detection
-    - `ctx.download()` - Context helper for ergonomic API
-    - Auto-detection in adapters (FluentAdapter, FastifyAdapter, BunAdapter)
-    - Security: Path traversal protection (blocks `..`, `/`, `\`)
-    - Supports Buffer, Stream, and string data
-    - Custom MIME types and disposition (attachment/inline)
-    - 81 tests passing (51 unit + 30 E2E) ✅
-
-### 🏗️ Architectural Improvements
-
-*   **SOLID + DDD Refactoring**: Complete architectural overhaul of BunAdapter
-    - **Dependency Inversion**: All dependencies via interfaces (`IRequestParser`, `IValidator`, `IResponseSerializer`)
-    - **Single Responsibility**: Each service does ONE thing (parsing, validation, serialization)
-    - **Open/Closed**: New content types/response formats via Strategy Pattern (no adapter changes)
-    - **Pure Functions**: `parsePathParams()`, `parseFormData()` - testable in isolation
-    - **Guard Clauses**: Clear, defensive programming throughout
-    - Result: 100% backward compatible, 0 tests broken, infinitely extensible
-
-*   **TinyTest Evolution**: Added `rawRequest()` method for low-level HTTP testing
-    - Returns native Fetch `Response` object for fine-grained control
-    - Perfect for testing file downloads, headers, and binary data
-    - `request()` now uses `rawRequest()` internally (DRY + composition)
-    - Backward compatible - existing tests unchanged
-
-*   **Internal Format Pattern**: File downloads use neutral internal format
-    - `FileDownloadResponse` with `__isFileDownload` marker for fast detection
-    - Adapters intercept BEFORE framework serialization
-    - Prevents premature JSON serialization
-    - Foundation for future protocols (TOON, gRPC) without touching core
-    - Principle: Transform only at the edges (Adapter Pattern)
-
-### 🐛 Fixes & Learnings
-
-*   **CRITICAL BUG: Path Parameters Never Worked in Bun** 🚨
-    - **Problem**: Routes like `/users/:id` returned empty params `{}`
-    - **Root Cause**: `buildContext()` didn't receive route, couldn't extract params
-    - **Impact**: 100% of dynamic routes broken in Bun
-    - **Fix**: Created pure function `extractPathParams(pathname, routePath)` and injected route
-    - **Result**: 13 tests fixed, all dynamic routes now work ✅
-    - **Lesson**: Tests revealed fundamental architectural problem, not just coverage
-
-*   **CRITICAL BUG: Port Detection Broken** 🚨
-    - **Problem**: `TinyTest` couldn't connect to server (ConnectionRefused errors)
-    - **Root Cause**: Returned input port (0) instead of actual assigned port
-    - **Impact**: 103 E2E tests failing, TinyTest unusable in Bun
-    - **Fix**: Use `this.server.port` (actual port) instead of input param
-    - **Result**: 103 tests fixed (72% improvement) ✅
-    - **Lesson**: Random port assignment (port=0) requires reading actual port from server
-
-*   **Architectural Debt: SOLID Violations** 🏗️
-    - **Problem**: BunAdapter violated Single Responsibility, Dependency Inversion, Open/Closed
-    - **Impact**: God method (8 responsibilities), tight coupling, hard to extend
-    - **Fix**: Complete refactor with interfaces, DI, Strategy Pattern, pure functions
-    - **Result**: 0 tests broken, infinite extensibility ✅
-    - **Lesson**: SOLID isn't theory - it's practice for maintainable, testable code
-
-*   **Adapter Consistency**: Ensured file download support across ALL adapters
-    - Fixed missing implementation in `FluentAdapter` (default for Node.js)
-    - All adapters now handle file downloads uniformly
-    - Tests revealed FluentAdapter is default, not FastifyAdapter
-
-*   **Guard Clauses as Pipeline**: Improved type guard implementation
-    - Fast path: Check `__isFileDownload` marker first (O(1))
-    - Fallback: Structural validation for manually created objects
-    - Clear separation of concerns
-
-### 📊 Progress
-
-*   **Tests - Node.js**: 728/728 passing (100% pass rate) ✅
-*   **Tests - Bun**: 458/487 passing (94.0% compatibility) ⚠️
-*   **E2E Tests**: 144 tests passing ✅
-*   **Coverage**: 77.14% (Statements: 77.14% | Branch: 80.73% | Functions: 73.21% | Lines: 77.14%)
-*   **Mutation Testing**: 58.72% score (742 killed | 2 timeout | 144 survived | 379 no coverage)
-*   **Code Quality**: 100% SOLID + DDD + Functional programming + Dependency Injection
-*   **Critical Bugs Fixed**: 2 (Path params + Port detection = 116 tests recovered)
-*   **v0.4.0 Progress**: 70% complete (7/10 features done)
-
----
-
 ## 🎯 What is SyntroJS?
 
 **SyntroJS is the world's first dual-runtime framework** that brings the simplicity and developer experience of FastAPI to the TypeScript ecosystem. Write your code once and run it on either **Node.js** for stability or **Bun** for maximum performance.
-
-It's designed for developers who value **verifiable quality**, providing a powerful, integrated testing suite that makes writing high-quality, mutation-resistant tests as easy as building endpoints.
 
 ---
 
 ## ✨ Key Features
 
-- **🚀 Dual Runtime Support**: Write once, run on both Node.js and Bun with auto-optimization. Zero code changes required.
-- **🔥 FastAPI-like Developer Experience**: Get automatic validation with Zod, full TypeScript type safety, and elegant error handling (`HTTPException`).
-- **🎨 Automatic Interactive Docs**: Just like FastAPI, get a beautiful landing page and interactive Swagger UI + ReDoc documentation out of the box at `/docs`.
-- **💰 TOON Format Support (Coming v0.5.0)**: First framework with hybrid JSON/TOON support. **40-60% payload reduction** = massive cost savings for microservices. 1M tx/hour = $200-500/month saved in infrastructure costs. Game changer for high-scale APIs, LLMs, and mobile apps.
-- **🧪 The Testing Superpower**: A uniquely powerful testing suite featuring `TinyTest` for effortless API testing, built-in boundary and contract testing, and `SmartMutator` for mutation testing in seconds, not hours.
-- **🔌 Rich Ecosystem**: Includes a functional middleware system, WebSocket support, simple dependency injection, background tasks, and seamless integration with `@syntrojs/logger` for structured logging.
-- **🔒 Security First**: Production-ready configurations to easily disable documentation (`docs: false`), plus built-in support for JWT, OAuth2, API Keys, and other security plugins.
+- **🚀 Dual Runtime Support**: Write once, run on both Node.js and Bun. Zero code changes required.
+- **🔥 FastAPI-like Developer Experience**: Automatic validation with Zod, full TypeScript type safety, elegant error handling (`HTTPException`).
+- **🎨 Automatic Interactive Docs**: Beautiful landing page + Swagger UI + ReDoc out of the box at `/docs`.
+- **🧪 Testing Superpower**: `TinyTest` for effortless API testing + `SmartMutator` for mutation testing in seconds.
+- **🔌 Rich Ecosystem**: Middleware system, WebSockets, dependency injection, background tasks, structured logging.
+- **🔒 Security First**: JWT, OAuth2, API Keys, and security plugins built-in.
 
 ---
 
@@ -135,13 +48,9 @@ It's designed for developers who value **verifiable quality**, providing a power
 
 ```bash
 npm install syntrojs zod
-# or
-pnpm add syntrojs zod
 ```
 
 ### 2. Create Your First API
-
-Create a fully documented and validated API in just a few lines.
 
 ```javascript
 import { SyntroJS } from 'syntrojs';
@@ -149,10 +58,10 @@ import { z } from 'zod';
 
 const app = new SyntroJS({ title: 'My API' });
 
-// A simple GET endpoint
+// Simple GET endpoint
 app.get('/hello', { handler: () => ({ message: 'Hello World!' }) });
 
-// A POST endpoint with automatic Zod validation
+// POST with automatic validation
 app.post('/users', {
   body: z.object({
     name: z.string().min(1),
@@ -164,127 +73,47 @@ app.post('/users', {
 await app.listen(3000);
 ```
 
-**That's it!** 🎉 Visit `http://localhost:3000` for the welcome page or `http://localhost:3000/docs` for your interactive API documentation.
+**That's it!** 🎉 Visit `http://localhost:3000/docs` for interactive documentation.
 
 ---
 
-## 🔥 The Dual-Runtime Revolution
+## 🔥 Dual-Runtime: Node.js vs Bun
 
-SyntroJS automatically detects your runtime and optimizes accordingly. The exact same code delivers the best of both worlds: stability on Node.js and extreme speed on Bun.
+Same code, different runtimes:
 
-```javascript
-// app.js
-import { SyntroJS } from 'syntrojs';
-const app = new SyntroJS({ title: 'My API' });
-
-app.get('/runtime', {
-  handler: () => ({
-    runtime: typeof Bun !== 'undefined' ? 'Bun (JavaScriptCore)' : 'Node.js (V8)',
-    performance: typeof Bun !== 'undefined' ? '3.8x faster than Fastify' : '89.3% of Fastify'
-  })
-});
-
-await app.listen(3000);
-```
-
-**Run with Node.js for stability:**
 ```bash
+# Node.js (stability + full ecosystem)
 node app.js
-# 🚀 SyntroJS-NODE | Running on Node.js (V8)
-# Performance: 89.3% of Fastify
-```
 
-**Run with Bun for maximum performance:**
-```bash
+# Bun (maximum performance)
 bun app.js
-# 🚀 SyntroJS-BUN | Running on Bun (JavaScriptCore)
-# Performance: 3.8x faster than Fastify
 ```
 
-| Runtime   | Performance                | Use Case                               |
-| --------- | -------------------------- | -------------------------------------- |
-| **Node.js** | 89.3% of Fastify           | Production stability, full ecosystem   |
-| **Bun**     | 3.8x faster than Fastify   | Maximum performance, modern development |
+| Runtime | Performance | Tests Passing | Use Case |
+|---------|-------------|---------------|----------|
+| **Node.js** | 89.3% of Fastify | 728/728 (100%) | Production, plugins |
+| **Bun** | 3.8x faster | 458/487 (94%) | Maximum speed |
 
-### ⚠️ Known Limitations - Bun Runtime
+### Bun Limitations
 
-While SyntroJS maintains **94% compatibility** between Node.js and Bun (458/487 tests passing), there are some known limitations when using Bun:
-
-**1. Fastify Plugins (Work in Node.js, Show Warnings in Bun)**
-```javascript
-// ✅ These plugins WORK in Node.js (already implemented)
-import { registerCors } from 'syntrojs/plugins';
-import { registerHelmet } from 'syntrojs/plugins';
-import { registerCompression } from 'syntrojs/plugins';
-import { registerRateLimit } from 'syntrojs/plugins';
-
-const app = new SyntroJS({ title: 'My API' });
-
-// Node.js: Works perfectly ✅
-// Bun: Shows warning, gracefully degrades ⚠️
-await registerCors(app.getRawServer(), { origin: '*' });
-
-// Note: In Bun, plugins show warning and don't apply
-// (Bun uses native HTTP server, not Fastify)
-// Native Bun implementations planned for v0.5.0
-```
-
-**2. getRawFastify() Method**
-```javascript
-// ❌ Returns undefined in Bun (not a Fastify server)
-const fastify = app.getRawFastify(); // Type error in Bun
-
-// ✅ Use getRawServer() instead (works in both runtimes)
-const server = app.getRawServer();
-```
-
-**3. Static File Serving**
-- Static file serving via `@fastify/static` not available in Bun
-- Use native Bun file serving or CDN for static assets
-- Planned native implementation in v0.5.0
-
-**Current Plugin Status:**
-| Plugin | Node.js | Bun | Notes |
-|--------|---------|-----|-------|
-| CORS | ✅ Full support | ⚠️ Warning only | Native impl planned v0.5.0 |
-| Helmet | ✅ Full support | ⚠️ Warning only | Native impl planned v0.5.0 |
-| Compression | ✅ Full support | ⚠️ Warning only | Native impl planned v0.5.0 |
-| Rate Limit | ✅ Full support | ⚠️ Warning only | Native impl planned v0.5.0 |
-
-**Why These Limitations?**
-- Bun uses native HTTP server (not Fastify)
-- Fastify plugins depend on Fastify's plugin system
-- Trade-off: Native performance vs. plugin ecosystem
-- **Good news**: Plugins don't break in Bun, they gracefully degrade with warnings
-
-**Test Results by Runtime:**
-| Runtime | Tests Passing | Tests Failing | Compatibility |
-|---------|---------------|---------------|---------------|
-| **Node.js** | 487/487 (100%) | 0 | ✅ Full |
-| **Bun** | 458/487 (94.0%) | 26* | ⚠️ High |
-
-\* *Failures are due to Fastify-specific features, not core functionality*
-
-**Recommendation:**
-- **Node.js**: Use when you need Fastify plugins (CORS, Helmet, etc.)
-- **Bun**: Use for maximum performance when plugins aren't needed
-- **Both**: Core API functionality works identically (routing, validation, etc.)
+| Feature | Node.js | Bun | Status |
+|---------|---------|-----|--------|
+| Core API | ✅ Full | ✅ Full | Identical |
+| Plugins (CORS, Helmet, etc.) | ✅ Full | ⚠️ Warnings only | v0.5.0 planned |
+| Static files | ✅ Full | ❌ Not available | v0.5.0 planned |
+| `getRawFastify()` | ✅ Works | ❌ Use `getRawServer()` | - |
 
 ---
 
-## 🧪 The Testing Superpower
+## 🧪 Testing Made Easy
 
-SyntroJS believes testing should be a first-class citizen, not an afterthought. We make writing **high-quality, verifiable tests** as easy as creating the endpoints themselves.
-
-### 1. Effortless API Testing with `TinyTest`
-
-`TinyTest` mirrors the SyntroJS API, so writing a test feels just like defining a route. It manages the server lifecycle for you.
+### TinyTest - API Testing
 
 ```javascript
 import { TinyTest } from 'syntrojs/testing';
 import { z } from 'zod';
 
-test('POST /users creates a user successfully', async () => {
+test('POST /users creates a user', async () => {
   const api = new TinyTest();
 
   api.post('/users', {
@@ -296,83 +125,39 @@ test('POST /users creates a user successfully', async () => {
     body: { name: 'John', email: 'john@example.com' }
   });
 
-  expect(status).toBe(201); // Or your desired status
+  expect(status).toBe(201);
   expect(data.name).toBe('John');
 
   await api.close();
 });
 ```
 
-### 2. Kill Mutants with Built-in Boundary Testing
+### SmartMutator - Mutation Testing in Seconds
 
-Mutation testing tools often create "mutants" by changing things like `.min(18)` to `.min(17)`. Most tests won't catch this. SyntroJS provides `testBoundaries` to automatically test these exact edge cases, ensuring your validation logic is robust.
-
-```javascript
-// This test kills mutants that other tests miss!
-test('POST /users validates age boundary', async () => {
-  const api = new TinyTest();
-  
-  api.post('/users', {
-    body: z.object({ age: z.number().min(18) }), // Must be 18+
-    handler: ({ body }) => ({ ...body }),
-  });
-  
-  // Automatically tests the edges of your validation
-  await api.testBoundaries('POST', '/users', [
-    { input: { body: { age: 17 } }, expected: { success: false } }, // ❌ Must fail
-    { input: { body: { age: 18 } }, expected: { success: true } },  // ✅ Must pass
-  ]);
-  
-  await api.close();
-});
-```
-
-### 3. Mutation Testing in Seconds with `SmartMutator`
-
-Traditional mutation testing with Stryker can take 30-60 minutes, making it unusable for daily development. **SmartMutator**, our optimized runner, gives you the same results in **seconds**.
-
-| Method                     | Mutants | Tests Executed | Time      |
-| -------------------------- | ------- | -------------- | --------- |
-| Stryker (vanilla)          | 1,247   | 187,050        | 43 min    |
-| **SmartMutator**           | **142** | **284**        | **12 sec**  |
-| **SmartMutator (incremental)** | **8**   | **16**         | **3.2 sec** |
-
-This transforms mutation testing from a slow CI/CD step into a real-time quality feedback tool you can run every time you save a file.
+| Method | Mutants | Tests | Time |
+|--------|---------|-------|------|
+| Stryker (vanilla) | 1,247 | 187,050 | 43 min |
+| **SmartMutator** | **142** | **284** | **12 sec** |
 
 ```bash
-# Run lightning-fast mutation testing
 pnpm test:mutate
 ```
 
-**Current Mutation Testing Results:**
+**Mutation Score: 58.72%** (742 killed, 144 survived)
 
-| Module | Mutation Score | Killed | Survived | No Coverage |
-|--------|---------------|---------|----------|-------------|
-| **All files** | **58.72%** | 742 | 144 | 379 |
-| application | 61.44% | 347 | 74 | 145 |
-| security | 87.50% | 119 | 13 | 4 |
-| plugins | 66.67% | 32 | 4 | 12 |
-| domain | 55.17% | 32 | 10 | 16 |
-| core | 48.05% | 74 | 19 | 61 |
-| infrastructure | 45.54% | 138 | 24 | 141 |
+---
 
-**Top Performers:**
-- `RouteRegistry.ts`: 100% (27 killed, 0 survived)
-- `ZodAdapter.ts`: 100% (11 killed, 0 survived)
-- `Route.ts`: 100% (8 killed, 0 survived)
-- `DependencyInjector.ts`: 95.83% (23 killed, 0 survived)
-- `APIKey.ts`: 96.88% (31 killed, 1 survived)
-- `BackgroundTasks.ts`: 92.31% (24 killed, 2 survived)
+## 📊 Quality Metrics
 
-> **The SyntroJS Guarantee:** We're the only framework where writing high-quality, mutation-resistant tests is a core, integrated part of the developer experience.
+- **Tests**: 728/728 passing (Node.js 100%, Bun 94%)
+- **Coverage**: 77.14% (Branch: 80.73%)
+- **Mutation Score**: 58.72%
+- **Code Quality**: 100% SOLID + DDD + Functional Programming
+- **Top Performers**: RouteRegistry (100%), ZodAdapter (100%), DependencyInjector (95.83%)
 
 ---
 
 ## 🚀 Production & Security
-
-For production deployments, security is critical. SyntroJS makes it easy to lock down your application.
-
-**ALWAYS disable documentation in production:**
 
 ```javascript
 const app = new SyntroJS({
@@ -381,259 +166,104 @@ const app = new SyntroJS({
 });
 ```
 
-### 🔒 Security Checklist
+### Security Checklist
 
-- [ ] **Disable all documentation** (`docs: false`)
-- [ ] **Set proper CORS** origins (not `*`)
-- [ ] **Enable rate limiting**
-- [ ] **Configure structured logging** without sensitive data (`@syntrojs/logger`).
-- [ ] **Use environment variables** for secrets.
-
----
-
-## 📚 Examples & Architecture
-
-### Comprehensive Examples
-
-For production-ready examples, including microservices, benchmarks, and security patterns, see our dedicated **[Examples Repository](https://github.com/Syntropysoft/syntrojs-example)**.
-
-### Architecture
-
-SyntroJS follows **Domain-Driven Design (DDD)** and **SOLID** principles to ensure a clean, maintainable, and testable codebase. Key design principles include Simplicity, Type-Safety, and Quality First.
-
-For a deeper dive, see our [ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md) document.
+- [ ] Disable all documentation (`docs: false`)
+- [ ] Set proper CORS origins (not `*`)
+- [ ] Enable rate limiting
+- [ ] Configure structured logging without sensitive data
+- [ ] Use environment variables for secrets
 
 ---
 
 ## 🗺️ Roadmap
 
-### ✅ Current Features (v0.3.x - Alpha)
+### ✅ v0.4.0 - REST Completion (70% done)
 
-**HTTP Methods**
-- ✅ GET, POST, PUT, PATCH, DELETE
-- ✅ HEAD
-- ✅ OPTIONS
-- ✅ WebSockets
-
-**Request Handling**
-- ✅ Path parameters with Zod validation
-- ✅ Query parameters with Zod validation
-- ✅ JSON body with Zod validation
-- ✅ Headers
-- ✅ Cookies
-
-**Response Handling**
-- ✅ JSON responses (default)
-- ✅ HTML responses (string)
-- ✅ Custom status codes
-- ✅ Custom headers
-- ✅ Streaming responses (Node.js Readable)
-- ✅ Buffer responses (binary data)
-- 🔜 TOON responses (40-60% payload reduction - game changer for microservices & LLMs)
-
-**Validation & Error Handling**
-- ✅ Automatic Zod validation
-- ✅ HTTPException with custom errors
-- ✅ Error handlers per route
-- ✅ Pagination helpers
-- ✅ Sorting helpers
-
-**Security & Middleware**
-- ✅ CORS plugin
-- ✅ Helmet (security headers)
-- ✅ Rate limiting
-- ✅ Compression
-- ✅ Bearer token auth (HTTPBearer, OAuth2PasswordBearer)
-- ✅ API Key auth (header, query, cookie)
-- ✅ HTTP Basic auth
-- ✅ Global & route-specific middlewares
-
-**Developer Experience**
-- ✅ Automatic OpenAPI/Swagger documentation
-- ✅ Interactive API docs (Swagger UI + ReDoc)
-- ✅ Beautiful landing page
-- ✅ Route groups
-- ✅ Dependency injection
-- ✅ Background tasks
-- ✅ Dual runtime (Node.js + Bun)
-- ✅ TinyTest for easy testing
-- ✅ SmartMutator for mutation testing
-
----
-
-### 🎯 v0.4.0 - REST Completion (Next Release)
-
-**HTTP Methods** (Quick Wins)
-- [x] HEAD method - `.head()` public method ✅
-- [x] OPTIONS method - `.options()` public method ✅
-- [x] Auto-OPTIONS for CORS preflight ✅
-
-**File Handling** (High Priority)
-- [x] Streaming responses - For large files ✅ v0.4.0-alpha.1
-- [x] File downloads - Helper for `Content-Disposition` headers ✅ v0.4.0-alpha.3
-- [ ] Static file serving - Expose `@fastify/static` integration
-- [x] File uploads - Multipart form data support (`@fastify/multipart`) ✅ v0.4.0-alpha.2
-
-**Request Body Formats**
-- [x] JSON (default) ✅
-- [x] Form data (`application/x-www-form-urlencoded`) ✅ v0.4.0-alpha.1
-- [x] Multipart form data (`multipart/form-data`) ✅ v0.4.0-alpha.1
-- [x] Raw text/binary support ✅ v0.4.0-alpha.1 (Buffer responses)
-- [ ] TOON (`application/toon`) - 40-60% smaller payloads (microservices, LLMs, mobile)
-- [ ] XML body parsing
-
-**Response Types**
-- [x] JSON (default) ✅
-- [ ] TOON - Content negotiation for payload efficiency (40-60% reduction = cost savings)
-- [ ] Redirects (301, 302, 307, 308) - `.redirect()` helper
-- [ ] XML responses
-- [x] File download responses ✅ v0.4.0-alpha.3 (ctx.download() helper + auto-detection)
-
-**HTTP Features**
-- [ ] Content negotiation (Accept headers)
-- [ ] ETags / Cache headers
-- [ ] Partial responses (Range headers)
-- [ ] Conditional requests (If-Modified-Since, If-None-Match)
-
----
+- [x] File downloads (`ctx.download()`)
+- [x] Streaming responses
+- [x] File uploads (multipart)
+- [x] Form data support
+- [ ] Static file serving
+- [ ] Redirects helper
+- [ ] Content negotiation
 
 ### 🚀 v0.5.0 - Advanced Features
 
-**TOON Format Support** (New! 🎯 Game Changer for Microservices)
-- [ ] Hybrid REST API - JSON by default, TOON on demand
-  - Parse requests with `Content-Type: application/toon`
-  - Respond with TOON based on `Accept: application/toon` header
-  - Automatic content negotiation (transparent to business logic)
-  - **40-60% payload reduction** vs JSON
-  - Integration with [@toon-format/toon](https://github.com/toon-format/toon)
-  
-- [ ] **Use Cases & ROI:**
-  - **Microservices**: 1M tx/hour = 720GB/month saved = $200-500/month infrastructure cost reduction
-  - **LLM APIs**: 40-60% token cost reduction (OpenAI, Claude, etc.)
-  - **High-frequency APIs**: Lower latency, less CPU overhead
-  - **Mobile apps**: Reduced data usage for users
-  - **IoT**: Minimal bandwidth for embedded devices
-  
-- [ ] **Implementation:**
-  - Content negotiation with `Accept` header
-  - Benchmarks: TOON vs JSON (payload size, parse time, serialize time)
-  - Documentation with cost-benefit analysis
-  - Real-world examples (microservices, LLM prompts, mobile apps)
-
-**Security**
-- [ ] CSRF protection
-- [ ] Session management (`@fastify/session`)
-- [ ] Cookie-based authentication
-- [ ] JWT refresh tokens
-- [ ] OAuth2 flows (authorization code, client credentials)
-
-**Real-time Communication**
+- [ ] **TOON Format**: 40-60% payload reduction for microservices
+- [ ] Native Bun plugins (CORS, Helmet, etc.)
 - [ ] Server-Sent Events (SSE)
-- [ ] WebSocket rooms/namespaces
-- [ ] WebSocket authentication
-- [ ] WebSocket middleware
-
-**Template & Views**
-- [ ] Template rendering (`@fastify/view`)
-- [ ] Support for major engines (EJS, Pug, Handlebars)
-- [ ] Layouts and partials
-
----
+- [ ] CSRF protection
+- [ ] Template rendering
 
 ### 🏗️ v1.0.0 - Production Ready
 
-**Database Integration**
 - [ ] ORM adapters (Prisma, TypeORM, Drizzle)
-- [ ] ODM adapters (Mongoose)
-- [ ] Query builder integration
-- [ ] Transaction support
-- [ ] Database migrations helper
-
-**API Features**
 - [ ] GraphQL support
-- [ ] API versioning
-- [ ] Request/Response transformation hooks
-- [ ] Custom serializers
-- [ ] Response compression strategies
-
-**Developer Tools**
 - [ ] Official CLI (`create-syntrojs`)
-- [ ] Code generation for CRUD
-- [ ] Migration tools from Express/Fastify
-- [ ] VSCode extension
-- [ ] Debug tools
-
-**Production Features**
 - [ ] Graceful shutdown
-- [ ] Health checks endpoint
 - [ ] Metrics/Prometheus integration
 - [ ] Distributed tracing (OpenTelemetry)
-- [ ] Load balancing helpers
-- [ ] Clustering support
-
-**Documentation**
-- [ ] Comprehensive guides
-- [ ] Video tutorials
-- [ ] Recipe book
-- [ ] Migration guides
-- [ ] Best practices guide
-- [ ] Performance tuning guide
 
 ---
 
-### 📊 Feature Comparison
+## 📚 Examples & Documentation
 
-| Feature | Status | Priority | Target Version |
-|---------|--------|----------|----------------|
-| HEAD method | ✅ Done | High | v0.3.13 |
-| OPTIONS method | ✅ Done | High | v0.3.13 |
-| Streaming responses | ✅ Done | High | v0.4.0-alpha.2 |
-| File uploads | ✅ Done | High | v0.4.0-alpha.2 |
-| Form data | ✅ Done | Medium | v0.4.0-alpha.2 |
-| Buffer responses | ✅ Done | Medium | v0.4.0-alpha.2 |
-| File downloads | ✅ Done | High | v0.4.0-alpha.3 |
-| Static files | 🔴 Missing | High | v0.4.0 |
-| Redirects | 🔴 Missing | High | v0.4.0 |
-| Content negotiation | 🔴 Missing | Medium | v0.4.0 |
-| TOON format | 🔴 Missing | High | v0.5.0 |
-| ETags | 🔴 Missing | Low | v0.5.0 |
-| SSE | 🔴 Missing | Medium | v0.5.0 |
-| CSRF | 🔴 Missing | Medium | v0.5.0 |
-| Sessions | 🔴 Missing | Medium | v0.5.0 |
-| Templates | 🔴 Missing | Low | v0.5.0 |
-| GraphQL | 🔴 Missing | Low | v1.0.0 |
-| ORM integration | 🔴 Missing | Low | v1.0.0 |
+- **Examples Repository**: [syntrojs-example](https://github.com/Syntropysoft/syntrojs-example)
+- **Architecture**: [ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md)
+- **Full Documentation**: Coming soon
 
 ---
 
-### 🎯 Immediate Next Steps (v0.4.0)
+## 🎯 Recent Changes (v0.4.0-alpha.3)
 
-1. ~~**Add HEAD method**~~ - ✅ Done (v0.3.13)
-2. ~~**Add OPTIONS method**~~ - ✅ Done (v0.3.13)
-3. ~~**Auto-OPTIONS for CORS**~~ - ✅ Done (v0.3.13)
-4. ~~**Streaming responses**~~ - ✅ Done (v0.4.0-alpha.1)
-5. ~~**File uploads**~~ - ✅ Done (v0.4.0-alpha.2) - Multipart/form-data with FileValidator
-6. ~~**Form data support**~~ - ✅ Done (v0.4.0-alpha.2) - application/x-www-form-urlencoded
-7. ~~**File downloads helper**~~ - ✅ Done (v0.4.0-alpha.3) - Content-Disposition headers + ctx.download()
-8. **Static file serving** - 2 days (@fastify/static integration)
-9. **Redirect helper** - 1 day (301, 302, 307, 308)
-10. **Content negotiation** - 2 days (Accept headers)
+### ✨ Highlights
 
-**Total estimate: ~5 days remaining** (7/10 completed - 70% ✅)
+- **File Downloads**: `ctx.download()` helper with security (path traversal protection)
+- **SOLID Refactoring**: Complete DDD overhaul with Dependency Injection
+- **Critical Bugs Fixed**: Path parameters + port detection (116 tests recovered)
+- **TinyTest**: Added `rawRequest()` for low-level HTTP testing
+- **Code Quality**: 100% SOLID + DDD + Functional + Pure Functions + Guard Clauses
 
-**Completed in alpha releases:**
-- ✅ HEAD & OPTIONS methods (v0.3.13)
-- ✅ Streaming responses + Buffer support (v0.4.0-alpha.1)
-- ✅ File uploads with validation (v0.4.0-alpha.2)
-- ✅ Form data parsing (v0.4.0-alpha.2)
-- ✅ ErrorHandler fix for dynamic imports (v0.4.0-alpha.2)
-- ✅ File downloads helper (v0.4.0-alpha.3)
+### 📊 Impact
+
+- **Tests recovered**: 116 (from 142 failing → 26 failing)
+- **Node.js compatibility**: 100% (728/728 tests)
+- **Bun compatibility**: 94% (458/487 tests)
+- **Backward compatible**: 0 tests broken
+
+<details>
+<summary><b>🐛 Technical Details: Critical Bugs Fixed</b></summary>
+
+### Bug #1: Path Parameters Never Worked in Bun 🚨
+
+- **Problem**: Routes like `/users/:id` returned empty params `{}`
+- **Root Cause**: `buildContext()` didn't receive route parameter
+- **Impact**: 100% of dynamic routes broken in Bun
+- **Fix**: Pure function `extractPathParams(pathname, routePath)` with route injection
+- **Result**: 13 tests recovered ✅
+
+### Bug #2: Port Detection Broken 🚨
+
+- **Problem**: `TinyTest` couldn't connect (ConnectionRefused errors)
+- **Root Cause**: Returned input port (0) instead of actual assigned port
+- **Impact**: 103 E2E tests failing
+- **Fix**: Use `this.server.port` (actual port from Bun)
+- **Result**: 103 tests recovered ✅
+
+### Architectural Debt: SOLID Violations 🏗️
+
+- **Problem**: God method (8 responsibilities), tight coupling
+- **Fix**: Interfaces (`IRequestParser`, `IValidator`, `IResponseSerializer`), DI, Strategy Pattern
+- **Result**: Infinite extensibility, 0 tests broken ✅
+
+</details>
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions! Check out our [GitHub repository](https://github.com/Syntropysoft/sintrojs) for details on how to contribute.
+We welcome contributions! Check out our [GitHub repository](https://github.com/Syntropysoft/sintrojs).
 
 ## 📄 License
 
