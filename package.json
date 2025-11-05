@@ -44,10 +44,10 @@
     "ci:permissive": "pnpm typecheck && pnpm test:coverage",
     "ci:node": "pnpm lint && pnpm typecheck && pnpm test:node",
     "ci:bun": "pnpm lint && pnpm typecheck && pnpm test:bun",
-    "benchmark": "node final-performance-benchmark.cjs",
-    "benchmark:final": "node final-performance-benchmark.cjs",
-    "benchmark:ultrafast": "node ultrafast-optimization-benchmark.cjs",
-    "benchmark:express": "node syntrojs-vs-express.cjs",
+    "benchmark": "node benchmarks/final-performance-benchmark.cjs",
+    "benchmark:final": "node benchmarks/final-performance-benchmark.cjs",
+    "benchmark:ultrafast": "node benchmarks/ultrafast-optimization-benchmark.cjs",
+    "benchmark:express": "node benchmarks/syntrojs-vs-express.cjs",
     "benchmark:diagnostic": "node benchmarks/diagnostic-baseline.cjs"
   },
   "keywords": [
