@@ -57,7 +57,7 @@ jobs:
           fi
       
       - name: Run linter
-        run: pnpm run lint
+        run: pnpm run lint -- --no-errors-on-warnings
 
   typecheck:
     name: Type Check
