@@ -1,4 +1,3 @@
 [test]
 include = ["tests/universal/**/*.test.ts", "tests/bun/**/*.test.ts"]
 exclude = ["tests/node/**/*.test.ts"]
-preload = ["./vitest.setup.ts"]

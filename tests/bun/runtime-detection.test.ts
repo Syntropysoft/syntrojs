@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { SyntroJS } from '../../../src/core';
+import { SyntroJS } from '../../src/core/SyntroJS';
 
 describe('Bun Runtime Detection', () => {
   test('should detect Bun runtime correctly', () => {
