@@ -14,6 +14,7 @@ import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest }
 import { StreamingResponseHandler } from '../application/StreamingResponseHandler';
 import type { Route } from '../domain/Route';
 import type { HttpMethod } from '../domain/types';
+import { createFileDownload } from './FileDownloadHelper';
 
 export interface UltraFastConfig {
   logger?: boolean;
@@ -61,6 +62,10 @@ interface OptimizedContext {
   background: {
     addTask: (task: () => void) => void;
   };
+  download: (
+    data: Buffer | Readable | string,
+    options: { filename: string; mimeType?: string; disposition?: 'attachment' | 'inline' },
+  ) => { data: Buffer | Readable | string; headers: Record<string, string>; statusCode: number };
 }
 
 class UltraFastAdapterImpl {
@@ -84,6 +89,7 @@ class UltraFastAdapterImpl {
         background: {
           addTask: (task: () => void) => setImmediate(task),
         },
+        download: (data, options) => createFileDownload(data, options),
       }),
       (ctx) => {
         // Reset del contexto

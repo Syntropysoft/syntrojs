@@ -13,6 +13,7 @@ import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest }
 import { StreamingResponseHandler } from '../application/StreamingResponseHandler';
 import type { Route } from '../domain/Route';
 import type { HttpMethod } from '../domain/types';
+import { createFileDownload, type FileDownloadOptions } from './FileDownloadHelper';
 
 export interface UltraMinimalConfig {
   logger?: boolean;
@@ -50,6 +51,9 @@ class UltraMinimalAdapterImpl {
           background: {
             addTask: (task: () => void) => setImmediate(task),
           },
+          // File download helper (functional)
+          download: (data: Buffer | Readable | string, options: FileDownloadOptions) =>
+            createFileDownload(data, options),
         };
 
         // DIRECT validation - no SchemaValidator overhead

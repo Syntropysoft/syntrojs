@@ -20,6 +20,7 @@ import { SchemaValidator } from '../application/SchemaValidator';
 import { StreamingResponseHandler } from '../application/StreamingResponseHandler';
 import type { Route } from '../domain/Route';
 import type { HttpMethod, RequestContext } from '../domain/types';
+import { createFileDownload, isFileDownloadResponse } from './FileDownloadHelper';
 import { integrateLogger, type LoggerIntegrationConfig } from './LoggerIntegration';
 
 /**
@@ -154,6 +155,24 @@ class FastifyAdapterImpl {
         // Execute handler
         const result = await route.handler(context);
 
+        // FILE DOWNLOAD SUPPORT: Check if result is a file download response
+        // Pattern: { data: Buffer|Stream|string, headers: { 'Content-Disposition': ... } }
+        // Priority: Check BEFORE Stream/Buffer to allow custom headers
+        if (isFileDownloadResponse(result)) {
+          // Cleanup dependencies before sending
+          if (cleanup) {
+            await cleanup();
+          }
+
+          // Set all headers from file download response (immutable)
+          for (const [key, value] of Object.entries(result.headers)) {
+            reply.header(key, value);
+          }
+
+          // Send file data with custom status
+          return reply.status(result.statusCode).send(result.data);
+        }
+
         // STREAMING SUPPORT: Check if result is a Stream (Node.js Readable)
         if (StreamingResponseHandler.isReadableStream(result)) {
           // Cleanup dependencies before streaming
@@ -271,6 +290,8 @@ class FastifyAdapterImpl {
       background: {
         addTask: (task, options) => BackgroundTasks.addTask(task, options),
       },
+      // File download helper (functional)
+      download: (data, options) => createFileDownload(data, options),
     };
   }
 

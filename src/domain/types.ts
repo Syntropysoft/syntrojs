@@ -100,6 +100,20 @@ export interface RequestContext<
     ) => void;
   };
 
+  /** File download helper */
+  download: (
+    data: Buffer | Readable | string,
+    options: {
+      filename: string;
+      mimeType?: string;
+      disposition?: 'attachment' | 'inline';
+    },
+  ) => {
+    data: Buffer | Readable | string;
+    headers: Record<string, string>;
+    statusCode: number;
+  };
+
   /** Uploaded files (multipart/form-data only) */
   files?: UploadedFile[];
 

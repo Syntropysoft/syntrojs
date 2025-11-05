@@ -21,6 +21,7 @@ import { SchemaValidator } from '../application/SchemaValidator';
 import { StreamingResponseHandler } from '../application/StreamingResponseHandler';
 import type { Route } from '../domain/Route';
 import type { RequestContext } from '../domain/types';
+import { createFileDownload, isFileDownloadResponse } from './FileDownloadHelper';
 
 /**
  * Bun-specific adapter for maximum performance
@@ -28,7 +29,6 @@ import type { RequestContext } from '../domain/types';
  */
 
 class BunAdapterImpl {
-  private isRunning = false;
   private server: BunServer | null = null;
   private routes: Map<string, Route> = new Map();
   private middlewareRegistry?: MiddlewareRegistry;
@@ -99,8 +99,6 @@ class BunAdapterImpl {
       },
     });
 
-    this.isRunning = true;
-
     return `http://[${host}]:${port}`;
   }
 
@@ -169,6 +167,23 @@ class BunAdapterImpl {
 
       // Execute handler
       const result = await route.handler(context);
+
+      // FILE DOWNLOAD SUPPORT: Check if result is a file download response
+      // Pattern: { data: Buffer|Stream|string, headers: { 'Content-Disposition': ... } }
+      // Priority: Check BEFORE Stream/Buffer to allow custom headers
+      if (isFileDownloadResponse(result)) {
+        // Extract headers (immutable)
+        const headers = new Headers();
+        for (const [key, value] of Object.entries(result.headers)) {
+          headers.set(key, value);
+        }
+
+        // Send file data with custom headers and status
+        return new Response(result.data as any, {
+          status: result.statusCode,
+          headers,
+        });
+      }
 
       // STREAMING SUPPORT: Check if result is a Stream (Node.js Readable)
       if (StreamingResponseHandler.isReadableStream(result)) {
@@ -259,6 +274,8 @@ class BunAdapterImpl {
       background: {
         addTask: (task) => setImmediate(task),
       },
+      // File download helper (functional)
+      download: (data, options) => createFileDownload(data, options),
     };
   }
 
@@ -301,7 +318,6 @@ class BunAdapterImpl {
     if (this.server) {
       this.server.stop();
       this.server = null;
-      this.isRunning = false;
     }
   }
 }

@@ -11,6 +11,7 @@
 export * from './BunAdapter';
 export * from './ErrorExtractor';
 export * from './FastifyAdapter';
+export * from './FileDownloadHelper';
 export * from './FluentAdapter';
 export * from './LoggerHelper';
 export * from './LoggerIntegration';

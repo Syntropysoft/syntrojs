@@ -9,8 +9,9 @@
 [![🚀 DUAL RUNTIME](https://img.shields.io/badge/🚀-DUAL%20RUNTIME-red.svg)](https://github.com/Syntropysoft/sintrojs)
 [![⚡ Bun Performance](https://img.shields.io/badge/⚡-3.8x%20Faster%20than%20Fastify-green.svg)](https://github.com/Syntropysoft/sintrojs)
 [![🚀 Node.js Performance](https://img.shields.io/badge/🚀-89.3%25%20of%20Fastify-blue.svg)](https://github.com/Syntropysoft/sintrojs)
-[![Coverage](https://img.shields.io/badge/coverage-80.54%25-brightgreen)](./coverage)
-[![Tests](https://img.shields.io/badge/tests-647%20passing-brightgreen)](./tests)
+[![Coverage](https://img.shields.io/badge/coverage-77.14%25-brightgreen)](./coverage)
+[![Mutation Score](https://img.shields.io/badge/mutation%20score-58.72%25-yellow)](./reports/mutation)
+[![Tests](https://img.shields.io/badge/tests-728%20passing-brightgreen)](./tests)
 
 ---
 
@@ -24,50 +25,54 @@
 
 ---
 
-## 🎯 Recent Changes (v0.4.0-alpha.2)
-
-### 🐛 Critical Fixes
-
-*   **ErrorHandler - Dynamic Imports Compatibility**: Fixed `instanceof` paradox with dynamic imports in `FluentAdapter`.
-    - **Problem**: `instanceof` checks fail across module boundaries when using dynamic imports
-    - **Solution**: Implemented structural typing (NestJS-style) - check `statusCode` property first
-    - **Result**: Works reliably with both regular imports AND dynamic imports
-    - **Principle**: SOLID - Depend on abstraction (statusCode) not implementation (instanceof)
+## 🎯 Recent Changes (v0.4.0-alpha.3)
 
 ### ✨ New Features
 
-*   **File Uploads**: Complete multipart/form-data support with validation.
-    - `@fastify/multipart` integration
-    - `FileValidator` for size, mimetype, and extension validation
-    - Multiple file uploads support
-    - Form fields + files parsing
-    - 7 E2E tests passing
+*   **File Downloads Helper**: Ergonomic API for serving file downloads with proper HTTP headers.
+    - `createFileDownload()` - Pure function with guard clauses and MIME type detection
+    - `ctx.download()` - Context helper for ergonomic API
+    - Auto-detection in adapters (FluentAdapter, FastifyAdapter, BunAdapter)
+    - Security: Path traversal protection (blocks `..`, `/`, `\`)
+    - Supports Buffer, Stream, and string data
+    - Custom MIME types and disposition (attachment/inline)
+    - 81 tests passing (51 unit + 30 E2E) ✅
 
-*   **Form Data**: Full application/x-www-form-urlencoded support.
-    - `@fastify/formbody` integration
-    - Automatic parsing to `ctx.body`
-    - Works with Zod validation
-    - 10 E2E tests passing
+### 🏗️ Architectural Improvements
 
-*   **Streaming & Buffer Responses**: Raw data support for files and binary content.
-    - Stream responses (Node.js Readable)
-    - Buffer responses (binary data)
-    - Custom status codes + headers
-    - Validation bypass for streams
-    - 11 tests passing
+*   **TinyTest Evolution**: Added `rawRequest()` method for low-level HTTP testing
+    - Returns native Fetch `Response` object for fine-grained control
+    - Perfect for testing file downloads, headers, and binary data
+    - `request()` now uses `rawRequest()` internally (DRY + composition)
+    - Backward compatible - existing tests unchanged
 
-*   **Developer Experience**: New testing tools for local/npm validation.
-    - `test-version.sh` - Automated script for testing local vs npm versions
-    - `TEST-GUIDE.md` - Complete testing workflow documentation
-    - Workspace integration for `syntrojs-examples`
+*   **Internal Format Pattern**: File downloads use neutral internal format
+    - `FileDownloadResponse` with `__isFileDownload` marker for fast detection
+    - Adapters intercept BEFORE framework serialization
+    - Prevents premature JSON serialization
+    - Foundation for future protocols (TOON, gRPC) without touching core
+    - Principle: Transform only at the edges (Adapter Pattern)
+
+### 🐛 Fixes & Learnings
+
+*   **Adapter Consistency**: Ensured file download support across ALL adapters
+    - Fixed missing implementation in `FluentAdapter` (default for Node.js)
+    - All adapters now handle file downloads uniformly
+    - Tests revealed FluentAdapter is default, not FastifyAdapter
+
+*   **Guard Clauses as Pipeline**: Improved type guard implementation
+    - Fast path: Check `__isFileDownload` marker first (O(1))
+    - Fallback: Structural validation for manually created objects
+    - Clear separation of concerns
 
 ### 📊 Progress
 
-*   **Tests**: 647/647 passing (100% pass rate) ✅
-*   **E2E Tests**: 114 tests passing (100%) ✅
-*   **Coverage**: All new features fully tested
+*   **Tests**: 728/728 passing (100% pass rate) ✅
+*   **E2E Tests**: 144 tests passing ✅
+*   **Coverage**: 77.14% (Statements: 77.14% | Branch: 80.73% | Functions: 73.21% | Lines: 77.14%)
+*   **Mutation Testing**: 58.72% score (742 killed | 2 timeout | 144 survived | 379 no coverage)
 *   **Code Style**: 100% SOLID + DDD + Functional programming
-*   **v0.4.0 Progress**: 60% complete (6/10 features done)
+*   **v0.4.0 Progress**: 70% complete (7/10 features done)
 
 ---
 
@@ -242,6 +247,26 @@ This transforms mutation testing from a slow CI/CD step into a real-time quality
 pnpm test:mutate
 ```
 
+**Current Mutation Testing Results:**
+
+| Module | Mutation Score | Killed | Survived | No Coverage |
+|--------|---------------|---------|----------|-------------|
+| **All files** | **58.72%** | 742 | 144 | 379 |
+| application | 61.44% | 347 | 74 | 145 |
+| security | 87.50% | 119 | 13 | 4 |
+| plugins | 66.67% | 32 | 4 | 12 |
+| domain | 55.17% | 32 | 10 | 16 |
+| core | 48.05% | 74 | 19 | 61 |
+| infrastructure | 45.54% | 138 | 24 | 141 |
+
+**Top Performers:**
+- `RouteRegistry.ts`: 100% (27 killed, 0 survived)
+- `ZodAdapter.ts`: 100% (11 killed, 0 survived)
+- `Route.ts`: 100% (8 killed, 0 survived)
+- `DependencyInjector.ts`: 95.83% (23 killed, 0 survived)
+- `APIKey.ts`: 96.88% (31 killed, 1 survived)
+- `BackgroundTasks.ts`: 92.31% (24 killed, 2 survived)
+
 > **The SyntroJS Guarantee:** We're the only framework where writing high-quality, mutation-resistant tests is a core, integrated part of the developer experience.
 
 ---
@@ -348,9 +373,9 @@ For a deeper dive, see our [ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md
 
 **File Handling** (High Priority)
 - [x] Streaming responses - For large files ✅ v0.4.0-alpha.1
-- [ ] File downloads - Helper for `Content-Disposition` headers
+- [x] File downloads - Helper for `Content-Disposition` headers ✅ v0.4.0-alpha.3
 - [ ] Static file serving - Expose `@fastify/static` integration
-- [x] File uploads - Multipart form data support (`@fastify/multipart`) ✅ v0.4.0-alpha.1
+- [x] File uploads - Multipart form data support (`@fastify/multipart`) ✅ v0.4.0-alpha.2
 
 **Request Body Formats**
 - [x] JSON (default) ✅
@@ -365,7 +390,7 @@ For a deeper dive, see our [ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md
 - [ ] TOON - Content negotiation for payload efficiency (40-60% reduction = cost savings)
 - [ ] Redirects (301, 302, 307, 308) - `.redirect()` helper
 - [ ] XML responses
-- [x] File download responses ✅ v0.4.0-alpha.1 (Streaming + Buffer support)
+- [x] File download responses ✅ v0.4.0-alpha.3 (ctx.download() helper + auto-detection)
 
 **HTTP Features**
 - [ ] Content negotiation (Accept headers)
@@ -469,11 +494,12 @@ For a deeper dive, see our [ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md
 | File uploads | ✅ Done | High | v0.4.0-alpha.2 |
 | Form data | ✅ Done | Medium | v0.4.0-alpha.2 |
 | Buffer responses | ✅ Done | Medium | v0.4.0-alpha.2 |
-| File downloads | 🔴 Missing | High | v0.4.0 |
-| Static files | 🟡 Partial | High | v0.4.0 |
+| File downloads | ✅ Done | High | v0.4.0-alpha.3 |
+| Static files | 🔴 Missing | High | v0.4.0 |
 | Redirects | 🔴 Missing | High | v0.4.0 |
 | Content negotiation | 🔴 Missing | Medium | v0.4.0 |
-| ETags | 🔴 Missing | Medium | v0.4.0 |
+| TOON format | 🔴 Missing | High | v0.5.0 |
+| ETags | 🔴 Missing | Low | v0.5.0 |
 | SSE | 🔴 Missing | Medium | v0.5.0 |
 | CSRF | 🔴 Missing | Medium | v0.5.0 |
 | Sessions | 🔴 Missing | Medium | v0.5.0 |
@@ -489,21 +515,22 @@ For a deeper dive, see our [ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md
 2. ~~**Add OPTIONS method**~~ - ✅ Done (v0.3.13)
 3. ~~**Auto-OPTIONS for CORS**~~ - ✅ Done (v0.3.13)
 4. ~~**Streaming responses**~~ - ✅ Done (v0.4.0-alpha.1)
-5. ~~**File uploads**~~ - ✅ Done (v0.4.0-alpha.1) - Multipart/form-data with FileValidator
-6. ~~**Form data support**~~ - ✅ Done (v0.4.0-alpha.1) - application/x-www-form-urlencoded
-7. **File downloads helper** - 2 days (Content-Disposition headers)
+5. ~~**File uploads**~~ - ✅ Done (v0.4.0-alpha.2) - Multipart/form-data with FileValidator
+6. ~~**Form data support**~~ - ✅ Done (v0.4.0-alpha.2) - application/x-www-form-urlencoded
+7. ~~**File downloads helper**~~ - ✅ Done (v0.4.0-alpha.3) - Content-Disposition headers + ctx.download()
 8. **Static file serving** - 2 days (@fastify/static integration)
 9. **Redirect helper** - 1 day (301, 302, 307, 308)
 10. **Content negotiation** - 2 days (Accept headers)
 
-**Total estimate: ~2 weeks** (6/10 completed - 60% ✅)
+**Total estimate: ~5 days remaining** (7/10 completed - 70% ✅)
 
 **Completed in alpha releases:**
 - ✅ HEAD & OPTIONS methods (v0.3.13)
 - ✅ Streaming responses + Buffer support (v0.4.0-alpha.1)
-- ✅ File uploads with validation (v0.4.0-alpha.1)
-- ✅ Form data parsing (v0.4.0-alpha.1)
+- ✅ File uploads with validation (v0.4.0-alpha.2)
+- ✅ Form data parsing (v0.4.0-alpha.2)
 - ✅ ErrorHandler fix for dynamic imports (v0.4.0-alpha.2)
+- ✅ File downloads helper (v0.4.0-alpha.3)
 
 ---
 

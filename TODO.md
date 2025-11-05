@@ -4,9 +4,9 @@
 
 **Version:** v0.4.0-alpha.3
 
-**Status:** MVP Core ✅ | Advanced Features ✅ | Security ✅ | Plugins ✅ | SmartMutator ✅ | **REST Completion 60%**
+**Status:** MVP Core ✅ | Advanced Features ✅ | Security ✅ | Plugins ✅ | SmartMutator ✅ | **REST Completion 70%**
 
-**Current Focus:** Complete REST features (File downloads, Static files, Redirects, Content negotiation)
+**Current Focus:** Complete REST features (Static files, Redirects, Content negotiation)
 
 **Last update:** 2025-11-05
 
@@ -14,7 +14,7 @@
 
 ## 📊 v0.4.0 Progress Tracker
 
-### ✅ Completed Features (6/10 - 60%)
+### ✅ Completed Features (7/10 - 70%)
 
 1. **HEAD Method** ✅ (v0.3.13)
    - `.head()` public method
@@ -56,25 +56,28 @@
    - Structural typing (NestJS-style) - check `statusCode` property first
    - Works reliably with both regular AND dynamic imports
 
-### 🔄 Pending Features (4/10 - 40%)
+8. **File Downloads Helper** ✅ (v0.4.0-alpha.3)
+   - `createFileDownload()` pure function with guard clauses
+   - `ctx.download()` ergonomic helper
+   - Auto-detection in all adapters (FluentAdapter, FastifyAdapter, BunAdapter)
+   - Path traversal protection
+   - MIME type detection
+   - 81 tests passing (51 unit + 30 E2E)
 
-1. **File Downloads Helper** (~2 días) 🎯 NEXT
-   - Helper for `Content-Disposition` headers
-   - Simplified API for file downloads
-   - Examples and documentation
+### 🔄 Pending Features (3/10 - 30%)
 
-2. **Static File Serving** (~2 días)
+1. **Static File Serving** (~2 días) 🎯 NEXT
    - Expose `@fastify/static` integration
    - Already installed as dependency
    - Configuration API
    - Examples for serving assets
 
-3. **Redirect Helper** (~1 día)
+2. **Redirect Helper** (~1 día)
    - `.redirect()` method
    - Support for 301, 302, 307, 308
    - Simple API: `return ctx.redirect('/new-path', 301)`
 
-4. **Content Negotiation** (~2 días)
+3. **Content Negotiation** (~2 días)
    - Accept headers parsing
    - Automatic format negotiation
    - Support for JSON, HTML, XML
@@ -82,16 +85,16 @@
 
 ### 📈 Current Metrics
 
-- **Tests:** 647/647 passing (100%) ✅
+- **Tests:** 728/728 passing (100%) ✅
+- **E2E Tests:** 144 passing ✅
 - **Coverage:** 80.54% ✅
-- **E2E Tests:** 114 passing ✅
 - **Dual Runtime:** Node.js + Bun working ✅
 - **Performance:** 3.8x faster with Bun, 89.3% of Fastify with Node.js ✅
 
 ### ⏱️ Estimated Time to v0.4.0 Release
 
-**Total remaining:** ~1 week (7 días de trabajo)
-- File downloads: 2 días
+**Total remaining:** ~5 días de trabajo (70% completado)
+- ~~File downloads: 2 días~~ ✅ Completado
 - Static files: 2 días
 - Redirects: 1 día
 - Content negotiation: 2 días

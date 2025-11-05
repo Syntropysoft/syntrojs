@@ -24,6 +24,7 @@ import type {
   RequestContext,
   SchemaFactory,
 } from '../domain/types';
+import { createFileDownload, isFileDownloadResponse } from './FileDownloadHelper';
 import { setComponentLoggingEnabled } from './LoggerHelper';
 import { integrateLogger, type LoggerIntegrationConfig } from './LoggerIntegration';
 
@@ -397,6 +398,8 @@ export class FluentAdapter {
             }
           },
         },
+        // File download helper (functional)
+        download: (data, options) => createFileDownload(data, options),
       };
 
       // Parse multipart form data if present (Dependency Inversion: use service)
@@ -429,6 +432,24 @@ export class FluentAdapter {
 
         // Ejecutar handler
         const result = await route.handler(context);
+
+        // FILE DOWNLOAD SUPPORT: Check if result is a file download response
+        // Pattern: { data: Buffer|Stream|string, headers: { 'Content-Disposition': ... }, __isFileDownload: true }
+        // Priority: Check BEFORE Stream/Buffer to allow custom headers
+        if (isFileDownloadResponse(result)) {
+          // Cleanup dependencies before sending
+          if (cleanupFn) {
+            setImmediate(() => cleanupFn!());
+          }
+
+          // Set all headers from file download response (immutable)
+          for (const [key, value] of Object.entries(result.headers)) {
+            reply.header(key, value);
+          }
+
+          // Send file data with custom status
+          return reply.status(result.statusCode).send(result.data);
+        }
 
         // STREAMING SUPPORT: Check if result is a Stream (Node.js Readable)
         if (StreamingResponseHandler.isReadableStream(result)) {

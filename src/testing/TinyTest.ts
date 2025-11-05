@@ -124,18 +124,25 @@ export class TinyTest extends SyntroJS {
   }
 
   /**
-   * Makes an HTTP request to the test server
+   * Makes a raw HTTP request to the test server
+   * Returns the native Fetch Response object without parsing
+   *
+   * Use this for:
+   * - File downloads (need to check Content-Disposition headers)
+   * - Binary data (need arrayBuffer())
+   * - Streams (need body.getReader())
+   * - Custom response handling
    *
    * @param method - HTTP method
    * @param path - Request path
    * @param options - Request options
-   * @returns Test response
+   * @returns Native Fetch Response object
    */
-  async request<T = unknown>(
+  async rawRequest(
     method: HttpMethod,
     path: string,
     options: TestRequestOptions = {},
-  ): Promise<TestResponse<T>> {
+  ): Promise<Response> {
     // Ensure server is started
     await this.ensureServer();
 
@@ -162,8 +169,25 @@ export class TinyTest extends SyntroJS {
       body,
     };
 
-    // Make request
-    const response = await fetch(url, fetchOptions);
+    // Make request and return raw Response
+    return await fetch(url, fetchOptions);
+  }
+
+  /**
+   * Makes an HTTP request to the test server
+   *
+   * @param method - HTTP method
+   * @param path - Request path
+   * @param options - Request options
+   * @returns Test response
+   */
+  async request<T = unknown>(
+    method: HttpMethod,
+    path: string,
+    options: TestRequestOptions = {},
+  ): Promise<TestResponse<T>> {
+    // Use rawRequest and parse the response
+    const response = await this.rawRequest(method, path, options);
 
     // Parse response
     let data: T;

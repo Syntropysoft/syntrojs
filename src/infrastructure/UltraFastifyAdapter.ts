@@ -14,6 +14,7 @@ import type { z } from 'zod';
 import { StreamingResponseHandler } from '../application/StreamingResponseHandler';
 import type { Route } from '../domain/Route';
 import type { HttpMethod } from '../domain/types';
+import { createFileDownload, type FileDownloadOptions } from './FileDownloadHelper';
 
 // Global caches for maximum performance
 const SCHEMA_CACHE = new Map<string, z.ZodSchema<unknown>>();
@@ -59,6 +60,9 @@ class UltraFastifyAdapterImpl {
           background: {
             addTask: (task: () => void) => setImmediate(task),
           },
+          // File download helper (functional)
+          download: (data: Buffer | Readable | string, options: FileDownloadOptions) =>
+            createFileDownload(data, options),
         };
 
         // ULTRA-FAST validation using cached schemas

@@ -7,12 +7,10 @@ import type { z } from 'zod';
 export class RuntimeOptimizer {
   private readonly runtime: 'node' | 'bun';
   private readonly isBun: boolean;
-  private readonly isNode: boolean;
 
   constructor() {
     this.runtime = this.detectRuntime();
     this.isBun = this.runtime === 'bun';
-    this.isNode = this.runtime === 'node';
   }
 
   private detectRuntime(): 'node' | 'bun' {
