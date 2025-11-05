@@ -73,7 +73,7 @@ describe('SmartSyntroJS Fluent Plugins API', () => {
     const originalEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = 'development';
 
-    const result = app.withCors();
+    const _result = app.withCors();
     expect((app as any)._corsOptions).toMatchObject({
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -87,7 +87,7 @@ describe('SmartSyntroJS Fluent Plugins API', () => {
     const originalEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = 'production';
 
-    const result = app.withCors();
+    const _result = app.withCors();
     expect((app as any)._corsOptions).toMatchObject({
       origin: [],
       credentials: true,

@@ -153,7 +153,7 @@ export async function registerHelmet(server: unknown, options: HelmetOptions = {
 
   try {
     fastifyHelmet = (await import('@fastify/helmet')).default;
-  } catch (error) {
+  } catch (_error) {
     throw new Error(
       'Helmet plugin requires @fastify/helmet to be installed. ' + 'Run: pnpm add @fastify/helmet',
     );

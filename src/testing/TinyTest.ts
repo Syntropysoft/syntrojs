@@ -24,9 +24,9 @@
  */
 
 import type { ZodSchema } from 'zod';
+import { RouteRegistry } from '../application/RouteRegistry';
 import { SyntroJS } from '../core';
 import type { HttpMethod } from '../domain/types';
-import { RouteRegistry } from '../application/RouteRegistry';
 
 /**
  * HTTP request options for testing
@@ -187,10 +187,10 @@ export class TinyTest extends SyntroJS {
 
   /**
    * Build request configuration based on body type
-   * 
+   *
    * Pure function: Returns new config without side effects
    * Guard clauses: Handles all body types
-   * 
+   *
    * @param body - Request body (FormData, object, or undefined)
    * @param customHeaders - Custom headers to merge
    * @returns Configuration object with body and headers
@@ -221,11 +221,12 @@ export class TinyTest extends SyntroJS {
     // Guard clause: String body (form-urlencoded or raw text)
     if (typeof body === 'string') {
       // Use provided Content-Type or default to form-urlencoded if looks like form data
-      const isFormUrlencoded = headers['Content-Type']?.includes('form-urlencoded') || body.includes('=');
-      
+      const isFormUrlencoded =
+        headers['Content-Type']?.includes('form-urlencoded') || body.includes('=');
+
       return {
         body,
-        headers: isFormUrlencoded 
+        headers: isFormUrlencoded
           ? { 'Content-Type': 'application/x-www-form-urlencoded', ...headers }
           : { 'Content-Type': 'text/plain', ...headers },
       };

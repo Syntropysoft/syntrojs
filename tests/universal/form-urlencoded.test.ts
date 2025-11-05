@@ -1,11 +1,11 @@
 /**
  * Form-urlencoded Support - Functional Tests
- * 
+ *
  * Validates that application/x-www-form-urlencoded is parsed correctly
  * Tests: parsing, validation with Zod, error handling
  */
 
-import { describe, test, expect, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 import { z } from 'zod';
 import { TinyTest } from '../../src/testing/TinyTest';
 
@@ -51,7 +51,7 @@ describe('Form-urlencoded E2E', () => {
     api.post('/validate-form', {
       body: bodySchema,
       handler: async (ctx) => {
-        return { 
+        return {
           valid: true,
           data: ctx.body,
         };
@@ -187,7 +187,7 @@ describe('Form-urlencoded E2E', () => {
       body: bodySchema,
       handler: async (ctx) => {
         const body = ctx.body as any;
-        return { 
+        return {
           id: body.id,
           quantity: body.quantity,
           types: {
@@ -213,4 +213,3 @@ describe('Form-urlencoded E2E', () => {
     expect(data.types.quantity).toBe('number');
   });
 });
-

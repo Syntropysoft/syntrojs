@@ -11,9 +11,9 @@ interface Bun {
     fetch(request: Request): Promise<Response>;
   }): BunServer;
 }
-import type { Readable } from 'node:stream';
-import { DependencyInjector } from '../application/DependencyInjector';
+
 import type { DependencyMetadata } from '../application/DependencyInjector';
+import { DependencyInjector } from '../application/DependencyInjector';
 import { ErrorHandler } from '../application/ErrorHandler';
 import type { MiddlewareRegistry } from '../application/MiddlewareRegistry';
 import { MultipartParser } from '../application/MultipartParser';
@@ -30,7 +30,6 @@ import type { RequestContext } from '../domain/types';
 class BunAdapterImpl {
   private server: BunServer | null = null;
   private routes: Map<string, Route> = new Map();
-  private isRunning = false;
   private middlewareRegistry?: MiddlewareRegistry;
 
   /**
@@ -59,7 +58,7 @@ class BunAdapterImpl {
    * @param server - Server instance
    * @param route - Route to register
    */
-  registerRoute(server: unknown, route: Route): void {
+  registerRoute(_server: unknown, route: Route): void {
     // Store route for later use
     const key = `${route.method}:${route.path}`;
     this.routes.set(key, route);
@@ -231,7 +230,7 @@ class BunAdapterImpl {
   private async buildContext(request: Request, url: URL): Promise<RequestContext> {
     // Parse path params (simple implementation)
     const params: Record<string, string> = {};
-    const pathSegments = url.pathname.split('/').filter(Boolean);
+    const _pathSegments = url.pathname.split('/').filter(Boolean);
 
     // Extract query params
     const query: Record<string, string> = {};

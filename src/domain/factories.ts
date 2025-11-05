@@ -9,7 +9,6 @@
  * - Immutability: No side effects, pure functions
  */
 
-import type { FastifyReply } from 'fastify';
 import type { MiddlewareConfig, RequestContext, RouteConfig } from './types';
 
 // ===== GUARD CLAUSES =====

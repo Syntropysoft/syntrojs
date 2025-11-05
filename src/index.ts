@@ -3,23 +3,19 @@
  * Main entry point
  */
 
+// Application exports
+export * from './application';
+// Core exports
+export * from './core';
 // Domain exports
 export * from './domain';
 
-// Application exports
-export * from './application';
-
-// Core exports
-export * from './core';
-
 // Infrastructure exports
 export * from './infrastructure';
-
-// Security exports
-export * from './security';
-
 // Plugins exports
 export * from './plugins';
+// Security exports
+export * from './security';
 
 /**
  * Current version

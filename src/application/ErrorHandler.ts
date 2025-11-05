@@ -8,19 +8,19 @@
 
 import { z } from 'zod';
 import {
-  HTTPException,
-  ValidationException,
-  NotFoundException,
   BadRequestException,
-  UnauthorizedException,
-  ForbiddenException,
   ConflictException,
+  ForbiddenException,
+  HTTPException,
   InternalServerException,
+  NotFoundException,
   ServiceUnavailableException,
+  UnauthorizedException,
+  ValidationException,
 } from '../domain/HTTPException';
 import type { ExceptionHandler, RequestContext, RouteResponse } from '../domain/types';
 import { getComponentLogger } from '../infrastructure/LoggerHelper';
-import { buildGenericErrorResponse, buildUnhandledErrorResponse } from './ErrorResponseBuilder';
+import { buildUnhandledErrorResponse } from './ErrorResponseBuilder';
 
 /**
  * Error handler implementation
@@ -28,13 +28,6 @@ import { buildGenericErrorResponse, buildUnhandledErrorResponse } from './ErrorR
 class ErrorHandlerImpl {
   // Immutable: Map is never replaced
   private readonly handlers = new Map<new (...args: any[]) => Error, ExceptionHandler>();
-
-  constructor() {
-    // No default handlers registered
-    // We use structural typing (statusCode check) instead for reliability
-    // Custom handlers can be registered via .register() for overrides
-    // This avoids the instanceof paradox with dynamic imports
-  }
 
   /**
    * Registers a custom exception handler
@@ -91,7 +84,7 @@ class ErrorHandlerImpl {
     // Dynamic imports break instanceof checks, so we rely on statusCode property
     if ((error as any).statusCode !== undefined) {
       const httpError = error as HTTPException;
-      
+
       // Check if it's ValidationException (has errors array)
       if (
         error.name === 'ValidationException' ||
@@ -108,7 +101,7 @@ class ErrorHandlerImpl {
           },
         };
       }
-      
+
       // Generic HTTPException (uses statusCode)
       return {
         status: httpError.statusCode,
@@ -122,7 +115,7 @@ class ErrorHandlerImpl {
 
     // PRIORITY 3: Fallback instanceof checks for specific exceptions
     // Note: These may fail with dynamic imports, but kept for backward compatibility
-    
+
     // 422 - ValidationException (most specific, has special errors array)
     if (
       error instanceof ValidationException ||
@@ -266,7 +259,11 @@ class ErrorHandlerImpl {
     }
 
     // ZodError handler (422)
-    if (error instanceof z.ZodError || error.name === 'ZodError' || error.constructor?.name === 'ZodError') {
+    if (
+      error instanceof z.ZodError ||
+      error.name === 'ZodError' ||
+      error.constructor?.name === 'ZodError'
+    ) {
       const zodError = error as z.ZodError;
       return {
         status: 422,
@@ -287,7 +284,7 @@ class ErrorHandlerImpl {
 
   /**
    * Finds handler by name or instanceof (for dynamic import compatibility)
-   * 
+   *
    * Strategy: Try instanceof first, then fallback to class name matching
    * This handles both regular imports and dynamic imports
    *
@@ -303,7 +300,7 @@ class ErrorHandlerImpl {
 
     // Second try: Match by class name (works for dynamic imports)
     const errorClassName = error.constructor?.name || error.name;
-    
+
     for (const [errorClass, handler] of this.handlers.entries()) {
       if (errorClass.name === errorClassName) {
         return handler;
@@ -346,10 +343,10 @@ class ErrorHandlerImpl {
     // Multiple matches: find most specific (child class wins over parent class)
     // Strategy: Find the class that is the deepest in the inheritance chain
     // (the one that is NOT a parent of any other matched class)
-    
+
     // Filter out generic Error handler (only use it as last resort)
     const specificMatches = matches.filter((m) => m.errorClass !== Error);
-    
+
     if (specificMatches.length === 0) {
       // Only Error handler matched - return it
       return matches.find((m) => m.errorClass === Error)?.handler;
@@ -363,7 +360,7 @@ class ErrorHandlerImpl {
     // Multiple specific handlers: find most specific by checking prototype chain
     // The most specific is the one that is the CHILD of all others (deepest in inheritance)
     // Strategy: Find the class that is NOT a parent of any other, but IS a child of at least one other
-    
+
     // Sort matches by inheritance depth: child classes come after parent classes
     // Find the class that is NOT a parent of any other
     for (let i = 0; i < specificMatches.length; i++) {
@@ -410,150 +407,6 @@ class ErrorHandlerImpl {
     // Custom handlers can still be registered via .register() for overrides
     // All handler logic is now in the handle() method using statusCode property
     return;
-
-    // 400 - BadRequestException
-    this.register(BadRequestException, (context, error) => {
-      const badRequest = error as BadRequestException;
-      return {
-        status: 400,
-        body: {
-          detail: badRequest.detail,
-          path: context.path,
-        },
-        headers: badRequest.headers,
-      };
-    });
-
-    // 401 - UnauthorizedException
-    this.register(UnauthorizedException, (context, error) => {
-      const unauthorized = error as UnauthorizedException;
-      return {
-        status: 401,
-        body: {
-          detail: unauthorized.detail,
-          path: context.path,
-        },
-        headers: unauthorized.headers,
-      };
-    });
-
-    // 403 - ForbiddenException
-    this.register(ForbiddenException, (context, error) => {
-      const forbidden = error as ForbiddenException;
-      return {
-        status: 403,
-        body: {
-          detail: forbidden.detail,
-          path: context.path,
-        },
-        headers: forbidden.headers,
-      };
-    });
-
-    // 404 - NotFoundException
-    this.register(NotFoundException, (context, error) => {
-      const notFound = error as NotFoundException;
-      return {
-        status: 404,
-        body: {
-          detail: notFound.detail,
-          path: context.path,
-        },
-        headers: notFound.headers,
-      };
-    });
-
-    // 409 - ConflictException
-    this.register(ConflictException, (context, error) => {
-      const conflict = error as ConflictException;
-      return {
-        status: 409,
-        body: {
-          detail: conflict.detail,
-          path: context.path,
-        },
-        headers: conflict.headers,
-      };
-    });
-
-    // 500 - InternalServerException
-    this.register(InternalServerException, (context, error) => {
-      const internal = error as InternalServerException;
-      return {
-        status: 500,
-        body: {
-          detail: internal.detail,
-          path: context.path,
-        },
-        headers: internal.headers,
-      };
-    });
-
-    // 503 - ServiceUnavailableException
-    this.register(ServiceUnavailableException, (context, error) => {
-      const unavailable = error as ServiceUnavailableException;
-      return {
-        status: 503,
-        body: {
-          detail: unavailable.detail,
-          path: context.path,
-        },
-        headers: unavailable.headers,
-      };
-    });
-
-    // Generic HTTPException handler - catches any HTTPException without specific handler
-    // Register AFTER all specific exceptions
-    this.register(HTTPException, (context, error) => {
-      const httpError = error as HTTPException;
-      return {
-        status: httpError.statusCode,
-        body: {
-          detail: httpError.detail,
-          path: context.path,
-        },
-        headers: httpError.headers,
-      };
-    });
-
-    // ZodError handler (422) - Convert ZodError to ValidationException format
-    this.register(z.ZodError, (context, error) => {
-      const zodError = error as z.ZodError;
-
-      return {
-        status: 422,
-        body: {
-          detail: 'Validation Error',
-          errors: zodError.errors.map((err) => ({
-            field: err.path.join('.'),
-            ...err,
-          })),
-          path: context.path,
-        },
-      };
-    });
-
-    // Generic Error handler - uses ErrorResponseBuilder (Strategy Pattern)
-    // Note: This should be the last fallback, but only for truly unhandled errors
-    // HTTPException and ValidationException should be caught by their specific handlers
-    this.register(Error, (context, error) => {
-      // Log error for debugging
-      const logger = getComponentLogger('error-handler');
-      logger.error(
-        {
-          error: {
-            name: error.name,
-            message: error.message,
-            stack: error.stack,
-          },
-          path: context.path,
-          method: context.method,
-        },
-        'Unhandled error in request handler',
-      );
-
-      return buildGenericErrorResponse(error, context);
-    });
   }
 
   /**

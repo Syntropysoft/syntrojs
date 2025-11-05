@@ -8,8 +8,8 @@
  * Principles: SOLID, DDD, Functional Programming, Guard Clauses
  */
 
-import { AsyncContext, JsonTransport } from '@syntrojs/logger';
 import type { Logger } from '@syntrojs/logger';
+import { AsyncContext, JsonTransport } from '@syntrojs/logger';
 import { getLogger } from '@syntrojs/logger/registry';
 import { createNoOpLogger } from './NoOpLogger';
 

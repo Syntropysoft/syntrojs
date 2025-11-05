@@ -127,7 +127,7 @@ export async function registerCompression(
 
   try {
     fastifyCompress = (await import('@fastify/compress')).default;
-  } catch (error) {
+  } catch (_error) {
     throw new Error(
       'Compression plugin requires @fastify/compress to be installed. ' +
         'Run: pnpm add @fastify/compress',

@@ -10,7 +10,7 @@
 
 import { beforeEach, describe, expect, it } from 'vitest';
 import { MiddlewareRegistry } from '../../../src/application/MiddlewareRegistry';
-import type { Middleware, MiddlewareConfig, RequestContext } from '../../../src/domain/types';
+import type { MiddlewareConfig, RequestContext } from '../../../src/domain/types';
 
 describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
   let registry: MiddlewareRegistry;
@@ -34,7 +34,7 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should validate path parameter', () => {
-      const middleware = (context: RequestContext) => {};
+      const middleware = (_context: RequestContext) => {};
 
       // Test null path
       expect(() => registry.add(middleware, { path: null as any })).toThrow(
@@ -56,7 +56,7 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should validate method parameter', () => {
-      const middleware = (context: RequestContext) => {};
+      const middleware = (_context: RequestContext) => {};
 
       // Test invalid method
       expect(() => registry.add(middleware, { method: 'INVALID' as any })).toThrow(
@@ -70,7 +70,7 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should validate priority parameter', () => {
-      const middleware = (context: RequestContext) => {};
+      const middleware = (_context: RequestContext) => {};
 
       // Test negative priority
       expect(() => registry.add(middleware, { priority: -1 })).toThrow(
@@ -89,7 +89,7 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should validate context parameter in executeMiddlewares', () => {
-      const middleware = (context: RequestContext) => {};
+      const middleware = (_context: RequestContext) => {};
       const registryWithMiddleware = registry.add(middleware);
 
       // Test null context
@@ -106,7 +106,7 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
 
   describe('Middleware Addition (Functional Programming)', () => {
     it('should add middleware and return new instance', () => {
-      const middleware = (context: RequestContext) => {};
+      const middleware = (_context: RequestContext) => {};
 
       const newRegistry = registry.add(middleware);
 
@@ -117,7 +117,7 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should add middleware with configuration', () => {
-      const middleware = (context: RequestContext) => {};
+      const middleware = (_context: RequestContext) => {};
       const config: MiddlewareConfig = {
         path: '/api',
         method: 'GET',
@@ -131,8 +131,8 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should add multiple middlewares', () => {
-      const middleware1 = (context: RequestContext) => {};
-      const middleware2 = (context: RequestContext) => {};
+      const middleware1 = (_context: RequestContext) => {};
+      const middleware2 = (_context: RequestContext) => {};
 
       const registry1 = registry.add(middleware1);
       const registry2 = registry1.add(middleware2);
@@ -143,7 +143,7 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should handle middleware with default configuration', () => {
-      const middleware = (context: RequestContext) => {};
+      const middleware = (_context: RequestContext) => {};
 
       const newRegistry = registry.add(middleware, {});
 
@@ -153,7 +153,7 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
 
   describe('Middleware Removal (Functional Programming)', () => {
     it('should remove middleware and return new instance', () => {
-      const middleware = (context: RequestContext) => {};
+      const middleware = (_context: RequestContext) => {};
       const registryWithMiddleware = registry.add(middleware);
 
       const newRegistry = registryWithMiddleware.remove(middleware);
@@ -164,7 +164,7 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should handle removal of non-existent middleware', () => {
-      const middleware = (context: RequestContext) => {};
+      const middleware = (_context: RequestContext) => {};
 
       const newRegistry = registry.remove(middleware);
 
@@ -174,8 +174,8 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should remove specific middleware from multiple', () => {
-      const middleware1 = (context: RequestContext) => {};
-      const middleware2 = (context: RequestContext) => {};
+      const middleware1 = (_context: RequestContext) => {};
+      const middleware2 = (_context: RequestContext) => {};
 
       const registryWithBoth = registry.add(middleware1).add(middleware2);
 
@@ -187,8 +187,8 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
 
   describe('Middleware Clearing (Functional Programming)', () => {
     it('should clear all middlewares and return new instance', () => {
-      const middleware1 = (context: RequestContext) => {};
-      const middleware2 = (context: RequestContext) => {};
+      const middleware1 = (_context: RequestContext) => {};
+      const middleware2 = (_context: RequestContext) => {};
 
       const registryWithMiddlewares = registry.add(middleware1).add(middleware2);
 
@@ -210,8 +210,8 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
 
   describe('Middleware Retrieval (DDD)', () => {
     it('should get middlewares by path and method', () => {
-      const middleware1 = (context: RequestContext) => {};
-      const middleware2 = (context: RequestContext) => {};
+      const middleware1 = (_context: RequestContext) => {};
+      const middleware2 = (_context: RequestContext) => {};
 
       const registryWithMiddlewares = registry
         .add(middleware1, { path: '/api', method: 'GET' })
@@ -227,8 +227,8 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should get middlewares with wildcard path', () => {
-      const middleware1 = (context: RequestContext) => {};
-      const middleware2 = (context: RequestContext) => {};
+      const middleware1 = (_context: RequestContext) => {};
+      const middleware2 = (_context: RequestContext) => {};
 
       const registryWithMiddlewares = registry
         .add(middleware1, { path: '*' })
@@ -240,8 +240,8 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should get middlewares with wildcard method', () => {
-      const middleware1 = (context: RequestContext) => {};
-      const middleware2 = (context: RequestContext) => {};
+      const middleware1 = (_context: RequestContext) => {};
+      const middleware2 = (_context: RequestContext) => {};
 
       const registryWithMiddlewares = registry
         .add(middleware1, { method: '*' })
@@ -253,7 +253,7 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should return empty array for non-matching path and method', () => {
-      const middleware = (context: RequestContext) => {};
+      const middleware = (_context: RequestContext) => {};
       const registryWithMiddleware = registry.add(middleware, { path: '/api', method: 'GET' });
 
       const middlewares = registryWithMiddleware.getMiddlewares('/users', 'POST');
@@ -266,13 +266,13 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
     it('should execute middlewares in priority order', async () => {
       const executionOrder: number[] = [];
 
-      const middleware1 = (context: RequestContext) => {
+      const middleware1 = (_context: RequestContext) => {
         executionOrder.push(1);
       };
-      const middleware2 = (context: RequestContext) => {
+      const middleware2 = (_context: RequestContext) => {
         executionOrder.push(2);
       };
-      const middleware3 = (context: RequestContext) => {
+      const middleware3 = (_context: RequestContext) => {
         executionOrder.push(3);
       };
 
@@ -303,10 +303,10 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should handle middleware execution errors gracefully', async () => {
-      const middleware1 = (context: RequestContext) => {
+      const middleware1 = (_context: RequestContext) => {
         throw new Error('Middleware error');
       };
-      const middleware2 = (context: RequestContext) => {};
+      const middleware2 = (_context: RequestContext) => {};
 
       const registryWithMiddlewares = registry.add(middleware1).add(middleware2);
 
@@ -355,7 +355,7 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
       expect(registry.getCount()).toBe(0);
       expect(registry.isEmpty()).toBe(true);
 
-      const middleware = (context: RequestContext) => {};
+      const middleware = (_context: RequestContext) => {};
       const registryWithMiddleware = registry.add(middleware);
 
       expect(registryWithMiddleware.getCount()).toBe(1);
@@ -368,8 +368,8 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should maintain immutability', () => {
-      const middleware1 = (context: RequestContext) => {};
-      const middleware2 = (context: RequestContext) => {};
+      const middleware1 = (_context: RequestContext) => {};
+      const middleware2 = (_context: RequestContext) => {};
 
       const registry1 = registry.add(middleware1);
       const registry2 = registry1.add(middleware2);
@@ -390,7 +390,7 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
 
   describe('Path Matching (Functional Programming)', () => {
     it('should match exact paths', () => {
-      const middleware = (context: RequestContext) => {};
+      const middleware = (_context: RequestContext) => {};
       const registryWithMiddleware = registry.add(middleware, { path: '/api/users' });
 
       const middlewares = registryWithMiddleware.getMiddlewares('/api/users', 'GET');
@@ -399,7 +399,7 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should match wildcard paths', () => {
-      const middleware = (context: RequestContext) => {};
+      const middleware = (_context: RequestContext) => {};
       const registryWithMiddleware = registry.add(middleware, { path: '*' });
 
       const middlewares = registryWithMiddleware.getMiddlewares('/any/path', 'GET');
@@ -408,7 +408,7 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should match partial paths', () => {
-      const middleware = (context: RequestContext) => {};
+      const middleware = (_context: RequestContext) => {};
       const registryWithMiddleware = registry.add(middleware, { path: '/api' });
 
       const middlewares = registryWithMiddleware.getMiddlewares('/api/users', 'GET');
@@ -419,7 +419,7 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
 
   describe('Method Matching (Functional Programming)', () => {
     it('should match exact methods', () => {
-      const middleware = (context: RequestContext) => {};
+      const middleware = (_context: RequestContext) => {};
       const registryWithMiddleware = registry.add(middleware, { method: 'GET' });
 
       const middlewares = registryWithMiddleware.getMiddlewares('/api', 'GET');
@@ -428,7 +428,7 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should match wildcard methods', () => {
-      const middleware = (context: RequestContext) => {};
+      const middleware = (_context: RequestContext) => {};
       const registryWithMiddleware = registry.add(middleware, { method: '*' });
 
       const middlewares = registryWithMiddleware.getMiddlewares('/api', 'POST');
@@ -437,7 +437,7 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should not match different methods', () => {
-      const middleware = (context: RequestContext) => {};
+      const middleware = (_context: RequestContext) => {};
       const registryWithMiddleware = registry.add(middleware, { method: 'GET' });
 
       const middlewares = registryWithMiddleware.getMiddlewares('/api', 'POST');
@@ -448,9 +448,9 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
 
   describe('Complex Scenarios (Functional Composition)', () => {
     it('should handle complex middleware configurations', () => {
-      const middleware1 = (context: RequestContext) => {};
-      const middleware2 = (context: RequestContext) => {};
-      const middleware3 = (context: RequestContext) => {};
+      const middleware1 = (_context: RequestContext) => {};
+      const middleware2 = (_context: RequestContext) => {};
+      const middleware3 = (_context: RequestContext) => {};
 
       const complexRegistry = registry
         .add(middleware1, { path: '/api', method: 'GET', priority: 10 })
@@ -469,9 +469,9 @@ describe('MiddlewareRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should handle chaining operations', () => {
-      const middleware1 = (context: RequestContext) => {};
-      const middleware2 = (context: RequestContext) => {};
-      const middleware3 = (context: RequestContext) => {};
+      const middleware1 = (_context: RequestContext) => {};
+      const middleware2 = (_context: RequestContext) => {};
+      const middleware3 = (_context: RequestContext) => {};
 
       const chainedRegistry = registry
         .add(middleware1)

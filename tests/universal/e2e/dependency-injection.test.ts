@@ -3,7 +3,6 @@
  */
 
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { z } from 'zod';
 import { DependencyInjector, inject } from '../../../src/application/DependencyInjector';
 import { SyntroJS } from '../../../src/core';
 

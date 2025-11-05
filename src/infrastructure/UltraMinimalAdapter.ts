@@ -8,8 +8,8 @@
  * 4. No ErrorHandler - minimal error handling
  */
 
-import Fastify, { type FastifyInstance, type FastifyRequest, type FastifyReply } from 'fastify';
 import type { Readable } from 'node:stream';
+import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import { StreamingResponseHandler } from '../application/StreamingResponseHandler';
 import type { Route } from '../domain/Route';
 import type { HttpMethod } from '../domain/types';
@@ -94,7 +94,6 @@ class UltraMinimalAdapterImpl {
       }
     });
   }
-
 }
 
 export const UltraMinimalAdapter = new UltraMinimalAdapterImpl();

@@ -2,10 +2,10 @@
  * HEAD and OPTIONS HTTP methods tests
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { TinyTest } from '../../src/testing/TinyTest';
-import { inject } from '../../src/application/DependencyInjector';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
+import { inject } from '../../src/application/DependencyInjector';
+import { TinyTest } from '../../src/testing/TinyTest';
 
 describe('HEAD HTTP Method', () => {
   let api: TinyTest;
@@ -305,4 +305,3 @@ describe('HEAD and OPTIONS Integration', () => {
     }
   });
 });
-

@@ -1,14 +1,14 @@
 /**
  * Streaming Support - End-to-End Functional Tests
- * 
+ *
  * Tests complete streaming flow with REAL HTTP requests
  * Validates: stream detection, buffer handling, response types
  */
 
-import { describe, test, expect, beforeEach, afterEach } from 'vitest';
 import { Readable } from 'node:stream';
-import { TinyTest } from '../../src/testing/TinyTest';
+import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 import { StreamingResponseHandler } from '../../src/application/StreamingResponseHandler';
+import { TinyTest } from '../../src/testing/TinyTest';
 
 describe('Streaming E2E - Complete Flow', () => {
   let api: TinyTest;
@@ -29,7 +29,7 @@ describe('Streaming E2E - Complete Flow', () => {
     });
 
     const response = await api.request('GET', '/stream-data');
-    
+
     expect(response.status).toBe(200);
     expect(response.data).toContain('chunk');
   });
@@ -44,7 +44,7 @@ describe('Streaming E2E - Complete Flow', () => {
     });
 
     const response = await api.request('GET', '/large-file');
-    
+
     expect(response.status).toBe(200);
     expect(response.data).toContain('chunk-0');
     expect(response.data).toContain('chunk-99');
@@ -58,7 +58,7 @@ describe('Streaming E2E - Complete Flow', () => {
     });
 
     const response = await api.request('GET', '/binary');
-    
+
     expect(response.status).toBe(200);
     expect(response.data).toBe('binary content here');
   });
@@ -74,7 +74,7 @@ describe('Streaming E2E - Complete Flow', () => {
     });
 
     const response = await api.request('GET', '/image');
-    
+
     expect(response.status).toBe(200);
     expect(typeof response.data).toBe('string');
   });
@@ -101,7 +101,7 @@ describe('Streaming E2E - Complete Flow', () => {
     const streamResp = await api.request('GET', '/stream-type');
     const bufferResp = await api.request('GET', '/buffer-type');
     const objectResp = await api.request('GET', '/object-type');
-    
+
     expect(streamResp.status).toBe(200);
     expect(bufferResp.status).toBe(200);
     expect(objectResp.status).toBe(200);
@@ -117,13 +117,13 @@ describe('Streaming E2E - Complete Flow', () => {
           '2,Jane,jane@example.com',
           '3,Bob,bob@example.com',
         ];
-        
-        return Readable.from(rows.map((row) => row + '\n'));
+
+        return Readable.from(rows.map((row) => `${row}\n`));
       },
     });
 
     const response = await api.request('GET', '/export-csv');
-    
+
     expect(response.status).toBe(200);
     expect(response.data).toContain('id,name,email');
     expect(response.data).toContain('John');
@@ -138,7 +138,7 @@ describe('Streaming E2E - Complete Flow', () => {
     });
 
     const response = await api.request('GET', '/empty-stream');
-    
+
     expect(response.status).toBe(200);
   });
 
@@ -150,7 +150,7 @@ describe('Streaming E2E - Complete Flow', () => {
     });
 
     const response = await api.request('GET', '/single-chunk');
-    
+
     expect(response.status).toBe(200);
     expect(response.data).toBe('only one chunk');
   });
@@ -165,7 +165,7 @@ describe('Streaming E2E - Complete Flow', () => {
     });
 
     const response = await api.request('GET', '/no-validate-stream');
-    
+
     expect(response.status).toBe(200);
     expect(response.data).toBe('raw stream data');
   });
@@ -180,7 +180,7 @@ describe('Streaming E2E - Complete Flow', () => {
     });
 
     const response = await api.request('GET', '/no-validate-buffer');
-    
+
     expect(response.status).toBe(200);
     expect(response.data).toBe('raw buffer data');
   });
@@ -190,7 +190,7 @@ describe('StreamingResponseHandler - Unit Behavior', () => {
   test('classify() should detect streams correctly', () => {
     const stream = Readable.from(['test']);
     const result = StreamingResponseHandler.classify(stream);
-    
+
     expect(result.type).toBe('stream');
     expect(result.isStreaming).toBe(true);
   });
@@ -198,7 +198,7 @@ describe('StreamingResponseHandler - Unit Behavior', () => {
   test('classify() should detect buffers correctly', () => {
     const buffer = Buffer.from('test');
     const result = StreamingResponseHandler.classify(buffer);
-    
+
     expect(result.type).toBe('buffer');
     expect(result.isStreaming).toBe(false);
   });
@@ -206,7 +206,7 @@ describe('StreamingResponseHandler - Unit Behavior', () => {
   test('classify() should detect objects correctly', () => {
     const obj = { message: 'test' };
     const result = StreamingResponseHandler.classify(obj);
-    
+
     expect(result.type).toBe('object');
     expect(result.isStreaming).toBe(false);
   });
@@ -214,13 +214,13 @@ describe('StreamingResponseHandler - Unit Behavior', () => {
   test('isReadableStream() should require ALL stream methods', () => {
     // Only pipe
     expect(StreamingResponseHandler.isReadableStream({ pipe: () => {} })).toBe(false);
-    
+
     // Only on
     expect(StreamingResponseHandler.isReadableStream({ on: () => {} })).toBe(false);
-    
+
     // Only read
     expect(StreamingResponseHandler.isReadableStream({ read: () => {} })).toBe(false);
-    
+
     // All three required
     expect(
       StreamingResponseHandler.isReadableStream({
@@ -235,7 +235,7 @@ describe('StreamingResponseHandler - Unit Behavior', () => {
     const stream = Readable.from(['test']);
     const buffer = Buffer.from('test');
     const object = { data: 'test' };
-    
+
     expect(StreamingResponseHandler.shouldSkipValidation(stream)).toBe(true);
     expect(StreamingResponseHandler.shouldSkipValidation(buffer)).toBe(true);
     expect(StreamingResponseHandler.shouldSkipValidation(object)).toBe(false);
@@ -243,4 +243,3 @@ describe('StreamingResponseHandler - Unit Behavior', () => {
     expect(StreamingResponseHandler.shouldSkipValidation(undefined)).toBe(false);
   });
 });
-

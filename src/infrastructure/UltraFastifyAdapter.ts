@@ -8,8 +8,8 @@
  * 4. Reduced function calls
  */
 
-import Fastify, { type FastifyInstance, type FastifyRequest, type FastifyReply } from 'fastify';
 import type { Readable } from 'node:stream';
+import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import type { z } from 'zod';
 import { StreamingResponseHandler } from '../application/StreamingResponseHandler';
 import type { Route } from '../domain/Route';
@@ -141,7 +141,6 @@ class UltraFastifyAdapterImpl {
     // Cache the route for ultra-fast access
     ROUTE_CACHE.set(routeKey, route);
   }
-
 }
 
 export const UltraFastifyAdapter = new UltraFastifyAdapterImpl();

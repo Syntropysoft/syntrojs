@@ -11,7 +11,7 @@ import type { RequestContext, UploadedFile } from '../domain/types';
 
 /**
  * Multipart parser implementation
- * 
+ *
  * Handles multipart/form-data parsing for both:
  * - Node.js (via Fastify's request.parts())
  * - Bun (via Web API FormData)
@@ -19,10 +19,10 @@ import type { RequestContext, UploadedFile } from '../domain/types';
 class MultipartParserImpl {
   /**
    * Parse multipart data from Fastify request (Node.js runtime)
-   * 
+   *
    * Pure function: Only transforms input to output, no side effects
    * Guard clauses: Validates all inputs before processing
-   * 
+   *
    * @param request - Fastify request with parts() method
    * @param context - Request context to populate with files/fields
    */
@@ -77,7 +77,7 @@ class MultipartParserImpl {
           context.fields = fields;
         }
       }
-    } catch (error) {
+    } catch (_error) {
       // Guard clause: If parsing fails, don't populate context
       // This allows the route to continue without files
       return;
@@ -86,10 +86,10 @@ class MultipartParserImpl {
 
   /**
    * Parse multipart data from Bun request (Web API)
-   * 
+   *
    * Pure function: Only transforms input to output
    * Guard clauses: Validates all inputs
-   * 
+   *
    * @param request - Bun Request (Web API standard)
    * @param context - Request context to populate with files/fields
    */
@@ -146,7 +146,7 @@ class MultipartParserImpl {
           context.fields = fields;
         }
       }
-    } catch (error) {
+    } catch (_error) {
       // Guard clause: If parsing fails, don't populate context
       return;
     }
@@ -154,9 +154,9 @@ class MultipartParserImpl {
 
   /**
    * Process a file part from Fastify multipart
-   * 
+   *
    * Pure function: Transforms file part to UploadedFile
-   * 
+   *
    * @param part - Fastify file part
    * @returns UploadedFile object
    */
@@ -204,9 +204,9 @@ class MultipartParserImpl {
 
   /**
    * Process a field part from Fastify multipart
-   * 
+   *
    * Pure function: Transforms field part to key-value pair
-   * 
+   *
    * @param part - Fastify field part
    * @returns Object with fieldname and value
    */
@@ -217,7 +217,7 @@ class MultipartParserImpl {
     }
 
     const value = part.value;
-    
+
     // Pure function: Convert value to string
     return {
       fieldname: part.fieldname,
@@ -227,9 +227,9 @@ class MultipartParserImpl {
 
   /**
    * Process a Web File from Bun FormData
-   * 
+   *
    * Pure function: Transforms Web File to UploadedFile
-   * 
+   *
    * @param name - Field name
    * @param file - Web API File object
    * @returns UploadedFile object
@@ -246,7 +246,7 @@ class MultipartParserImpl {
 
     // Convert Web File to Buffer
     const buffer = Buffer.from(await file.arrayBuffer());
-    
+
     // Create a Readable stream from buffer for compatibility
     const { Readable } = await import('node:stream');
     const stream = Readable.from(buffer);
@@ -280,4 +280,3 @@ class MultipartParserSingleton {
 }
 
 export const MultipartParser = MultipartParserSingleton;
-

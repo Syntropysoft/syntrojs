@@ -123,7 +123,7 @@ export async function registerCors(server: unknown, options: CorsOptions = {}): 
 
   try {
     fastifyCors = (await import('@fastify/cors')).default;
-  } catch (error) {
+  } catch (_error) {
     throw new Error(
       'CORS plugin requires @fastify/cors to be installed. ' + 'Run: pnpm add @fastify/cors',
     );

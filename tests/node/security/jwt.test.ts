@@ -4,9 +4,9 @@
 
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import {
+  decodeJWT,
   JWTError,
   type JWTPayload,
-  decodeJWT,
   signJWT,
   verifyJWT,
 } from '../../../src/security/jwt';
@@ -54,7 +54,7 @@ describe('JWT Utilities', () => {
     });
 
     test('should parse expiresIn correctly', () => {
-      const now = Math.floor(Date.now() / 1000);
+      const _now = Math.floor(Date.now() / 1000);
 
       // 30 seconds
       const token1 = signJWT(PAYLOAD, { secret: SECRET, expiresIn: '30s' });

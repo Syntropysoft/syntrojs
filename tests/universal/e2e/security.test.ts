@@ -161,7 +161,7 @@ describe('Security E2E', () => {
       if (app) {
         await app.close();
       }
-    } catch (error) {
+    } catch (_error) {
       // Ignore close errors if server never started
     }
   });

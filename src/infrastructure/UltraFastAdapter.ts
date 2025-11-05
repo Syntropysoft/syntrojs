@@ -9,9 +9,8 @@
  * 5. Contexto mínimo y reutilizable
  */
 
-import Fastify, { type FastifyInstance, type FastifyRequest, type FastifyReply } from 'fastify';
 import type { Readable } from 'node:stream';
-import { z } from 'zod';
+import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import { StreamingResponseHandler } from '../application/StreamingResponseHandler';
 import type { Route } from '../domain/Route';
 import type { HttpMethod } from '../domain/types';
@@ -215,7 +214,6 @@ class UltraFastAdapterImpl {
       }
     });
   }
-
 }
 
 export const UltraFastAdapter = new UltraFastAdapterImpl();

@@ -4,7 +4,6 @@
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';
-import { z } from 'zod';
 import { createRouteRegistry } from '../../../src/application/RouteRegistry';
 import { Route } from '../../../src/domain/Route';
 import type { HttpMethod } from '../../../src/domain/types';

@@ -162,7 +162,7 @@ export interface RouteConfig<
 
 /**
  * Route handler function type
- * 
+ *
  * Supports multiple response types:
  * - TResponse: JSON objects, strings, numbers, etc. (validated by Zod if schema provided)
  * - Readable: Node.js streams for large files or streaming data

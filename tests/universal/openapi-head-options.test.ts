@@ -2,9 +2,9 @@
  * OpenAPI Generator - HEAD and OPTIONS support tests
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { SyntroJS } from '../../src/core/SyntroJS';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
+import { SyntroJS } from '../../src/core/SyntroJS';
 
 describe('OpenAPI Generator - HEAD and OPTIONS', () => {
   let app: SyntroJS;
@@ -167,9 +167,8 @@ describe('OpenAPI Generator - HEAD and OPTIONS', () => {
 
     expect(spec.paths['/response-test/:id'].head?.responses).toBeDefined();
     expect(spec.paths['/response-test/:id'].head?.responses['200']).toBeDefined();
-    
+
     expect(spec.paths['/response-test'].options?.responses).toBeDefined();
     expect(spec.paths['/response-test'].options?.responses['200']).toBeDefined();
   });
 });
-

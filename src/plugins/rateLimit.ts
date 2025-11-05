@@ -149,7 +149,7 @@ export async function registerRateLimit(
 
   try {
     fastifyRateLimit = (await import('@fastify/rate-limit')).default;
-  } catch (error) {
+  } catch (_error) {
     throw new Error(
       'Rate Limiting plugin requires @fastify/rate-limit to be installed. ' +
         'Run: pnpm add @fastify/rate-limit',

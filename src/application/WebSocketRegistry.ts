@@ -1,4 +1,4 @@
-import type { HttpMethod, RequestContext, WebSocketHandler } from '../domain/types';
+import type { WebSocketHandler } from '../domain/types';
 
 // ===== GUARD CLAUSES =====
 

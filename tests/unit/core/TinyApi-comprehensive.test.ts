@@ -10,7 +10,7 @@
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { SyntroJS, type SyntroJSConfig } from '../../../src/core';
+import { SyntroJS } from '../../../src/core';
 
 describe('SyntroJS - Comprehensive Coverage Tests', () => {
   let api: SyntroJS;
@@ -253,13 +253,13 @@ describe('SyntroJS - Comprehensive Coverage Tests', () => {
       expect(() => api.use(null as any)).toThrow('Middleware or path is required');
 
       // Test empty path
-      expect(() => api.use('', (context: any) => {})).toThrow('Middleware or path is required');
+      expect(() => api.use('', (_context: any) => {})).toThrow('Middleware or path is required');
     });
   });
 
   describe('WebSocket System (Functional Programming)', () => {
     it('should support WebSocket handler registration', () => {
-      const handler = (ws: any, context: any) => {
+      const handler = (ws: any, _context: any) => {
         ws.send('Hello WebSocket');
       };
 
@@ -272,7 +272,7 @@ describe('SyntroJS - Comprehensive Coverage Tests', () => {
     });
 
     it('should validate WebSocket parameters', () => {
-      const handler = (ws: any, context: any) => {};
+      const handler = (_ws: any, _context: any) => {};
 
       // Test null path
       expect(() => api.ws(null as any, handler)).toThrow(
@@ -358,7 +358,7 @@ describe('SyntroJS - Comprehensive Coverage Tests', () => {
     it('should handle custom exception handlers', () => {
       const api = new SyntroJS();
 
-      const customHandler = (context: any, error: Error) => ({
+      const customHandler = (_context: any, _error: Error) => ({
         statusCode: 500,
         body: { error: 'Custom error' },
       });

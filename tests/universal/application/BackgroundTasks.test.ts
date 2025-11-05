@@ -2,7 +2,7 @@
  * Tests for BackgroundTasks
  */
 
-import { ArrayTransport, CompositeTransport, JsonTransport } from '@syntrojs/logger';
+import { ArrayTransport } from '@syntrojs/logger';
 import { getLogger, loggerRegistry } from '@syntrojs/logger/registry';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { createBackgroundTasks } from '../../../src/application/BackgroundTasks';

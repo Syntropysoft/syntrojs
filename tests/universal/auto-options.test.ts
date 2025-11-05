@@ -2,15 +2,15 @@
  * Auto-OPTIONS Generator Tests
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { SyntroJS } from '../../src/core/SyntroJS';
-import { RouteRegistry } from '../../src/application/RouteRegistry';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import {
-  getAllowedMethods,
   generateOptionsHeaders,
   generateOptionsResponse,
+  getAllowedMethods,
 } from '../../src/application/AutoOptionsGenerator';
-import { z } from 'zod';
+import { RouteRegistry } from '../../src/application/RouteRegistry';
+import { SyntroJS } from '../../src/core/SyntroJS';
 
 describe('Auto-OPTIONS Generator', () => {
   let app: SyntroJS;
@@ -227,4 +227,3 @@ describe('Auto-OPTIONS Generator', () => {
     });
   });
 });
-

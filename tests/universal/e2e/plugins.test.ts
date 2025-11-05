@@ -3,7 +3,7 @@
  * Tests for SyntroJS plugin wrappers
  */
 
-import { afterAll, beforeAll, describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import { SyntroJS } from '../../../src/core';
 import {
   registerCompression,

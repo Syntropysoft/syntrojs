@@ -1,13 +1,13 @@
 /**
  * Multipart Support - End-to-End Functional Tests
- * 
+ *
  * Tests complete multipart flow with REAL HTTP requests
  * Validates: parsing, validation, error handling, immutability
  */
 
-import { describe, test, expect, beforeEach, afterEach } from 'vitest';
-import { TinyTest } from '../../src/testing/TinyTest';
+import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 import { FileValidator } from '../../src/application/FileValidator';
+import { TinyTest } from '../../src/testing/TinyTest';
 
 describe('Multipart E2E - Complete Flow', () => {
   let api: TinyTest;
@@ -23,19 +23,19 @@ describe('Multipart E2E - Complete Flow', () => {
   test('should upload single file and parse correctly', async () => {
     api.post('/upload', {
       handler: async (ctx) => {
-      // Validate file was parsed
-      expect(ctx.files).toBeDefined();
-      expect(ctx.files?.length).toBe(1);
+        // Validate file was parsed
+        expect(ctx.files).toBeDefined();
+        expect(ctx.files?.length).toBe(1);
 
-      const file = ctx.files![0];
-      expect(file.filename).toBe('test.txt');
-      expect(file.mimetype).toBe('text/plain');
-      expect(file.size).toBeGreaterThan(0);
+        const file = ctx.files![0];
+        expect(file.filename).toBe('test.txt');
+        expect(file.mimetype).toBe('text/plain');
+        expect(file.size).toBeGreaterThan(0);
 
-      // Validate toBuffer() works
-      const buffer = await file.toBuffer();
-      expect(Buffer.isBuffer(buffer)).toBe(true);
-      expect(buffer.toString()).toContain('test');
+        // Validate toBuffer() works
+        const buffer = await file.toBuffer();
+        expect(Buffer.isBuffer(buffer)).toBe(true);
+        expect(buffer.toString()).toContain('test');
 
         return { uploaded: true, filename: file.filename };
       },
@@ -45,7 +45,7 @@ describe('Multipart E2E - Complete Flow', () => {
     formData.append('file', new Blob(['test content'], { type: 'text/plain' }), 'test.txt');
 
     const response = await api.request('POST', '/upload', { body: formData });
-    
+
     expect(response.status).toBe(200);
     expect((response.data as any).uploaded).toBe(true);
     expect((response.data as any).filename).toBe('test.txt');
@@ -54,13 +54,13 @@ describe('Multipart E2E - Complete Flow', () => {
   test('should upload multiple files', async () => {
     api.post('/multi-upload', {
       handler: async (ctx) => {
-      expect(ctx.files).toBeDefined();
-      expect(ctx.files?.length).toBe(3);
+        expect(ctx.files).toBeDefined();
+        expect(ctx.files?.length).toBe(3);
 
-      const filenames = ctx.files!.map((f) => f.filename);
-      expect(filenames).toContain('file1.txt');
-      expect(filenames).toContain('file2.pdf');
-      expect(filenames).toContain('file3.jpg');
+        const filenames = ctx.files!.map((f) => f.filename);
+        expect(filenames).toContain('file1.txt');
+        expect(filenames).toContain('file2.pdf');
+        expect(filenames).toContain('file3.jpg');
 
         return { count: ctx.files!.length, names: filenames };
       },
@@ -72,7 +72,7 @@ describe('Multipart E2E - Complete Flow', () => {
     formData.append('files', new Blob(['content3'], { type: 'image/jpeg' }), 'file3.jpg');
 
     const response = await api.request('POST', '/multi-upload', { body: formData });
-    
+
     expect(response.status).toBe(200);
     expect((response.data as any).count).toBe(3);
   });
@@ -80,14 +80,14 @@ describe('Multipart E2E - Complete Flow', () => {
   test('should parse form fields along with files', async () => {
     api.post('/mixed', {
       handler: async (ctx) => {
-      // Validate files
-      expect(ctx.files).toBeDefined();
-      expect(ctx.files?.length).toBe(1);
+        // Validate files
+        expect(ctx.files).toBeDefined();
+        expect(ctx.files?.length).toBe(1);
 
-      // Validate fields
-      expect(ctx.fields).toBeDefined();
-      expect(ctx.fields?.title).toBe('My Upload');
-      expect(ctx.fields?.description).toBe('Test file');
+        // Validate fields
+        expect(ctx.fields).toBeDefined();
+        expect(ctx.fields?.title).toBe('My Upload');
+        expect(ctx.fields?.description).toBe('Test file');
 
         return {
           file: ctx.files![0].filename,
@@ -102,7 +102,7 @@ describe('Multipart E2E - Complete Flow', () => {
     formData.append('file', new Blob(['data'], { type: 'text/plain' }), 'doc.txt');
 
     const response = await api.request('POST', '/mixed', { body: formData });
-    
+
     expect(response.status).toBe(200);
     expect((response.data as any).file).toBe('doc.txt');
     expect((response.data as any).fields.title).toBe('My Upload');
@@ -111,15 +111,15 @@ describe('Multipart E2E - Complete Flow', () => {
   test('should validate file constraints with FileValidator', async () => {
     api.post('/validated-upload', {
       handler: async (ctx) => {
-      // Validate file exists
-      const file = ctx.files?.[0];
-      
-      // Apply validation
-      FileValidator.validate(file, {
-        required: true,
-        maxSize: 10 * 1024 * 1024, // 10MB
-        allowedTypes: ['image/jpeg', 'image/png'],
-      });
+        // Validate file exists
+        const file = ctx.files?.[0];
+
+        // Apply validation
+        FileValidator.validate(file, {
+          required: true,
+          maxSize: 10 * 1024 * 1024, // 10MB
+          allowedTypes: ['image/jpeg', 'image/png'],
+        });
 
         return { validated: true };
       },
@@ -129,7 +129,7 @@ describe('Multipart E2E - Complete Flow', () => {
     formData.append('avatar', new Blob(['image'], { type: 'image/jpeg' }), 'avatar.jpg');
 
     const response = await api.request('POST', '/validated-upload', { body: formData });
-    
+
     expect(response.status).toBe(200);
     expect((response.data as any).validated).toBe(true);
   });
@@ -137,13 +137,13 @@ describe('Multipart E2E - Complete Flow', () => {
   test('should reject files that fail validation', async () => {
     api.post('/strict-upload', {
       handler: async (ctx) => {
-      const file = ctx.files?.[0];
-      
-      // This should throw ValidationException
-      FileValidator.validate(file, {
-        required: true,
-        allowedTypes: ['image/png'], // Only PNG allowed
-      });
+        const file = ctx.files?.[0];
+
+        // This should throw ValidationException
+        FileValidator.validate(file, {
+          required: true,
+          allowedTypes: ['image/png'], // Only PNG allowed
+        });
 
         return { uploaded: true };
       },
@@ -153,7 +153,7 @@ describe('Multipart E2E - Complete Flow', () => {
     formData.append('file', new Blob(['data'], { type: 'text/plain' }), 'doc.txt');
 
     const response = await api.request('POST', '/strict-upload', { body: formData });
-    
+
     // Should return 422 Validation Error
     expect(response.status).toBe(422);
   });
@@ -161,25 +161,25 @@ describe('Multipart E2E - Complete Flow', () => {
   test('should handle files immutably (frozen objects)', async () => {
     api.post('/immutable-test', {
       handler: async (ctx) => {
-      const file = ctx.files?.[0];
-      
-      // Verify file is frozen
-      expect(Object.isFrozen(file)).toBe(true);
+        const file = ctx.files?.[0];
 
-      // Attempt to modify - in strict mode this might throw or fail silently
-      const originalFilename = file?.filename;
-      
-      try {
-        (file as any).filename = 'hacked.txt';
-      } catch (error) {
-        // In strict mode, modification throws TypeError
-        // This is expected and good
-      }
-      
-      // Filename MUST remain unchanged (immutability guarantee)
-      expect(file?.filename).toBe(originalFilename);
+        // Verify file is frozen
+        expect(Object.isFrozen(file)).toBe(true);
 
-        return { 
+        // Attempt to modify - in strict mode this might throw or fail silently
+        const originalFilename = file?.filename;
+
+        try {
+          (file as any).filename = 'hacked.txt';
+        } catch (_error) {
+          // In strict mode, modification throws TypeError
+          // This is expected and good
+        }
+
+        // Filename MUST remain unchanged (immutability guarantee)
+        expect(file?.filename).toBe(originalFilename);
+
+        return {
           immutable: true,
           frozen: Object.isFrozen(file),
           filenameUnchanged: file?.filename === originalFilename,
@@ -191,7 +191,7 @@ describe('Multipart E2E - Complete Flow', () => {
     formData.append('file', new Blob(['data'], { type: 'text/plain' }), 'safe.txt');
 
     const response = await api.request('POST', '/immutable-test', { body: formData });
-    
+
     expect(response.status).toBe(200);
     expect((response.data as any).immutable).toBe(true);
   });
@@ -210,9 +210,8 @@ describe('Multipart E2E - Complete Flow', () => {
     formData.append('comment', 'Just a comment, no files');
 
     const response = await api.request('POST', '/optional-file', { body: formData });
-    
+
     expect(response.status).toBe(200);
     expect((response.data as any).hasFiles).toBe(false);
   });
 });
-

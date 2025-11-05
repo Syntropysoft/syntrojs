@@ -2,8 +2,8 @@
  * ErrorHandler tests
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MockInstance, SpyInstance } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createErrorHandler } from '../../../src/application/ErrorHandler';
 import {
   BadRequestException,

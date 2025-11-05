@@ -6,8 +6,8 @@
  * Principles: SOLID (Single Responsibility), Guard Clauses
  */
 
-import type { RouteRegistry } from './RouteRegistry';
 import type { HttpMethod } from '../domain/types';
+import type { RouteRegistry } from './RouteRegistry';
 
 /**
  * Auto-OPTIONS configuration
@@ -53,7 +53,9 @@ export function getAllowedMethods(registry: typeof RouteRegistry, path: string):
     .filter((route: any) => routePathMatches(route.path, path))
     .map((route: any) => route.method as HttpMethod)
     .concat(['OPTIONS' as HttpMethod]) // Always include OPTIONS
-    .filter((method: HttpMethod, index: number, array: HttpMethod[]) => array.indexOf(method) === index) // Deduplicate
+    .filter(
+      (method: HttpMethod, index: number, array: HttpMethod[]) => array.indexOf(method) === index,
+    ) // Deduplicate
     .sort(); // Sort alphabetically
 
   // Guard clause: return empty array if no routes found (remove OPTIONS)
@@ -84,8 +86,9 @@ function routePathMatches(routePath: string, requestPath: string): boolean {
   }
 
   // Functional: check if all segments match (params match anything)
-  return routeSegments.every((routeSegment, index) => 
-    routeSegment.startsWith(':') || routeSegment === requestSegments[index]
+  return routeSegments.every(
+    (routeSegment, index) =>
+      routeSegment.startsWith(':') || routeSegment === requestSegments[index],
   );
 }
 
@@ -107,18 +110,19 @@ export function generateOptionsHeaders(
   };
 
   // CORS headers (immutable) - functional composition
-  const corsHeaders = config.includeCorsHeaders !== false
-    ? {
-        'Access-Control-Allow-Origin': config.origin ?? '*',
-        'Access-Control-Allow-Methods': allowedMethods.join(', '),
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
-        'Access-Control-Max-Age': (config.maxAge ?? 86400).toString(),
-        // Conditional credential header
-        ...(config.origin && config.origin !== '*' 
-          ? { 'Access-Control-Allow-Credentials': 'true' } 
-          : {}),
-      }
-    : {};
+  const corsHeaders =
+    config.includeCorsHeaders !== false
+      ? {
+          'Access-Control-Allow-Origin': config.origin ?? '*',
+          'Access-Control-Allow-Methods': allowedMethods.join(', '),
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+          'Access-Control-Max-Age': (config.maxAge ?? 86400).toString(),
+          // Conditional credential header
+          ...(config.origin && config.origin !== '*'
+            ? { 'Access-Control-Allow-Credentials': 'true' }
+            : {}),
+        }
+      : {};
 
   // Functional composition: merge all headers immutably
   return Object.freeze({
@@ -164,4 +168,3 @@ export function generateOptionsResponse(
     headers,
   });
 }
-

@@ -1,6 +1,6 @@
 /**
  * Auto-OPTIONS Example
- * 
+ *
  * This example demonstrates how to use the Auto-OPTIONS generator
  * to automatically respond to OPTIONS requests based on registered routes.
  */
@@ -10,10 +10,10 @@ import { generateOptionsResponse } from 'syntrojs';
 import { RouteRegistry } from 'syntrojs';
 import { z } from 'zod';
 
-const app = new SyntroJS({ 
+const app = new SyntroJS({
   title: 'Auto-OPTIONS Example',
   version: '1.0.0',
-  description: 'Automatic OPTIONS generation for CORS preflight'
+  description: 'Automatic OPTIONS generation for CORS preflight',
 });
 
 // ============================================
@@ -99,17 +99,13 @@ app.options('/users/:id', {
   summary: 'Get allowed methods (auto-generated)',
   handler: ({ params }) => {
     // Automatically get allowed methods for this path
-    const response = generateOptionsResponse(
-      RouteRegistry,
-      `/users/${params.id}`,
-      {
-        origin: 'https://example.com', // Your frontend origin
-        maxAge: 86400, // 24 hours cache
-        additionalHeaders: {
-          'X-API-Version': '1.0',
-        },
-      }
-    );
+    const response = generateOptionsResponse(RouteRegistry, `/users/${params.id}`, {
+      origin: 'https://example.com', // Your frontend origin
+      maxAge: 86400, // 24 hours cache
+      additionalHeaders: {
+        'X-API-Version': '1.0',
+      },
+    });
 
     return {
       status: response.status,
@@ -136,14 +132,10 @@ app.options('/api/:resource', {
   summary: 'CORS preflight for API endpoints',
   handler: ({ params }) => {
     // Auto-generate based on registered routes
-    const response = generateOptionsResponse(
-      RouteRegistry,
-      `/api/${params.resource}`,
-      {
-        origin: '*',
-        maxAge: 3600,
-      }
-    );
+    const response = generateOptionsResponse(RouteRegistry, `/api/${params.resource}`, {
+      origin: '*',
+      maxAge: 3600,
+    });
 
     return response;
   },
@@ -161,10 +153,7 @@ app.get('/api/discover/:path(*)', {
   params: z.object({ path: z.string() }),
   summary: 'Discover allowed methods for any path',
   handler: ({ params }) => {
-    const response = generateOptionsResponse(
-      RouteRegistry,
-      `/${params.path}`
-    );
+    const response = generateOptionsResponse(RouteRegistry, `/${params.path}`);
 
     return {
       path: `/${params.path}`,
@@ -181,7 +170,9 @@ await app.listen(3000);
 console.log('\n🎯 Try these examples:\n');
 
 console.log('Manual OPTIONS request:');
-console.log('  curl -X OPTIONS http://localhost:3000/users/123e4567-e89b-12d3-a456-426614174000 -v\n');
+console.log(
+  '  curl -X OPTIONS http://localhost:3000/users/123e4567-e89b-12d3-a456-426614174000 -v\n',
+);
 
 console.log('CORS preflight simulation:');
 console.log('  curl -X OPTIONS http://localhost:3000/users \\');
@@ -197,4 +188,3 @@ console.log('  curl http://localhost:3000/users');
 console.log('  curl http://localhost:3000/users/123e4567-e89b-12d3-a456-426614174000\n');
 
 console.log('📖 Documentation: http://localhost:3000/docs\n');
-

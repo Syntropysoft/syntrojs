@@ -9,10 +9,10 @@
  * usando un API fluido similar a
  */
 
-import Fastify, { type FastifyInstance, type FastifyRequest, type FastifyReply } from 'fastify';
+import type { Readable } from 'node:stream';
 import formbody from '@fastify/formbody';
 import multipart from '@fastify/multipart';
-import type { Readable } from 'node:stream';
+import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import type { MiddlewareRegistry } from '../application/MiddlewareRegistry';
 import { MultipartParser } from '../application/MultipartParser';
 import { StreamingResponseHandler } from '../application/StreamingResponseHandler';
@@ -21,13 +21,11 @@ import type {
   DependencyResolverFactory,
   ErrorHandlerFactory,
   HttpMethod,
-  Middleware,
-  MiddlewareFactory,
   RequestContext,
   SchemaFactory,
 } from '../domain/types';
 import { setComponentLoggingEnabled } from './LoggerHelper';
-import { type LoggerIntegrationConfig, integrateLogger } from './LoggerIntegration';
+import { integrateLogger, type LoggerIntegrationConfig } from './LoggerIntegration';
 
 export interface FluentAdapterConfig {
   /** Enable Fastify built-in logger (legacy) */
@@ -56,7 +54,6 @@ export class FluentAdapter {
   private dependencyFactories: Map<string, DependencyResolverFactory> = new Map();
   private errorHandlerFactories: Map<string, ErrorHandlerFactory> = new Map();
   private schemaFactories: Map<string, SchemaFactory> = new Map();
-  private middlewareFactories: Map<string, MiddlewareFactory> = new Map();
 
   constructor() {
     // Initialize immutable default configuration

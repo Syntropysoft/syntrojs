@@ -11,7 +11,7 @@ import { SyntroJS } from '../../../src/core';
 const createApp = () => new SyntroJS();
 
 // Helper funcional para crear handler puro
-const createPureHandler = (message: string) => async (ws: any, ctx: any) => {
+const createPureHandler = (message: string) => async (_ws: any, ctx: any) => {
   // Sin efectos secundarios - solo retorna datos
   return { message, path: ctx.path };
 };

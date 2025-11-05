@@ -1,15 +1,14 @@
 /**
  * Multipart Support Tests
- * 
+ *
  * Tests for file uploads and form data handling
  * Part of v0.4.0 - REST Completion
  */
 
-import { writeFileSync, mkdirSync, unlinkSync } from 'node:fs';
+import { mkdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
-import { TinyTest } from '../../src/testing/TinyTest';
 import { FileValidator } from '../../src/application/FileValidator';
-import { z } from 'zod';
+import { TinyTest } from '../../src/testing/TinyTest';
 
 // Test fixtures directory
 const FIXTURES_DIR = './tests/fixtures/multipart';
@@ -19,7 +18,7 @@ describe('Multipart Support', () => {
   beforeAll(() => {
     // Create fixtures directory
     mkdirSync(FIXTURES_DIR, { recursive: true });
-    
+
     // Create test file for uploads
     writeFileSync(TEST_FILE, 'Test file content for uploads');
   });
@@ -36,44 +35,44 @@ describe('Multipart Support', () => {
   describe('File Uploads', () => {
     test('should handle single file upload', async () => {
       const api = new TinyTest();
-      
+
       api.post('/upload', {
         handler: ({ files }) => {
           if (!files || files.length === 0) {
             return { error: 'No files uploaded' };
           }
-          
+
           return {
             uploaded: files[0].filename,
             size: files[0].size,
-            type: files[0].mimetype
+            type: files[0].mimetype,
           };
-        }
+        },
       });
 
       // Note: Need to implement multipart request in TinyTest
       // For now, we test the structure is correct
-      
+
       await api.close();
     });
 
     test('should handle multiple file uploads', async () => {
       const api = new TinyTest();
-      
+
       api.post('/upload/multiple', {
         handler: ({ files }) => {
           if (!files || files.length === 0) {
             return { error: 'No files uploaded' };
           }
-          
+
           return {
             count: files.length,
-            files: files.map(f => ({
+            files: files.map((f) => ({
               name: f.filename,
-              size: f.size
-            }))
+              size: f.size,
+            })),
           };
-        }
+        },
       });
 
       await api.close();
@@ -81,15 +80,15 @@ describe('Multipart Support', () => {
 
     test('should handle form fields with file', async () => {
       const api = new TinyTest();
-      
+
       api.post('/upload/with-fields', {
         handler: ({ files, fields }) => {
           return {
             file: files?.[0]?.filename,
             title: fields?.title,
-            description: fields?.description
+            description: fields?.description,
           };
-        }
+        },
       });
 
       await api.close();
@@ -296,23 +295,22 @@ describe('Multipart Support', () => {
   describe('Context Population', () => {
     test('should populate files in context', async () => {
       const api = new TinyTest();
-      
+
       api.post('/check-context', {
         handler: ({ files, fields }) => {
           return {
             hasFiles: Array.isArray(files),
             filesCount: files?.length || 0,
             hasFields: typeof fields === 'object',
-            fieldsKeys: fields ? Object.keys(fields) : []
+            fieldsKeys: fields ? Object.keys(fields) : [],
           };
-        }
+        },
       });
 
       // This would be populated by multipart parser
       // Testing structure only
-      
+
       await api.close();
     });
   });
 });
-

@@ -6,8 +6,8 @@
  * Principles: SOLID (Single Responsibility), Guard Clauses, Functional
  */
 
-import { ZodObject } from 'zod';
 import type { ZodError, ZodSchema } from 'zod';
+import { ZodObject } from 'zod';
 import { ValidationException } from '../domain/HTTPException';
 
 /**

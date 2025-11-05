@@ -6,13 +6,13 @@
  * Principles: Dependency Inversion (depend on abstractions, not Fastify directly)
  */
 
-import Fastify, { type FastifyInstance, type FastifyRequest, type FastifyReply } from 'fastify';
+import type { Readable } from 'node:stream';
 import formbody from '@fastify/formbody';
 import multipart from '@fastify/multipart';
-import type { Readable } from 'node:stream';
+import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import { BackgroundTasks } from '../application/BackgroundTasks';
-import { DependencyInjector } from '../application/DependencyInjector';
 import type { DependencyMetadata } from '../application/DependencyInjector';
+import { DependencyInjector } from '../application/DependencyInjector';
 import { ErrorHandler } from '../application/ErrorHandler';
 import type { MiddlewareRegistry } from '../application/MiddlewareRegistry';
 import { MultipartParser } from '../application/MultipartParser';
@@ -20,7 +20,7 @@ import { SchemaValidator } from '../application/SchemaValidator';
 import { StreamingResponseHandler } from '../application/StreamingResponseHandler';
 import type { Route } from '../domain/Route';
 import type { HttpMethod, RequestContext } from '../domain/types';
-import { type LoggerIntegrationConfig, integrateLogger } from './LoggerIntegration';
+import { integrateLogger, type LoggerIntegrationConfig } from './LoggerIntegration';
 
 /**
  * Fastify adapter configuration

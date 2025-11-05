@@ -10,7 +10,7 @@
 
 import { beforeEach, describe, expect, it } from 'vitest';
 import { WebSocketRegistry } from '../../../src/application/WebSocketRegistry';
-import type { RequestContext, WebSocketHandler } from '../../../src/domain/types';
+import type { RequestContext } from '../../../src/domain/types';
 
 describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
   let registry: WebSocketRegistry;
@@ -21,7 +21,7 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
 
   describe('Guard Clauses', () => {
     it('should validate path parameter', () => {
-      const handler = (ws: any, context: RequestContext) => {};
+      const handler = (_ws: any, _context: RequestContext) => {};
 
       // Test null path
       expect(() => registry.add(null as any, handler)).toThrow(
@@ -70,7 +70,7 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
 
   describe('WebSocket Handler Addition (Functional Programming)', () => {
     it('should add WebSocket handler and return new instance', () => {
-      const handler = (ws: any, context: RequestContext) => {};
+      const handler = (_ws: any, _context: RequestContext) => {};
 
       const newRegistry = registry.add('/ws', handler);
 
@@ -81,8 +81,8 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should add multiple WebSocket handlers', () => {
-      const handler1 = (ws: any, context: RequestContext) => {};
-      const handler2 = (ws: any, context: RequestContext) => {};
+      const handler1 = (_ws: any, _context: RequestContext) => {};
+      const handler2 = (_ws: any, _context: RequestContext) => {};
 
       const registry1 = registry.add('/ws1', handler1);
       const registry2 = registry1.add('/ws2', handler2);
@@ -93,8 +93,8 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should add handlers for same path with different patterns', () => {
-      const handler1 = (ws: any, context: RequestContext) => {};
-      const handler2 = (ws: any, context: RequestContext) => {};
+      const handler1 = (_ws: any, _context: RequestContext) => {};
+      const handler2 = (_ws: any, _context: RequestContext) => {};
 
       const registryWithBoth = registry.add('/ws', handler1).add('/ws', handler2);
 
@@ -104,7 +104,7 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
 
   describe('WebSocket Handler Removal (Functional Programming)', () => {
     it('should remove WebSocket handler and return new instance', () => {
-      const handler = (ws: any, context: RequestContext) => {};
+      const handler = (_ws: any, _context: RequestContext) => {};
       const registryWithHandler = registry.add('/ws', handler);
 
       const newRegistry = registryWithHandler.remove('/ws', handler);
@@ -115,7 +115,7 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should handle removal of non-existent handler', () => {
-      const handler = (ws: any, context: RequestContext) => {};
+      const handler = (_ws: any, _context: RequestContext) => {};
 
       const newRegistry = registry.remove('/ws', handler);
 
@@ -125,8 +125,8 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should remove specific handler from multiple', () => {
-      const handler1 = (ws: any, context: RequestContext) => {};
-      const handler2 = (ws: any, context: RequestContext) => {};
+      const handler1 = (_ws: any, _context: RequestContext) => {};
+      const handler2 = (_ws: any, _context: RequestContext) => {};
 
       const registryWithBoth = registry.add('/ws', handler1).add('/ws', handler2);
 
@@ -136,7 +136,7 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should handle removal with different path', () => {
-      const handler = (ws: any, context: RequestContext) => {};
+      const handler = (_ws: any, _context: RequestContext) => {};
       const registryWithHandler = registry.add('/ws1', handler);
 
       const newRegistry = registryWithHandler.remove('/ws2', handler);
@@ -147,8 +147,8 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
 
   describe('WebSocket Handler Clearing (Functional Programming)', () => {
     it('should clear all handlers and return new instance', () => {
-      const handler1 = (ws: any, context: RequestContext) => {};
-      const handler2 = (ws: any, context: RequestContext) => {};
+      const handler1 = (_ws: any, _context: RequestContext) => {};
+      const handler2 = (_ws: any, _context: RequestContext) => {};
 
       const registryWithHandlers = registry.add('/ws1', handler1).add('/ws2', handler2);
 
@@ -170,7 +170,7 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
 
   describe('WebSocket Handler Retrieval (DDD)', () => {
     it('should get handlers by exact path', () => {
-      const handler = (ws: any, context: RequestContext) => {};
+      const handler = (_ws: any, _context: RequestContext) => {};
       const registryWithHandler = registry.add('/ws', handler);
 
       const handlers = registryWithHandler.getHandlers('/ws');
@@ -180,7 +180,7 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should get handlers by path pattern', () => {
-      const handler = (ws: any, context: RequestContext) => {};
+      const handler = (_ws: any, _context: RequestContext) => {};
       const registryWithHandler = registry.add('/ws/:id', handler);
 
       const handlers = registryWithHandler.getHandlers('/ws/123');
@@ -190,7 +190,7 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should get handlers with wildcard path', () => {
-      const handler = (ws: any, context: RequestContext) => {};
+      const handler = (_ws: any, _context: RequestContext) => {};
       const registryWithHandler = registry.add('*', handler);
 
       const handlers = registryWithHandler.getHandlers('/any/path');
@@ -199,7 +199,7 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should return empty array for non-matching path', () => {
-      const handler = (ws: any, context: RequestContext) => {};
+      const handler = (_ws: any, _context: RequestContext) => {};
       const registryWithHandler = registry.add('/ws', handler);
 
       const handlers = registryWithHandler.getHandlers('/different');
@@ -208,8 +208,8 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should get multiple handlers for same path', () => {
-      const handler1 = (ws: any, context: RequestContext) => {};
-      const handler2 = (ws: any, context: RequestContext) => {};
+      const handler1 = (_ws: any, _context: RequestContext) => {};
+      const handler2 = (_ws: any, _context: RequestContext) => {};
 
       const registryWithHandlers = registry.add('/ws', handler1).add('/ws', handler2);
 
@@ -223,7 +223,7 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
 
   describe('Path Parameter Extraction (Functional Programming)', () => {
     it('should extract parameters from path patterns', () => {
-      const handler = (ws: any, context: RequestContext) => {};
+      const handler = (_ws: any, _context: RequestContext) => {};
       const registryWithHandler = registry.add('/ws/:id/users/:userId', handler);
 
       const handlers = registryWithHandler.getHandlers('/ws/123/users/456');
@@ -232,7 +232,7 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should handle complex path patterns', () => {
-      const handler = (ws: any, context: RequestContext) => {};
+      const handler = (_ws: any, _context: RequestContext) => {};
       const registryWithHandler = registry.add('/api/:version/ws/:roomId', handler);
 
       const handlers = registryWithHandler.getHandlers('/api/v1/ws/room123');
@@ -241,8 +241,8 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should handle multiple parameter patterns', () => {
-      const handler1 = (ws: any, context: RequestContext) => {};
-      const handler2 = (ws: any, context: RequestContext) => {};
+      const handler1 = (_ws: any, _context: RequestContext) => {};
+      const handler2 = (_ws: any, _context: RequestContext) => {};
 
       const registryWithHandlers = registry
         .add('/ws/:id', handler1)
@@ -261,7 +261,7 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
       expect(registry.getCount()).toBe(0);
       expect(registry.isEmpty()).toBe(true);
 
-      const handler = (ws: any, context: RequestContext) => {};
+      const handler = (_ws: any, _context: RequestContext) => {};
       const registryWithHandler = registry.add('/ws', handler);
 
       expect(registryWithHandler.getCount()).toBe(1);
@@ -274,8 +274,8 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should maintain immutability', () => {
-      const handler1 = (ws: any, context: RequestContext) => {};
-      const handler2 = (ws: any, context: RequestContext) => {};
+      const handler1 = (_ws: any, _context: RequestContext) => {};
+      const handler2 = (_ws: any, _context: RequestContext) => {};
 
       const registry1 = registry.add('/ws1', handler1);
       const registry2 = registry1.add('/ws2', handler2);
@@ -296,7 +296,7 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
 
   describe('Path Matching (Functional Programming)', () => {
     it('should match exact paths', () => {
-      const handler = (ws: any, context: RequestContext) => {};
+      const handler = (_ws: any, _context: RequestContext) => {};
       const registryWithHandler = registry.add('/ws/chat', handler);
 
       const handlers = registryWithHandler.getHandlers('/ws/chat');
@@ -305,7 +305,7 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should match parameterized paths', () => {
-      const handler = (ws: any, context: RequestContext) => {};
+      const handler = (_ws: any, _context: RequestContext) => {};
       const registryWithHandler = registry.add('/ws/:roomId', handler);
 
       const handlers = registryWithHandler.getHandlers('/ws/room123');
@@ -314,7 +314,7 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should match wildcard paths', () => {
-      const handler = (ws: any, context: RequestContext) => {};
+      const handler = (_ws: any, _context: RequestContext) => {};
       const registryWithHandler = registry.add('*', handler);
 
       const handlers = registryWithHandler.getHandlers('/any/path/here');
@@ -323,7 +323,7 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should not match different paths', () => {
-      const handler = (ws: any, context: RequestContext) => {};
+      const handler = (_ws: any, _context: RequestContext) => {};
       const registryWithHandler = registry.add('/ws/chat', handler);
 
       const handlers = registryWithHandler.getHandlers('/ws/different');
@@ -334,9 +334,9 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
 
   describe('Complex Scenarios (Functional Composition)', () => {
     it('should handle complex WebSocket configurations', () => {
-      const handler1 = (ws: any, context: RequestContext) => {};
-      const handler2 = (ws: any, context: RequestContext) => {};
-      const handler3 = (ws: any, context: RequestContext) => {};
+      const handler1 = (_ws: any, _context: RequestContext) => {};
+      const handler2 = (_ws: any, _context: RequestContext) => {};
+      const handler3 = (_ws: any, _context: RequestContext) => {};
 
       const complexRegistry = registry
         .add('/ws/chat', handler1)
@@ -355,9 +355,9 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should handle chaining operations', () => {
-      const handler1 = (ws: any, context: RequestContext) => {};
-      const handler2 = (ws: any, context: RequestContext) => {};
-      const handler3 = (ws: any, context: RequestContext) => {};
+      const handler1 = (_ws: any, _context: RequestContext) => {};
+      const handler2 = (_ws: any, _context: RequestContext) => {};
+      const handler3 = (_ws: any, _context: RequestContext) => {};
 
       const chainedRegistry = registry
         .add('/ws1', handler1)
@@ -371,9 +371,9 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should handle multiple handlers for same path', () => {
-      const handler1 = (ws: any, context: RequestContext) => {};
-      const handler2 = (ws: any, context: RequestContext) => {};
-      const handler3 = (ws: any, context: RequestContext) => {};
+      const handler1 = (_ws: any, _context: RequestContext) => {};
+      const handler2 = (_ws: any, _context: RequestContext) => {};
+      const handler3 = (_ws: any, _context: RequestContext) => {};
 
       const multiHandlerRegistry = registry
         .add('/ws', handler1)
@@ -391,7 +391,7 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
 
   describe('Edge Cases (Guard Clauses)', () => {
     it('should handle special characters in paths', () => {
-      const handler = (ws: any, context: RequestContext) => {};
+      const handler = (_ws: any, _context: RequestContext) => {};
       const registryWithHandler = registry.add('/ws/chat-room-123', handler);
 
       const handlers = registryWithHandler.getHandlers('/ws/chat-room-123');
@@ -400,7 +400,7 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should handle empty path segments', () => {
-      const handler = (ws: any, context: RequestContext) => {};
+      const handler = (_ws: any, _context: RequestContext) => {};
       const registryWithHandler = registry.add('/ws//chat', handler);
 
       const handlers = registryWithHandler.getHandlers('/ws//chat');
@@ -409,7 +409,7 @@ describe('WebSocketRegistry - Comprehensive Coverage Tests', () => {
     });
 
     it('should handle very long paths', () => {
-      const handler = (ws: any, context: RequestContext) => {};
+      const handler = (_ws: any, _context: RequestContext) => {};
       const longPath = `/ws/${'a'.repeat(1000)}`;
       const registryWithHandler = registry.add(longPath, handler);
 

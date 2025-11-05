@@ -1,17 +1,20 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.5.3/schema.json",
-  "organizeImports": {
-    "enabled": true
-  },
+  "$schema": "https://biomejs.dev/schemas/2.3.3/schema.json",
   "files": {
-    "ignore": [
-      "node_modules",
-      "dist",
-      "build",
-      "coverage",
-      ".turbo",
-      ".stryker-tmp",
-      "reports/mutation/mutation-report.json"
+    "ignoreUnknown": false,
+    "includes": [
+      "src/**/*.ts",
+      "tests/**/*.ts",
+      "examples/**/*.js",
+      "benchmarks/**/*.js",
+      "scripts/**/*.js",
+      "!!**/node_modules",
+      "!!**/dist",
+      "!!**/build",
+      "!!**/coverage",
+      "!!**/.turbo",
+      "!!**/.stryker-tmp",
+      "!!**/reports/mutation"
     ]
   },
   "linter": {
@@ -36,7 +39,7 @@
   },
   "overrides": [
     {
-      "include": ["src/application/ErrorHandler.ts"],
+      "includes": ["src/application/ErrorHandler.ts"],
       "linter": {
         "rules": {
           "complexity": {
@@ -49,7 +52,7 @@
       }
     },
     {
-      "include": ["src/infrastructure/FastifyAdapter.ts"],
+      "includes": ["src/infrastructure/FastifyAdapter.ts"],
       "linter": {
         "rules": {
           "suspicious": {
@@ -62,7 +65,7 @@
       }
     },
     {
-      "include": ["src/infrastructure/BunAdapter.ts"],
+      "includes": ["src/infrastructure/BunAdapter.ts"],
       "linter": {
         "rules": {
           "suspicious": {
@@ -75,7 +78,7 @@
       }
     },
     {
-      "include": ["tests/**/*.ts", "tests/**/*.js"],
+      "includes": ["tests/**/*.ts", "tests/**/*.js"],
       "linter": {
         "rules": {
           "suspicious": {
@@ -90,7 +93,7 @@
       }
     },
     {
-      "include": ["benchmarks/**/*.js", "benchmarks/**/*.cjs"],
+      "includes": ["benchmarks/**/*.js", "benchmarks/**/*.cjs"],
       "linter": {
         "rules": {
           "complexity": {
@@ -100,7 +103,7 @@
       }
     },
     {
-      "include": ["examples/**/*.js", "examples/**/*.cjs"],
+      "includes": ["examples/**/*.js", "examples/**/*.cjs"],
       "linter": {
         "rules": {
           "complexity": {
@@ -110,7 +113,7 @@
       }
     },
     {
-      "include": ["scripts/**/*.js"],
+      "includes": ["scripts/**/*.js"],
       "linter": {
         "rules": {
           "complexity": {
@@ -120,7 +123,7 @@
       }
     },
     {
-      "include": ["src/plugins/**/*.ts"],
+      "includes": ["src/plugins/**/*.ts"],
       "linter": {
         "rules": {
           "suspicious": {
@@ -130,7 +133,7 @@
       }
     },
     {
-      "include": [
+      "includes": [
         "src/core/**/*.ts",
         "src/domain/**/*.ts",
         "src/infrastructure/FluentAdapter.ts",
@@ -145,7 +148,7 @@
       }
     },
     {
-      "include": ["src/security/**/*.ts"],
+      "includes": ["src/security/**/*.ts"],
       "linter": {
         "rules": {
           "suspicious": {
@@ -155,7 +158,7 @@
       }
     },
     {
-      "include": ["src/testing/**/*.ts"],
+      "includes": ["src/testing/**/*.ts"],
       "linter": {
         "rules": {
           "suspicious": {

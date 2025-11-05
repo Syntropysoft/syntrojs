@@ -89,7 +89,7 @@
     "redoc": "^2.5.2"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.5.3",
+    "@biomejs/biome": "^2.3.3",
     "@fastify/compress": "^7.0.0",
     "@fastify/cors": "^9.0.0",
     "@fastify/helmet": "^11.1.1",

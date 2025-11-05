@@ -33,10 +33,10 @@ export interface ResponseClassification {
 class StreamingResponseHandlerImpl {
   /**
    * Classify response type
-   * 
+   *
    * Pure function: Only analyzes, doesn't modify
    * Guard clauses: Validates input
-   * 
+   *
    * @param value - Response value to classify
    * @returns Classification result
    */
@@ -78,10 +78,10 @@ class StreamingResponseHandlerImpl {
 
   /**
    * Check if value is a Node.js Readable stream
-   * 
+   *
    * Pure function: Type checking only, no side effects
    * Guard clauses: Validates structure
-   * 
+   *
    * @param value - Value to check
    * @returns True if value is a Readable stream
    */
@@ -102,9 +102,9 @@ class StreamingResponseHandlerImpl {
 
   /**
    * Check if value is a Buffer
-   * 
+   *
    * Pure function: Type checking only
-   * 
+   *
    * @param value - Value to check
    * @returns True if value is a Buffer
    */
@@ -114,11 +114,11 @@ class StreamingResponseHandlerImpl {
 
   /**
    * Determine if response should skip validation
-   * 
+   *
    * Pure function: Decision logic
-   * 
+   *
    * Streams and Buffers cannot be validated by Zod schemas
-   * 
+   *
    * @param value - Response value
    * @returns True if validation should be skipped
    */
@@ -152,4 +152,3 @@ class StreamingResponseHandlerSingleton {
 }
 
 export const StreamingResponseHandler = StreamingResponseHandlerSingleton;
-

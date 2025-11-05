@@ -10,8 +10,8 @@ import type { FastifyInstance } from 'fastify';
 import { DocsRenderer } from '../application/DocsRenderer';
 import { ErrorHandler } from '../application/ErrorHandler';
 import { MiddlewareRegistry } from '../application/MiddlewareRegistry';
-import { OpenAPIGenerator } from '../application/OpenAPIGenerator';
 import type { OpenAPIConfig } from '../application/OpenAPIGenerator';
+import { OpenAPIGenerator } from '../application/OpenAPIGenerator';
 import { RouteRegistry } from '../application/RouteRegistry';
 import { WebSocketRegistry } from '../application/WebSocketRegistry';
 import { Route } from '../domain/Route';
@@ -860,7 +860,7 @@ export class SyntroJS {
     try {
       // Try to dynamically import package - will fail if not installed
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore - Package might not be installed
+      // @ts-expect-error - Package might not be installed
       await import('swagger-ui-dist');
       swaggerInstalled = true;
     } catch {
@@ -870,7 +870,7 @@ export class SyntroJS {
     try {
       // Try to dynamically import package - will fail if not installed
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore - Package might not be installed
+      // @ts-expect-error - Package might not be installed
       await import('redoc');
       redocInstalled = true;
     } catch {
@@ -884,9 +884,10 @@ export class SyntroJS {
     // Detect if local assets are installed (for air-gapped environments)
     // By default, we use CDN for all users
     // Only if the user explicitly installs optionalDependencies, we serve locally
-    const { swaggerInstalled, redocInstalled } = await this.detectLocalAssets();
+    const { swaggerInstalled: _swaggerInstalled, redocInstalled: _redocInstalled } =
+      await this.detectLocalAssets();
     // NOTE: Temporarily forcing CDN since we haven't implemented asset serving routes yet
-    const useLocalAssets = false; // swaggerInstalled || redocInstalled;
+    const useLocalAssets = false; // _swaggerInstalled || _redocInstalled;
 
     // Register root endpoint with welcome page
     if (this.shouldEnableDocsEndpoint('landingPage') && !RouteRegistry.has('GET', '/')) {
@@ -974,13 +975,13 @@ export class SyntroJS {
   private async renderWelcomePage(): Promise<string> {
     const title = this.config.title || 'SyntroJS API';
     const version = this.config.version || '1.0.0';
-    
+
     // Check if we need to use CDN (local assets not available)
     let swaggerInstalled = false;
     try {
       // Try to dynamically import package - will fail if not installed
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore - Package might not be installed
+      // @ts-expect-error - Package might not be installed
       await import('swagger-ui-dist');
       swaggerInstalled = true;
     } catch {
@@ -1064,9 +1065,13 @@ export class SyntroJS {
     <div class="subtitle">
       API is running successfully. Explore the interactive API documentation.
     </div>
-    ${!swaggerInstalled ? `<div class="warning">
+    ${
+      !swaggerInstalled
+        ? `<div class="warning">
       ⚠️ Documentation requires internet access for CDN assets. Air-gapped environments are not currently supported.
-    </div>` : ''}
+    </div>`
+        : ''
+    }
     <div class="links">
       <a href="/docs" class="button">📖 Swagger UI</a>
       <a href="/redoc" class="button">📚 ReDoc</a>

@@ -256,7 +256,7 @@ describe('FastifyAdapter', () => {
     });
 
     test('builds context with correlation ID from header', async () => {
-      let receivedContext: RequestContext | undefined = undefined;
+      let receivedContext: RequestContext | undefined;
 
       const route = new Route('GET', '/test', {
         handler: (context) => {
@@ -281,7 +281,7 @@ describe('FastifyAdapter', () => {
     });
 
     test('generates correlation ID if not provided', async () => {
-      let receivedContext: RequestContext | undefined = undefined;
+      let receivedContext: RequestContext | undefined;
 
       const route = new Route('GET', '/test', {
         handler: (context) => {
@@ -303,7 +303,7 @@ describe('FastifyAdapter', () => {
     });
 
     test('builds context with timestamp', async () => {
-      let receivedContext: RequestContext | undefined = undefined;
+      let receivedContext: RequestContext | undefined;
 
       const route = new Route('GET', '/test', {
         handler: (context) => {

@@ -218,7 +218,9 @@ export class SmartMutator {
     }
 
     console.log(`📝 Detected ${changedFiles.length} changed files:`);
-    changedFiles.forEach((file) => console.log(`   - ${file}`));
+    for (const file of changedFiles) {
+      console.log(`   - ${file}`);
+    }
     config.mutate = changedFiles;
   }
 
@@ -288,7 +290,7 @@ export class SmartMutator {
     try {
       const strykerModule = await import('@stryker-mutator/core');
       Stryker = strykerModule.Stryker;
-    } catch (error) {
+    } catch (_error) {
       throw new Error(
         'SmartMutator requires @stryker-mutator/core to be installed. ' +
           'Please install it as a dev dependency: npm install --save-dev @stryker-mutator/core',

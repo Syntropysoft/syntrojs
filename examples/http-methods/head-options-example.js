@@ -1,16 +1,16 @@
 /**
  * HEAD and OPTIONS HTTP Methods Example
- * 
+ *
  * This example demonstrates how to use HEAD and OPTIONS methods in SyntroJS
  */
 
 import { SyntroJS } from 'syntrojs';
 import { z } from 'zod';
 
-const app = new SyntroJS({ 
+const app = new SyntroJS({
   title: 'HEAD & OPTIONS Example',
   version: '1.0.0',
-  description: 'Demonstrates HEAD and OPTIONS HTTP methods'
+  description: 'Demonstrates HEAD and OPTIONS HTTP methods',
 });
 
 // ============================================
@@ -19,7 +19,7 @@ const app = new SyntroJS({
 
 /**
  * HEAD /users/:id
- * 
+ *
  * HEAD is identical to GET but only returns headers (no body).
  * Useful for checking if a resource exists without downloading it.
  */
@@ -40,7 +40,7 @@ app.head('/users/:id', {
 
 /**
  * HEAD /documents/:id
- * 
+ *
  * Common use case: Check document existence and get metadata
  * without downloading the full document.
  */
@@ -54,7 +54,7 @@ app.head('/documents/:id', {
       'Content-Type': 'application/pdf',
       'Content-Length': '1048576', // 1MB
       'Last-Modified': 'Wed, 21 Oct 2015 07:28:00 GMT',
-      'ETag': '"33a64df551425fcc55e4d42a148795d9f25f89d4"',
+      ETag: '"33a64df551425fcc55e4d42a148795d9f25f89d4"',
       'X-Document-ID': params.id,
       'X-Document-Version': '2.0',
     },
@@ -63,7 +63,7 @@ app.head('/documents/:id', {
 
 /**
  * HEAD /api/health
- * 
+ *
  * Health check endpoint - HEAD is perfect for this.
  */
 app.head('/api/health', {
@@ -84,7 +84,7 @@ app.head('/api/health', {
 
 /**
  * OPTIONS /users
- * 
+ *
  * Returns allowed HTTP methods for the /users endpoint.
  * Primarily used for CORS preflight requests.
  */
@@ -95,7 +95,7 @@ app.options('/users', {
     status: 204, // No Content
     body: null,
     headers: {
-      'Allow': 'GET, POST, HEAD, OPTIONS',
+      Allow: 'GET, POST, HEAD, OPTIONS',
       'Access-Control-Allow-Methods': 'GET, POST, HEAD, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       'Access-Control-Max-Age': '86400', // 24 hours
@@ -105,7 +105,7 @@ app.options('/users', {
 
 /**
  * OPTIONS /users/:id
- * 
+ *
  * Returns allowed methods for a specific user resource.
  */
 app.options('/users/:id', {
@@ -118,14 +118,14 @@ app.options('/users/:id', {
       allow: ['GET', 'PUT', 'DELETE', 'HEAD', 'OPTIONS'],
     },
     headers: {
-      'Allow': 'GET, PUT, DELETE, HEAD, OPTIONS',
+      Allow: 'GET, PUT, DELETE, HEAD, OPTIONS',
     },
   }),
 });
 
 /**
  * OPTIONS /api/*
- * 
+ *
  * CORS preflight handler for all API endpoints.
  * Returns comprehensive CORS headers.
  */
@@ -142,7 +142,7 @@ app.options('/api/:resource', {
       'Access-Control-Expose-Headers': 'X-Total-Count, X-Page-Count',
       'Access-Control-Max-Age': '86400',
       'Access-Control-Allow-Credentials': 'true',
-      'Allow': 'GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS',
+      Allow: 'GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS',
     },
   }),
 });
@@ -201,4 +201,3 @@ console.log('  curl http://localhost:3000/users/123e4567-e89b-12d3-a456-42661417
 console.log('  curl http://localhost:3000/api/health\n');
 
 console.log('📖 Documentation: http://localhost:3000/docs\n');
-

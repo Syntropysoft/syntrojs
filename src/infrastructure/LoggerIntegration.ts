@@ -5,12 +5,11 @@
  * Provides automatic request/response logging with correlation IDs
  */
 
-import { AsyncContext } from '@syntrojs/logger';
-import { JsonTransport } from '@syntrojs/logger';
+import { AsyncContext, JsonTransport } from '@syntrojs/logger';
 import { getLogger } from '@syntrojs/logger/registry';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { getLogLevelForStatusCode } from './LogLevelMapper';
 import { setComponentLoggingEnabled } from './LoggerHelper';
+import { getLogLevelForStatusCode } from './LogLevelMapper';
 
 /**
  * Logger integration configuration
@@ -76,7 +75,7 @@ export function integrateLogger(
   };
 
   // Add request ID to context
-  fastify.addHook('onRequest', async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.addHook('onRequest', async (request: FastifyRequest, _reply: FastifyReply) => {
     // Generate or use existing correlation ID
     const correlationId =
       (request.headers['x-correlation-id'] as string) || generateCorrelationId();
