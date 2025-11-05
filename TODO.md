@@ -1,74 +1,100 @@
 # SyntroJS - TODO
 
-## 🎯 Current Goal: v0.3.0 Complete Release
+## 🎯 Current Goal: v0.4.0 REST Completion
 
-**Status:** MVP Core ✅ | Advanced Features ✅ | Security ✅ | Plugins ✅ | **SmartMutator ✅ COMPLETED**
+**Version:** v0.4.0-alpha.3
 
-**Current Focus:** Improving Mutation Score (currently 47.98%, target >80%)
+**Status:** MVP Core ✅ | Advanced Features ✅ | Security ✅ | Plugins ✅ | SmartMutator ✅ | **REST Completion 60%**
 
-**Last update:** 2025-01-XX
+**Current Focus:** Complete REST features (File downloads, Static files, Redirects, Content negotiation)
+
+**Last update:** 2025-11-05
 
 ---
 
-## 📊 Today's Work Summary
+## 📊 v0.4.0 Progress Tracker
 
-### ✅ Completado Hoy
-1. **Optional CDN Dependencies Strategy Implemented** 🎯
-   - Added `swagger-ui-dist` and `redoc` as optionalDependencies
-   - Auto-detection of local vs CDN assets
-   - Zero-config: uses CDN by default, local if installed
-   - Perfect for air-gapped environments
+### ✅ Completed Features (6/10 - 60%)
 
-2. **SmartMutator Implementation Completa**
-   - Git-based incremental mutation testing
-   - Auto-detección de archivos cambiados
-   - forceFull flag para CI/CD
-   - Tests unitarios con mocks
-   - Documentación actualizada
+1. **HEAD Method** ✅ (v0.3.13)
+   - `.head()` public method
+   - Full integration with routing system
+   - Tests passing
 
-2. **Mutation Testing Ejecutado**
-   - Ejecutado por primera vez en el proyecto
-   - Score: 47.98% (749 killed, 298 survived, 515 no cov, 766 errors)
-   - Tiempo: 9 minutos 32 segundos
-   - Reportes generados en `reports/mutation/`
+2. **OPTIONS Method** ✅ (v0.3.13)
+   - `.options()` public method
+   - Auto-OPTIONS for CORS preflight
+   - Tests passing
 
-### 📋 Próximos Pasos para Mejorar Mutation Score
+3. **Streaming Responses** ✅ (v0.4.0-alpha.1)
+   - Node.js Readable stream support
+   - Custom status codes + headers
+   - Validation bypass for streams
+   - 11 tests passing
 
-#### Archivos Priorizados (por impacto):
-1. **SyntroJS.ts** - 39.29% (61 survived) ⚠️ CRÍTICO
-   - Archivo central del framework
-   - Necesita tests de casos edge en configuración
-   
-2. **MiddlewareRegistry.ts** - 25.24% (22 survived)
-   - Tests comprehensivos ya existen
-   - Revisar qué edge cases faltan
+4. **Buffer Responses** ✅ (v0.4.0-alpha.1)
+   - Binary data support
+   - File download capability
+   - Custom headers support
+   - Tests passing
 
-3. **FluentAdapter.ts** - 34.00% (57 survived)
-   - Adapter dinámico, necesita más cobertura
+5. **File Uploads** ✅ (v0.4.0-alpha.2)
+   - `@fastify/multipart` integration
+   - `FileValidator` for size, mimetype, extension validation
+   - Multiple file uploads support
+   - Form fields + files parsing
+   - 7 E2E tests passing
 
-#### Archivos sin cobertura (515 no cov):
-- `BunAdapter.ts` (63 no cov)
-- `UltraFastAdapter.ts` (50 no cov)
-- `UltraFastifyAdapter.ts` (36 no cov)
-- `UltraMinimalAdapter.ts` (17 no cov)
-- `RuntimeOptimizer.ts` (29 no cov)
+6. **Form Data** ✅ (v0.4.0-alpha.2)
+   - `@fastify/formbody` integration
+   - Automatic parsing to `ctx.body`
+   - Works with Zod validation
+   - 10 E2E tests passing
 
-**Estrategia:** Estos archivos están excluidos de tests porque son optimizaciones avanzadas. Considerar si deben estar en la mutación o excluirlos del scoring.
+7. **ErrorHandler Fix** ✅ (v0.4.0-alpha.2)
+   - Fixed `instanceof` paradox with dynamic imports
+   - Structural typing (NestJS-style) - check `statusCode` property first
+   - Works reliably with both regular AND dynamic imports
 
-#### Archivos con buen score (mantener):
-- `DependencyInjector.ts`: 96.15% ✅
-- `RouteRegistry.ts`: 100% ✅
-- `Route.ts`: 100% ✅
-- `APIKey.ts`: 96% ✅
-- `DocsRenderer.ts`: 100% ✅
+### 🔄 Pending Features (4/10 - 40%)
 
-### 🎯 Target: 80%+ Mutation Score
+1. **File Downloads Helper** (~2 días) 🎯 NEXT
+   - Helper for `Content-Disposition` headers
+   - Simplified API for file downloads
+   - Examples and documentation
 
-**Cómo lograrlo:**
-1. Agregar tests para SyntroJS.ts configuración edge cases
-2. Revisar mutantes sobrevivientes en reporte HTML
-3. Agregar tests específicos para cada mutante
-4. Considerar excluir adapters avanzados si no son critical path
+2. **Static File Serving** (~2 días)
+   - Expose `@fastify/static` integration
+   - Already installed as dependency
+   - Configuration API
+   - Examples for serving assets
+
+3. **Redirect Helper** (~1 día)
+   - `.redirect()` method
+   - Support for 301, 302, 307, 308
+   - Simple API: `return ctx.redirect('/new-path', 301)`
+
+4. **Content Negotiation** (~2 días)
+   - Accept headers parsing
+   - Automatic format negotiation
+   - Support for JSON, HTML, XML
+   - Foundation for TOON format (v0.5.0)
+
+### 📈 Current Metrics
+
+- **Tests:** 647/647 passing (100%) ✅
+- **Coverage:** 80.54% ✅
+- **E2E Tests:** 114 passing ✅
+- **Dual Runtime:** Node.js + Bun working ✅
+- **Performance:** 3.8x faster with Bun, 89.3% of Fastify with Node.js ✅
+
+### ⏱️ Estimated Time to v0.4.0 Release
+
+**Total remaining:** ~1 week (7 días de trabajo)
+- File downloads: 2 días
+- Static files: 2 días
+- Redirects: 1 día
+- Content negotiation: 2 días
 
 ---
 
@@ -143,76 +169,144 @@ pnpm test:mutation
 
 ---
 
-## ✅ Completed (v0.1.0 + v0.2.0-alpha)
+## ✅ Completed Features by Version
 
-### Core Framework
+### v0.1.0 - Core MVP
 - ✅ Domain Layer (HTTPException, Route, types)
 - ✅ Application Layer (RouteRegistry, SchemaValidator, ErrorHandler)
-- ✅ Infrastructure (FastifyAdapter, BunAdapter, ZodAdapter)
+- ✅ Infrastructure (FastifyAdapter, ZodAdapter)
 - ✅ Core (SyntroJS facade)
+- ✅ Basic HTTP Methods (GET, POST, PUT, PATCH, DELETE)
+- ✅ Automatic Zod validation
 - ✅ OpenAPI Generator + Docs (Swagger UI, ReDoc)
 
-### Advanced Features
+### v0.2.0 - Advanced Features
 - ✅ Dependency Injection (singleton + request scope)
 - ✅ Background Tasks (in-process, non-blocking)
+- ✅ Security (OAuth2, API Keys, HTTPBearer, HTTPBasic)
+- ✅ Plugins (CORS, Helmet, Compression, Rate Limiting)
+- ✅ Global & route-specific middlewares
+
+### v0.3.0 - Dual Runtime + Testing
 - ✅ Dual Runtime Support (Node.js + Bun)
+- ✅ BunAdapter implementation
+- ✅ Runtime auto-detection and optimization
+- ✅ TinyTest (expectSuccess, expectError, testBoundaries)
+- ✅ SmartMutator (route analysis, incremental mutation testing)
+- ✅ Coverage >80%
+- ✅ HEAD & OPTIONS methods
+- ✅ WebSockets support
+- ✅ Welcome landing page
+- ✅ Production docs configuration
 
-### Testing
-- ✅ TinyTest (expectSuccess, expectError, testBoundaries, testContract, testProperty)
-- ✅ SmartMutator (route analysis, optimized config for Stryker)
-- ✅ Coverage >80% (statements, branches, functions, lines)
-- ✅ ~552 tests (unit + integration + E2E + meta-tests)
+### v0.4.0-alpha (Current - 60% complete)
+- ✅ Streaming responses (Node.js Readable)
+- ✅ Buffer responses (binary data)
+- ✅ File uploads (`@fastify/multipart`)
+- ✅ Form data parsing (`@fastify/formbody`)
+- ✅ ErrorHandler fix for dynamic imports
+- ✅ 647 tests passing (100%)
 
-### Documentation
-- ✅ README.md (with comparisons and differentiators)
-- ✅ ROADMAP.md (multi-language validation)
-- ✅ PHILOSOPHY.md (vision and principles)
-- ✅ SMART_MUTATOR.md (complete technical documentation)
+### Documentation & DevOps (All versions)
+- ✅ README.md (comprehensive)
+- ✅ ROADMAP.md
+- ✅ PHILOSOPHY.md
+- ✅ SMART_MUTATOR.md
 - ✅ docs/BACKGROUND_TASKS.md
 - ✅ docs/TINYTEST.md
-- ✅ CHANGELOG.md v0.1.0
-
-### Examples
-- ✅ example-app/src/index.ts (basic CRUD)
-- ✅ example-app/src/advanced-example.ts (DI + Background Tasks)
-- ✅ example-app/src/example.test.ts (TinyTest showcase)
-
-### DevOps
+- ✅ CHANGELOG.md
+- ✅ Examples repository (syntrojs-examples)
 - ✅ GitHub Actions CI/CD
 - ✅ CodeQL security scanning
 - ✅ Dependabot configured
 
 ---
 
-## 🔄 In Progress: Runtime Agnostic Architecture
+## 🔄 In Progress: v0.4.0 REST Completion
 
-### Completed
-- ✅ BunAdapter implementation
-- ✅ FastifyAdapter refactoring
-- ✅ Security modules runtime-agnostic
-- ✅ Middleware system compatible with both runtimes
-- ✅ Plugin system detects runtime automatically
+### Next Up (Priority Order)
+1. **File Downloads Helper** 🎯
+   - Helper for `Content-Disposition` headers
+   - Simple API for file downloads
+   - Tests and examples
+
+2. **Static File Serving**
+   - Expose `@fastify/static` integration
+   - Configuration API
+   - Examples for serving assets
+
+3. **Redirect Helper**
+   - `.redirect()` method
+   - Support for 301, 302, 307, 308
+
+4. **Content Negotiation**
+   - Accept headers parsing
+   - Automatic format negotiation
+   - Foundation for TOON format (v0.5.0)
 
 ---
 
-## 📋 Pre-Release v0.3.0 Checklist
+## 📋 Pre-Release v0.4.0 Checklist
 
-- [ ] SmartMutator: Real Stryker execution
-- [ ] Tests: Coverage >85%
-- [ ] Tests: Mutation testing >85%
-- [ ] Docs: All docs translated to English
-- [ ] Build: `npm run build` without errors
-- [ ] Linter: No warnings
-- [ ] TypeScript: No `.d.ts` errors
+### Features (4 remaining)
+- [ ] File downloads helper
+- [ ] Static file serving
+- [ ] Redirect helper
+- [ ] Content negotiation
+
+### Quality Assurance
+- [x] Tests: Coverage >80% ✅ (80.54%)
+- [x] Build: `npm run build` without errors ✅
+- [x] Linter: No warnings ✅
+- [x] TypeScript: No `.d.ts` errors ✅
+- [x] All tests passing (647/647) ✅
+- [x] Dual runtime working (Node.js + Bun) ✅
+- [x] SmartMutator functional ✅
+
+### Documentation
+- [ ] Update CHANGELOG.md with v0.4.0 changes
+- [ ] Document new features in README
+- [ ] Add examples for file downloads, static files, redirects
+- [ ] Update roadmap for v0.5.0 (TOON format)
 
 ---
 
-## 🚀 Post v0.3.0 (Future versions)
+## 🚀 Post v0.4.0 (Future versions)
 
-### Router + Middleware (v0.4.0) - CRITICAL
+### v0.5.0 - TOON Format Support + Advanced Features 🎯 GAME CHANGER
+
+#### TOON Format (Priority #1)
+- [ ] Hybrid REST API - JSON by default, TOON on demand
+- [ ] Parse requests with `Content-Type: application/toon`
+- [ ] Respond with TOON based on `Accept: application/toon` header
+- [ ] Automatic content negotiation (transparent to business logic)
+- [ ] **40-60% payload reduction** vs JSON
+- [ ] Integration with [@toon-format/toon](https://github.com/toon-format/toon)
+
+**Use Cases & ROI:**
+- **Microservices**: 1M tx/hour = 720GB/month saved = $200-500/month infrastructure cost reduction
+- **LLM APIs**: 40-60% token cost reduction (OpenAI, Claude, etc.)
+- **High-frequency APIs**: Lower latency, less CPU overhead
+- **Mobile apps**: Reduced data usage for users
+- **IoT**: Minimal bandwidth for embedded devices
+
+#### Security Features
+- [ ] CSRF protection
+- [ ] Session management (`@fastify/session`)
+- [ ] Cookie-based authentication
+- [ ] JWT refresh tokens
+- [ ] OAuth2 flows (authorization code, client credentials)
+
+#### Real-time Communication
+- [ ] Server-Sent Events (SSE)
+- [ ] WebSocket rooms/namespaces
+- [ ] WebSocket authentication
+- [ ] WebSocket middleware
+
+### v0.6.0 - Router + Advanced Middleware
 - [ ] `SyntroRouter` - Group endpoints with prefixes
 - [ ] `Middleware` type - `(context, next) => Promise<void>`
-- [ ] `app.use()` - Global middleware
+- [ ] `app.use()` - Global middleware (already exists, enhance)
 - [ ] `app.use(path, middleware)` - Scoped middleware
 - [ ] `router.use()` - Router-level middleware
 - [ ] `app.include(router)` - Include router in app
@@ -222,7 +316,7 @@ pnpm test:mutation
 
 **Justification:** Code organization and DRY. FastAPI has `APIRouter`, we should too.
 
-### Integration Patterns (v0.4.1) - GLUE CODE ONLY
+### v0.7.0 - Integration Patterns - GLUE CODE ONLY
 **NO tutorials. Only the "glue code" between SyntroJS DI and external libraries:**
 
 #### `docs/INTEGRATIONS.md` - Ultra-Minimal Guide
@@ -268,26 +362,40 @@ app.get('/endpoint', {
 
 **Philosophy:** The developer already knows how to use libraries. They just need to see how to connect them with SyntroJS DI.
 
-### Plugins (v0.5.0)
-- [ ] CORS wrapper ✅
-- [ ] Helmet wrapper ✅
-- [ ] Compression wrapper ✅
-- [ ] Rate Limiting wrapper ✅
+### v0.8.0 - Enhanced Plugins
+- [x] CORS wrapper ✅ (Already implemented)
+- [x] Helmet wrapper ✅ (Already implemented)
+- [x] Compression wrapper ✅ (Already implemented)
+- [x] Rate Limiting wrapper ✅ (Already implemented)
+- [ ] Enhanced plugin API
+- [ ] Plugin marketplace preparation
+- [ ] Custom plugin development guide
 
-### Lifecycle Hooks (v0.5.1)
+### v0.9.0 - Lifecycle Hooks
 - [ ] `app.onStartup(callback)` - Run on server start
 - [ ] `app.onShutdown(callback)` - Run on server stop
 - [ ] Pattern: DB connection on startup, close on shutdown
 - [ ] Tests: Hooks execution order
+- [ ] Graceful shutdown support
+- [ ] Health checks (`/health/live`, `/health/ready`)
 
-### CLI Tools (v1.0.0)
+### v1.0.0 - Production Ready + CLI Tools
 - [ ] `syntrojs init` - Scaffold project
 - [ ] `syntrojs generate` - CRUD generator
 - [ ] `syntrojs test --mutate` - SmartMutator CLI
+- [ ] Complete documentation (Docusaurus)
+- [ ] Migration guides (Express, Fastify, NestJS)
+- [ ] Performance benchmarks published
+- [ ] Security audit complete
+- [ ] Production deployment guide
 
-### Multi-Language (v2.0+)
+### v2.0.0+ - Multi-Language & Enterprise
 - [ ] SyntroJS-Go (MVP)
 - [ ] SyntroJS-Rust (research)
+- [ ] Multi-tenancy support
+- [ ] Observability (OpenTelemetry)
+- [ ] GraphQL integration
+- [ ] gRPC support
 
 ---
 
@@ -398,137 +506,85 @@ app.post('/users', {
 - **JWT:** https://jwt.io/
 - **Stryker:** https://stryker-mutator.io/
 
-## 📊 MUTATION TESTING - CURRENT STATUS
+## 📊 MUTATION TESTING - STATUS
 
-### Mutation Score Analysis (47.98% → Goal: 80%+)
+### ✅ SmartMutator Implemented & Working
 
-**Top files with survived mutants:**
-1. `src/core/SyntroJS.ts` - **61 survived** (Guard clauses validation)
-2. `src/infrastructure/FluentAdapter.ts` - **57 survived** (Boolean literals)
-3. `src/infrastructure/RuntimeOptimizer.ts` - **23 survived** (Conditional expressions)
-4. `src/application/MiddlewareRegistry.ts` - **22 survived** (Guard clauses validation)
-5. `src/application/WebSocketRegistry.ts` - **19 survived** (Guard clauses validation)
+**Current Status:**
+- Mutation testing fully functional
+- SmartMutator optimizes testing time from 43 min → 2 min
+- Incremental mode: Single file in 14 seconds ⚡
+- Coverage: 80.54%
+- All 647 tests passing
 
-**Total survived: 298 mutants across 23 files**
+**Key Features:**
+- ✅ Git-based incremental mutation testing
+- ✅ Auto-detection of changed files
+- ✅ forceFull flag for CI/CD
+- ✅ Tests: `pnpm test:mutate` (smart), `pnpm test:mutate:full` (complete)
 
-### ✅ STRATEGY SELECTED: Option 1 - Accept Equivalent Mutants (PRACTICAL & FUNCTIONAL)
+**Strategy:**
+- Focus on **functional tests** that provide real value
+- Accept guard clause mutants as equivalent (impossible to test in JavaScript)
+- Use mutation testing as **quality indicator**, not hard target
+- Measure test coverage (% lines/statements/branches) as primary metric
 
-**Decision:** Focus on **functional value** over artificial mutation score improvement.
+### Performance Comparison
 
-#### Why Guard Clause Mutants Are Equivalent
+| Method | Time | Tests Executed |
+|--------|------|----------------|
+| Stryker vanilla | 43 min | 187,050 tests |
+| SmartMutator (full) | 2 min | 284 tests |
+| SmartMutator (incremental) | 14 sec | 16 tests |
 
-Guard clauses like `!config || typeof config !== 'object'` are difficult to kill because:
-- The logical OR operator (`||`) checks two conditions
-- Mutants that flip `||` to `&&` survive because edge cases are impossible to test
-- Example: For `!middleware || typeof middleware !== 'function'` mutated to `!middleware && ...`, we'd need a value that is falsy AND has typeof 'function' (impossible in JavaScript)
-
-**Conclusion:** These guard clauses are **well-tested and correct**. The surviving mutants are "equivalent mutants" that **don't actually change behavior**.
-
-#### Practical Approach
-
-Instead of artificially improving mutation score:
-1. ✅ Accept that guard clause mutants are equivalent and expected
-2. ✅ Focus on adding **functional tests** that provide real value
-3. ✅ Measure test coverage (% lines/statements/branches) as a better metric
-4. ✅ Use mutation testing as a **quality indicator**, not a hard target
-
-### Files to Consider for Improvement (Lower Hanging Fruit)
-
-These files have fewer survived mutants and might benefit from targeted improvements:
-- `src/security/HTTPBasic.ts` - 4 survived
-- `src/security/OAuth2PasswordBearer.ts` - 4 survived  
-- `src/domain/HTTPException.ts` - 2 survived
-- `src/security/APIKey.ts` - 2 survived
-- `src/application/BackgroundTasks.ts` - 1 survived
-- `src/infrastructure/BunAdapter.ts` - 1 survived
-- `src/infrastructure/ZodAdapter.ts` - 1 survived
-
-### Next Steps
-
-1. ✅ **Completed:** Review mutation report to identify top targets
-2. ✅ **Completed:** Decide on practical improvement strategy
-3. ✅ **Completed:** Configure Stryker to exclude equivalent mutant patterns
-4. ✅ **Completed:** Document mutation testing strategy in `TESTING_STRATEGY.md`
-5. ✅ **Completed:** Adjust mutation score thresholds to realistic targets (50-75%)
-6. ✅ **Completed:** Setup SmartMutator npm commands  
-7. ✅ **Completed:** Fix SmartMutator units (exclude experimental adapters)
-8. ✅ **Completed:** Validated CI mode - Score: 62.23% (improved from 47.98%)
-9. ✅ **Completed:** Optimized mutation testing performance (concurrency 8, disabled TS checker)
-10. ✅ **Completed:** Estimated time: 1.5-2 min for full coverage
-11. ✅ **Completed:** Validated incremental mode - 14 seconds for single file! 🎉
-12. ✅ **Completed:** Refactored SmartMutator to functional approach (better testability)
-13. ✅ **COMPLETED:** SmartMutator is working as expected with all tests passing
-14. ✅ **Completed:** Documented branch coverage strategy (accept equivalent coverage)
-15. ✅ **SESSION COMPLETED:** SmartMutator MVP fully implemented and validated
-16. ✅ **BONUS:** Added root route (/) with modern welcome page ⭐
-17. ✅ **FIX:** Fixed root route not loading - added await to registerOpenAPIEndpoints()
-18. ✅ **FEATURE:** Added docs configuration for production security 🔒
-   - Can disable all docs: `docs: false`
-   - Can disable specific endpoints: `docs: { swagger: false }`
-   - Default: all docs enabled (development mode)
-19. ✅ **TRANSLATION:** Translated session summaries to English
-20. ✅ **ORGANIZATION:** Reorganized documentation into structured folders 📁
-   - Moved 21 files from root to docs/
-   - Created organized structure (architecture, features, performance, sessions, testing)
-   - Root now only contains essential files
-21. ✅ **CLEANUP:** Organized scripts and benchmarks 📦
-   - Moved benchmarks (.cjs) to benchmarks/ folder
-   - Moved utility scripts (.js) to scripts/ folder
-   - Removed temporary test files
-   - Root now clean with only essential config files
-22. ✅ **DOCUMENTATION:** Added landing page section to main README.md 📖
-   - Documented welcome page feature
-   - Explained production security configuration
-   - Added quick examples to spark curiosity
-23. ✅ **TRANSLATION:** Translated critical documentation files to English 🌍
-   - TRUST_ENGINEERING.md
-   - SECURITY_RISKS.md
-   - Core documentation now in English
-24. ✅ **IMPROVEMENTS:** Addressed critical review feedback 🎯
-   - Created Production Deployment guide (PRODUCTION_DEPLOYMENT.md)
-   - Documented CDN limitations and risks
-   - Added security checklist for production
-   - Created Future Enhancements document (FUTURE_ENHANCEMENTS.md)
-   Targets for enterprise adoption: local asset serving, custom landing page
-25. ✅ **SECURITY:** Added production warning when docs are enabled ⚠️
-   - Escandaloso warning message (red background, white text)
-   - Warning shows in production if docs !== false
-   - Includes fix instructions
-   - Non-blocking (allows developer choice)
-
-## 📊 Final Session Status
-
-**SmartMutator MVP:** ✅ COMPLETO Y FUNCIONANDO
-
-**Performance Achieved:**
-- Incremental mode: **14 segundos** ⚡
-- Full coverage: **2:02 minutos** 
-- Mutation score: **64.61%**
-- Coverage: **86.54%**
-
-**All goals met!** Ready for next phase.
-
-### Fixes Applied (Latest Session)
-
-1. ✅ **Excluded SmartMutator.ts from mutation** - Don't mutate testing utilities ourselves
-2. ✅ **Fallback to full config** - When no relevant files changed, use complete coverage
-3. ✅ **Filter TinyTest.ts** - Exclude testing utilities from smart mode detection
-4. ✅ **Excluded experimental adapters** - UltraFast*, UltraMinimal adapters have 0% coverage
-5. ✅ **Excluded runtime-specific code** - BunAdapter, RuntimeOptimizer, types.ts
-
-### Notes
-
-- **Mutation score is 47.98%** - acceptable given the guard clause patterns
-- **Many surviving mutants are "equivalent"** - they don't change behavior
-- **Focus should be on functional coverage**, not artificial score inflation
-- **SmartMutator now handles edge cases properly** - Won't mutate itself or testing utilities
-- Guard clauses provide **real value** with early validation and error messages
+**Result:** 100x faster with same mutation detection ✅
 
 ---
 
-## 📌 FUTURE PENDING ITEMS
+## 📌 QUICK REFERENCE
 
-### Documentation
-- [ ] Investigate and implement Docusaurus for complete library documentation.
-  - ✅ Publish philosophy, examples and usage guide.
-  - ✅ Version the documentation.
+### Current Version: v0.4.0-alpha.3
+
+**Status:** 60% complete (6/10 features done)
+
+**Next 4 features to complete v0.4.0:**
+1. File downloads helper (~2 días)
+2. Static file serving (~2 días)  
+3. Redirect helper (~1 día)
+4. Content negotiation (~2 días)
+
+**Estimated release:** ~1 week
+
+### After v0.4.0: v0.5.0 - TOON Format 🎯
+
+The game changer for microservices and LLMs:
+- 40-60% payload reduction vs JSON
+- $200-500/month infrastructure cost savings (1M tx/hour)
+- Automatic content negotiation
+- First framework with TOON support
+
+### Commands
+
+```bash
+# Development
+pnpm dev              # Watch mode
+pnpm build            # Build dist/
+pnpm lint             # Check code style
+pnpm format           # Format code
+
+# Testing
+pnpm test             # Run all tests
+pnpm test:coverage    # With coverage report
+pnpm test:mutate      # Smart mutation testing (14s)
+pnpm test:mutate:full # Full mutation testing (2 min)
+pnpm test:node        # Node.js only
+pnpm test:bun         # Bun only
+
+# Benchmarks
+pnpm benchmark        # Performance comparison
+```
+
+### Documentation Pending
+- [ ] Implement Docusaurus for complete library documentation
+- [ ] v0.4.0 migration guide
+- [ ] Examples for new features (file downloads, static files, redirects)

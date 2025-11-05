@@ -1,6 +1,6 @@
 {
   "name": "syntrojs",
-  "version": "0.4.0-alpha.2",
+  "version": "0.4.0-alpha.3",
   "description": "🔥 DUAL RUNTIME: FastAPI for Node.js AND Bun - Same Code, Maximum Performance | ⚡ 3.8x Faster with Bun | 🚀 89.3% of Fastify with Node.js",
   "type": "module",
   "main": "./dist/index.js",
@@ -81,7 +81,6 @@
     "@fastify/multipart": "^8.0.0",
     "@fastify/static": "^7.0.0",
     "@syntrojs/logger": "^0.2.1-alpha",
-    "docs": "link:/Users/gabrielalejandrogomez/source/libs/hyper/syntrojs/docs",
     "fastify": "^4.26.0",
     "zod": "^3.22.4",
     "zod-to-json-schema": "^3.22.4"
