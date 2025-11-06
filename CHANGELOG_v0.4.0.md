@@ -1,102 +1,102 @@
 # Changelog v0.4.0 - HTTP Redirects & Content Negotiation
 
-## 🎉 Features Completadas
+## 🎉 Completed Features
 
 ### ✅ HTTP Redirects Helper
-- **Implementación:** `src/infrastructure/RedirectHelper.ts`
-- **API:** `ctx.redirect(url, statusCode)` y `createRedirect(url, statusCode)`
-- **Status codes soportados:** 301, 302, 303, 307, 308
-- **Validación:** URL sanitization, security checks (rechaza `javascript:`, `data:`, `file:`)
-- **Tests:** 38/38 passing (100%) en Node y Bun
+- **Implementation:** `src/infrastructure/RedirectHelper.ts`
+- **API:** `ctx.redirect(url, statusCode)` and `createRedirect(url, statusCode)`
+- **Supported status codes:** 301, 302, 303, 307, 308
+- **Validation:** URL sanitization, security checks (rejects `javascript:`, `data:`, `file:`)
+- **Tests:** 38/38 passing (100%) on Node and Bun
 
 ### ✅ Content Negotiation
-- **Implementación:** `src/application/ContentNegotiator.ts`
+- **Implementation:** `src/application/ContentNegotiator.ts`
 - **API:** `ctx.accepts.json()`, `ctx.accepts.html()`, `ctx.accepts.xml()`, `ctx.accepts.text()`, `ctx.accepts.toon()`
-- **Soporta:** Quality factors (q=0.8), wildcards (`*/*`), múltiples tipos
-- **Tests:** 100% passing en Node y Bun
+- **Supports:** Quality factors (q=0.8), wildcards (`*/*`), multiple types
+- **Tests:** 100% passing on Node and Bun
 
-## 🔧 Fixes & Mejoras
+## 🔧 Fixes & Improvements
 
-### BunAdapter - Mejoras Críticas
+### BunAdapter - Critical Improvements
 
-1. **Body Parsing Siempre Activo**
-   - **Problema:** Solo parseaba body si había schema Zod
-   - **Fix:** Ahora parsea siempre, valida solo si hay schema
-   - **Impacto:** +5 tests arreglados
+1. **Body Parsing Always Active**
+   - **Problem:** Only parsed body if Zod schema was present
+   - **Fix:** Now always parses, validates only if schema exists
+   - **Impact:** +5 tests fixed
 
 2. **Form-urlencoded Support**
-   - **Problema:** No parseaba `application/x-www-form-urlencoded`
-   - **Fix:** Implementado `parseUrlEncoded()` en `BunRequestParser`
-   - **Impacto:** +4 tests arreglados
+   - **Problem:** Did not parse `application/x-www-form-urlencoded`
+   - **Fix:** Implemented `parseUrlEncoded()` in `BunRequestParser`
+   - **Impact:** +4 tests fixed
 
 3. **Custom Response Serializer**
-   - **Nuevo:** `CustomResponseSerializer` para respuestas con `{ status, headers, body }`
-   - **Uso:** HEAD requests con headers personalizados
-   - **Impacto:** +3 tests arreglados
+   - **New:** `CustomResponseSerializer` for responses with `{ status, headers, body }`
+   - **Usage:** HEAD requests with custom headers
+   - **Impact:** +3 tests fixed
 
-4. **Multipart Upload en Bun**
-   - **Problema:** `processWebFile()` intentaba usar Node.js streams
-   - **Fix:** Usa Buffer directamente en Bun
-   - **Impacto:** +1 test arreglado
+4. **Multipart Upload in Bun**
+   - **Problem:** `processWebFile()` attempted to use Node.js streams
+   - **Fix:** Uses Buffer directly in Bun
+   - **Impact:** +1 test fixed
 
 5. **Response Validation**
-   - **Problema:** BunAdapter no validaba responses contra schema
-   - **Fix:** Agregada validación después del handler
-   - **Impacto:** +1 test arreglado
+   - **Problem:** BunAdapter did not validate responses against schema
+   - **Fix:** Added validation after handler execution
+   - **Impact:** +1 test fixed
 
 6. **Error Context**
-   - **Problema:** `handleError()` no recibía contexto con path
-   - **Fix:** Ahora pasa contexto completo a `ErrorHandler`
-   - **Impacto:** +1 test arreglado
+   - **Problem:** `handleError()` did not receive context with path
+   - **Fix:** Now passes complete context to `ErrorHandler`
+   - **Impact:** +1 test fixed
 
 7. **Singleton Isolation**
-   - **Problema:** BunAdapter singleton causaba contaminación entre tests
-   - **Fix:** `TinyTest` limpia singleton en cada instancia
-   - **Impacto:** +3 tests arreglados
+   - **Problem:** BunAdapter singleton caused test contamination
+   - **Fix:** `TinyTest` clears singleton on each instance
+   - **Impact:** +3 tests fixed
 
 ### TinyTest Improvements
 
 1. **Redirect Testing Support**
-   - **Nuevo parámetro:** `rawRequest(..., followRedirects: boolean)`
-   - **Por defecto:** `true` (compatible con tests existentes)
-   - **Para redirects:** `false` (no sigue redirects)
-   - **Impacto:** Tests de redirects funcionan correctamente
+   - **New parameter:** `rawRequest(..., followRedirects: boolean)`
+   - **Default:** `true` (compatible with existing tests)
+   - **For redirects:** `false` (does not follow redirects)
+   - **Impact:** Redirect tests work correctly
 
 ### Test Organization
 
-1. **Movidos a `tests/node/`:**
+1. **Moved to `tests/node/`:**
    - `plugins.test.ts` (Fastify-specific)
    - `docs.test.ts` (Fastify-specific)
 
-2. **Eliminados de `tests/universal/`:**
-   - `getRawFastify` tests (solo aplica a Node.js)
+2. **Removed from `tests/universal/`:**
+   - `getRawFastify` tests (only applies to Node.js)
 
-## 📊 Métricas Finales
+## 📊 Final Metrics
 
-### Tests (antes → después):
+### Tests (before → after):
 
-| Runtime | Antes | Después | Mejora |
-|---------|-------|---------|--------|
-| **Node.js** | 936/939 (99.7%) | 934/937 (99.7%) | ✅ Estable |
+| Runtime | Before | After | Improvement |
+|---------|--------|-------|-------------|
+| **Node.js** | 936/939 (99.7%) | 934/937 (99.7%) | ✅ Stable |
 | **Bun** | 663/692 (95.8%) | **674/679 (99.3%)** | **+3.5%** 🎉 |
 
 ### Linter:
 
-- **Errores:** 3 → 0 ✅
-- **Warnings:** 42 → 51 (nuevos archivos creados)
+- **Errors:** 3 → 0 ✅
+- **Warnings:** 42 → 51 (new files created)
 
-### Total de tests arreglados en Bun: **24 tests** 🎉
+### Total tests fixed in Bun: **24 tests** 🎉
 
 ## 🟡 Known Issues (5 tests - 0.7%)
 
-**Todos relacionados con logging/observability** - NO afectan funcionalidad:
+**All related to logging/observability** - DO NOT affect functionality:
 
 1. Background task timeout logging (4 tests)
 2. Dependency injection cleanup timing (1 test)
 
-**Detalle completo:** Ver `KNOWN_ISSUES.md`
+**Full details:** See `KNOWN_ISSUES.md`
 
-## 📝 Archivos Creados
+## 📝 Files Created
 
 ### Features:
 - `src/infrastructure/RedirectHelper.ts`
@@ -122,11 +122,11 @@
 
 ### Documentation:
 - `KNOWN_ISSUES.md`
-- `CHANGELOG_v0.4.0.md` (este archivo)
+- `CHANGELOG_v0.4.0.md` (this file)
 
 ---
 
-**Fecha:** 2025-11-06  
-**Versión:** 0.4.0-alpha.3 → 0.4.0  
+**Date:** 2025-11-06  
+**Version:** 0.4.0-alpha.3 → 0.4.0  
 **Status:** Production Ready ✅
 
