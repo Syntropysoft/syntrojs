@@ -1,68 +1,68 @@
 # Known Issues & Technical Debt
 
-> **IMPORTANTE:** Leer este archivo ANTES de investigar tests fallidos para evitar perder tiempo.
+> **IMPORTANT:** Read this file BEFORE investigating failed tests to avoid wasting time.
 
 ---
 
-## 🟡 Bun Runtime - 5 Tests de Logging/Observability (v0.4.0)
+## 🟡 Bun Runtime - 5 Logging/Observability Tests (v0.4.0)
 
-**Estado:** Funcionalidad core funciona ✅ - Solo afecta logging de errores  
-**Impacto:** Minimal - 5/679 tests (99.3% passing)  
-**Prioridad:** Baja - Resolver en v0.5.0  
-**Tests afectados:** 5 tests de observability (NO funcionalidad)
+**Status:** Core functionality works ✅ - Only affects error logging  
+**Impact:** Minimal - 5/679 tests (99.3% passing)  
+**Priority:** Low - Resolve in v0.5.0  
+**Affected tests:** 5 observability tests (NOT functionality)
 
-### Lista de tests fallidos (5):
+### List of failing tests (5):
 
 **Background Tasks - Logging/Observability (4 tests):**
-- `BackgroundTasks > addTask() > handles timeout for long-running tasks` - Unit test de timeout logs
+- `BackgroundTasks > addTask() > handles timeout for long-running tasks` - Unit test for timeout logs
 - `background task errors do not affect response` - Error logging timing
-- `warns for slow background tasks (>100ms)` - Warning logs no se capturan
-- `background task with custom timeout` - Timeout error logs no se capturan
+- `warns for slow background tasks (>100ms)` - Warning logs not captured
+- `background task with custom timeout` - Timeout error logs not captured
 
 **Dependency Injection - Cleanup (1 test):**
-- `dependency cleanup is called after request` - Lifecycle timing en Bun
+- `dependency cleanup is called after request` - Lifecycle timing in Bun
 
-### Nota Importante:
+### Important Note:
 
-**La funcionalidad core funciona perfectamente** ✅:
-- Background tasks SE EJECUTAN correctamente
-- Background tasks NO bloquean la respuesta
-- DI cleanup probablemente se ejecuta pero con timing diferente
+**Core functionality works perfectly** ✅:
+- Background tasks EXECUTE correctly
+- Background tasks DO NOT block response
+- DI cleanup probably executes but with different timing
 
-El problema es **logging de errores en background tasks** - en Bun las unhandled rejections se detectan de manera diferente, causando que los logs no se capturen en los tests.
+The issue is **error logging in background tasks** - in Bun, unhandled rejections are detected differently, causing logs not to be captured in tests.
 
-### Causa raíz:
+### Root Cause:
 
-Bun tiene Promise handling más estricto que Node.js:
-- Detecta unhandled rejections más rápido
-- `queueMicrotask` vs `setImmediate` tienen timing diferente
-- Los logs se generan pero no son capturados por el test antes de que termine
+Bun has stricter Promise handling than Node.js:
+- Detects unhandled rejections faster
+- `queueMicrotask` vs `setImmediate` have different timing
+- Logs are generated but not captured by test before it finishes
 
-### Verificación:
+### Verification:
 
 ```bash
 # Node (100% passing)
 npm test
 
-# Bun (4 tests de logging fallarán - funcionalidad OK)
+# Bun (4 logging tests will fail - functionality OK)
 bun test tests/universal tests/bun
 ```
 
-### Solución propuesta para v0.5.0:
+### Proposed Solution for v0.5.0:
 
-- [ ] Crear `BunBackgroundTasks` con manejo de Promise específico para Bun ✅ (Iniciado)
-- [ ] Ajustar timing de tests para capturar logs asincrónicos en Bun
-- [ ] O simplificar tests para no depender de logs internos
+- [ ] Create `BunBackgroundTasks` with Bun-specific Promise handling ✅ (Started)
+- [ ] Adjust test timing to capture asynchronous logs in Bun
+- [ ] Or simplify tests to not depend on internal logs
 
 ---
 
 ## ✅ Redirects & Content Negotiation (v0.4.0)
 
-**Estado:** Completamente funcional en Node y Bun  
-**Tests:** 38/38 passing en ambos runtimes  
-**Nota:** Los tests de redirects usan `rawRequest(..., false)` para NO seguir redirects automáticamente
+**Status:** Fully functional on Node and Bun  
+**Tests:** 38/38 passing on both runtimes  
+**Note:** Redirect tests use `rawRequest(..., false)` to NOT follow redirects automatically
 
 ---
 
-**Última actualización:** 2025-11-06
+**Last updated:** 2025-11-06
 
