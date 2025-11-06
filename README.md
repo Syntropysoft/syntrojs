@@ -24,7 +24,7 @@
 - ✅ **Active development** - Regular updates and community support
 - 🎯 **v0.5.0 coming soon** - TOON Format support (40-60% payload reduction)
 
-**Latest Release**: **v0.4.0** - HTTP Redirects + Content Negotiation - [CHANGELOG](./CHANGELOG_v0.4.0.md)
+**Latest Release**: **v0.4.0** - HTTP Redirects + Content Negotiation - [CHANGELOG](./docs/CHANGELOG_v0.4.0.md)
 
 > 💡 **Note**: While the core is stable, we recommend pinning to specific versions until v1.0.0
 

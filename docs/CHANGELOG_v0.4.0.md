@@ -94,7 +94,7 @@
 1. Background task timeout logging (4 tests)
 2. Dependency injection cleanup timing (1 test)
 
-**Full details:** See `KNOWN_ISSUES.md`
+**Full details:** See [KNOWN_ISSUES.md](./KNOWN_ISSUES.md)
 
 ## 📝 Files Created
 
@@ -121,8 +121,8 @@
 - `examples/http-methods/content-negotiation-example.js`
 
 ### Documentation:
-- `KNOWN_ISSUES.md`
-- `CHANGELOG_v0.4.0.md` (this file)
+- `docs/KNOWN_ISSUES.md`
+- `docs/CHANGELOG_v0.4.0.md` (this file)
 
 ---
 
