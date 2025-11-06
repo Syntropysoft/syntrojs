@@ -10,10 +10,16 @@
 
 import type { Readable } from 'node:stream';
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
+import { createAcceptsHelper } from '../application/ContentNegotiator';
 import { StreamingResponseHandler } from '../application/StreamingResponseHandler';
 import type { Route } from '../domain/Route';
 import type { HttpMethod } from '../domain/types';
-import { createFileDownload, type FileDownloadOptions } from './FileDownloadHelper';
+import {
+  createFileDownload,
+  type FileDownloadOptions,
+  isFileDownloadResponse,
+} from './FileDownloadHelper';
+import { createRedirect, isRedirectResponse, type RedirectStatusCode } from './RedirectHelper';
 
 export interface UltraMinimalConfig {
   logger?: boolean;
@@ -54,6 +60,11 @@ class UltraMinimalAdapterImpl {
           // File download helper (functional)
           download: (data: Buffer | Readable | string, options: FileDownloadOptions) =>
             createFileDownload(data, options),
+          // HTTP redirect helper (functional)
+          redirect: (url: string, statusCode?: RedirectStatusCode) =>
+            createRedirect(url, statusCode),
+          // Content negotiation helper (functional)
+          accepts: createAcceptsHelper(request.headers.accept as string),
         };
 
         // DIRECT validation - no SchemaValidator overhead
@@ -69,6 +80,22 @@ class UltraMinimalAdapterImpl {
 
         // DIRECT handler execution
         const result = await route.handler(context);
+
+        // REDIRECT SUPPORT
+        if (isRedirectResponse(result)) {
+          for (const [key, value] of Object.entries(result.headers)) {
+            reply.header(key, value);
+          }
+          return reply.status(result.statusCode).send();
+        }
+
+        // FILE DOWNLOAD SUPPORT
+        if (isFileDownloadResponse(result)) {
+          for (const [key, value] of Object.entries(result.headers)) {
+            reply.header(key, value);
+          }
+          return reply.status(result.statusCode).send(result.data);
+        }
 
         // STREAMING SUPPORT: Check if result is a Stream
         if (StreamingResponseHandler.isReadableStream(result)) {

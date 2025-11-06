@@ -6,6 +6,7 @@
 export * from './AutoOptionsGenerator';
 export * from './BackgroundTasks';
 export * from './BunRequestParser';
+export * from './ContentNegotiator';
 export * from './DependencyInjector';
 export * from './DocsRenderer';
 export * from './ErrorHandler';

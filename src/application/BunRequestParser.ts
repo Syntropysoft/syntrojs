@@ -9,6 +9,8 @@ import type { IRequestParser } from '../domain/interfaces';
 import type { Route } from '../domain/Route';
 import type { RequestContext } from '../domain/types';
 import { createFileDownload } from '../infrastructure/FileDownloadHelper';
+import { createRedirect } from '../infrastructure/RedirectHelper';
+import { createAcceptsHelper } from './ContentNegotiator';
 
 /**
  * Bun Request Parser
@@ -56,6 +58,50 @@ export class BunRequestParser implements IRequestParser {
   }
 
   /**
+   * Parse URL-encoded string to plain object
+   * Pure function: No side effects
+   *
+   * @param text - URL-encoded string (e.g., "key=value&foo=bar")
+   * @returns Plain object
+   */
+  private parseUrlEncoded(text: string): Record<string, any> {
+    // Guard clause: Empty text
+    if (!text) {
+      return {};
+    }
+
+    const body: Record<string, any> = {};
+    const params = new URLSearchParams(text);
+
+    for (const [key, value] of params.entries()) {
+      // Guard clause: Handle arrays (e.g., tags[]=value1&tags[]=value2)
+      if (key.endsWith('[]')) {
+        const cleanKey = key.slice(0, -2);
+        if (!body[cleanKey]) {
+          body[cleanKey] = [];
+        }
+        body[cleanKey].push(value);
+        continue;
+      }
+
+      // Handle duplicate keys as arrays (e.g., tags=a&tags=b)
+      if (body[key]) {
+        // Convert to array if not already
+        if (!Array.isArray(body[key])) {
+          body[key] = [body[key]];
+        }
+        body[key].push(value);
+        continue;
+      }
+
+      // Default: Simple key-value
+      body[key] = value;
+    }
+
+    return body;
+  }
+
+  /**
    * Parse FormData to plain object
    * Pure function: No side effects
    *
@@ -99,8 +145,8 @@ export class BunRequestParser implements IRequestParser {
 
     // Guard clause: application/x-www-form-urlencoded
     if (contentType.includes('application/x-www-form-urlencoded')) {
-      const formData = await request.formData();
-      return this.parseFormData(formData);
+      const text = await request.text();
+      return this.parseUrlEncoded(text);
     }
 
     // Guard clause: application/json (default)
@@ -167,6 +213,10 @@ export class BunRequestParser implements IRequestParser {
       },
       // File download helper (functional)
       download: (data, options) => createFileDownload(data, options),
+      // HTTP redirect helper (functional)
+      redirect: (url, statusCode) => createRedirect(url, statusCode),
+      // Content negotiation helper (functional)
+      accepts: createAcceptsHelper(headers.accept),
     };
   }
 }

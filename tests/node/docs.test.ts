@@ -4,9 +4,9 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { ErrorHandler } from '../../../src/application/ErrorHandler';
-import { RouteRegistry } from '../../../src/application/RouteRegistry';
-import { SyntroJS } from '../../../src/core';
+import { ErrorHandler } from '../../src/application/ErrorHandler';
+import { RouteRegistry } from '../../src/application/RouteRegistry';
+import { SyntroJS } from '../../src/core';
 
 describe('Documentation Endpoints E2E', () => {
   let app: SyntroJS;

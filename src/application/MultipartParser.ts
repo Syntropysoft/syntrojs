@@ -116,6 +116,10 @@ class MultipartParserImpl {
     try {
       // Bun's native FormData API (Web standard)
       const formData = await request.formData();
+      console.log(
+        'DEBUG - parseBun - formData entries count:',
+        Array.from(formData.entries()).length,
+      );
 
       // Functional: Process each entry
       for (const [name, value] of formData.entries()) {
@@ -146,7 +150,7 @@ class MultipartParserImpl {
           context.fields = fields;
         }
       }
-    } catch (_error) {
+    } catch (error) {
       // Guard clause: If parsing fails, don't populate context
       return;
     }
@@ -248,11 +252,19 @@ class MultipartParserImpl {
     const buffer = Buffer.from(await file.arrayBuffer());
 
     // Create a Readable stream from buffer for compatibility
-    const { Readable } = await import('node:stream');
-    const stream = Readable.from(buffer);
+    // Guard clause: Bun runtime (no Node.js streams needed)
+    let stream: any;
+    if (typeof (globalThis as any).Bun !== 'undefined') {
+      // Bun: Use buffer directly (Bun handles buffers as streams)
+      stream = buffer;
+    } else {
+      // Node.js: Create Readable stream
+      const { Readable } = await import('node:stream');
+      stream = Readable.from(buffer);
+    }
 
     // Pure function: Create UploadedFile
-    return {
+    const uploaded = {
       filename: file.name,
       mimetype: file.type || 'application/octet-stream',
       encoding: '7bit',
@@ -261,6 +273,7 @@ class MultipartParserImpl {
       data: stream,
       toBuffer: async () => buffer,
     };
+    return uploaded;
   }
 }
 

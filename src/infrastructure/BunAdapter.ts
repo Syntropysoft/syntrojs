@@ -63,7 +63,7 @@ class BunAdapterImpl {
   /**
    * Register route
    */
-  registerRoute(server: unknown, route: Route): void {
+  registerRoute(_server: unknown, route: Route): void {
     const routeKey = `${route.method}:${route.path}`;
     this.routes.set(routeKey, route);
   }
@@ -104,6 +104,8 @@ class BunAdapterImpl {
    * SOLID: Each step delegates to specialized services
    */
   private async handleRequest(request: Request): Promise<Response> {
+    let context: any = null;
+
     try {
       const url = new URL(request.url);
       const method = request.method as string;
@@ -115,7 +117,7 @@ class BunAdapterImpl {
       }
 
       // 2. CONTEXT BUILDING: Delegate to RequestParser (Dependency Inversion)
-      const context = await this.requestParser.buildContext(request, url, route);
+      context = await this.requestParser.buildContext(request, url, route);
 
       // 3. MIDDLEWARE: Execute if available
       await this.executeMiddlewares(route, context);
@@ -129,10 +131,17 @@ class BunAdapterImpl {
       // 6. HANDLER: Execute business logic
       const result = await route.handler(context);
 
+      // 6.5. RESPONSE VALIDATION: Validate response against schema if provided
+      if (route.config.response) {
+        const validatedResult = this.validator.validateOrThrow(route.config.response, result);
+        // 7. SERIALIZATION: Delegate to Response Serializers (Strategy Pattern + Open/Closed)
+        return this.serializeResponse(validatedResult, route.config.status ?? 200);
+      }
+
       // 7. SERIALIZATION: Delegate to Response Serializers (Strategy Pattern + Open/Closed)
       return this.serializeResponse(result, route.config.status ?? 200);
     } catch (error) {
-      return await this.handleError(error);
+      return await this.handleError(error, context);
     }
   }
 
@@ -208,11 +217,19 @@ class BunAdapterImpl {
     // Parse multipart form data
     await MultipartParser.parseBun(request, context);
 
-    // Parse and validate body
-    if (!context.files && route.config.body && ['POST', 'PUT', 'PATCH'].includes(request.method)) {
+    // Parse body for POST/PUT/PATCH (ALWAYS parse, validate only if schema exists)
+    // Single Responsibility: Parsing and validation are separate concerns
+    if (!context.files && ['POST', 'PUT', 'PATCH'].includes(request.method)) {
       const contentType = request.headers.get('content-type') || '';
-      const body = await this.requestParser.parseBody(request, contentType);
-      context.body = this.validator.validateOrThrow(route.config.body, body);
+      const parsedBody = await this.requestParser.parseBody(request, contentType);
+
+      // Validate body if schema is provided
+      if (route.config.body) {
+        context.body = this.validator.validateOrThrow(route.config.body, parsedBody);
+      } else {
+        // No validation: use parsed body as-is
+        context.body = parsedBody;
+      }
     }
   }
 
@@ -239,9 +256,9 @@ class BunAdapterImpl {
   /**
    * Handle errors
    */
-  private async handleError(error: unknown): Promise<Response> {
+  private async handleError(error: unknown, context?: any): Promise<Response> {
     const errorObj = error instanceof Error ? error : new Error(String(error));
-    const httpException = await ErrorHandler.handle(errorObj, {} as any);
+    const httpException = await ErrorHandler.handle(errorObj, context || ({} as any));
 
     return new Response(JSON.stringify(httpException.body), {
       status: httpException.status,
@@ -291,9 +308,11 @@ export class BunAdapter {
       const { BunRequestParser } = require('../application/BunRequestParser');
       const { SchemaValidator } = require('../application/SchemaValidator');
       const {
+        RedirectSerializer,
         FileDownloadSerializer,
         StreamSerializer,
         BufferSerializer,
+        CustomResponseSerializer,
         JsonSerializer,
       } = require('../application/serializers');
 
@@ -302,10 +321,12 @@ export class BunAdapter {
         new BunRequestParser(),
         SchemaValidator, // Singleton
         [
-          new FileDownloadSerializer(),
-          new StreamSerializer(),
-          new BufferSerializer(),
-          new JsonSerializer(), // Must be last (default)
+          new RedirectSerializer(), // First: 3xx status code, no body
+          new FileDownloadSerializer(), // Second: custom headers + data
+          new CustomResponseSerializer(), // Third: custom status/headers/body
+          new StreamSerializer(), // Fourth: Node.js Readable streams
+          new BufferSerializer(), // Fifth: binary data
+          new JsonSerializer(), // Last: default fallback
         ],
       );
     }
@@ -331,5 +352,13 @@ export class BunAdapter {
 
   static async close(server: unknown): Promise<void> {
     return BunAdapter.getInstance().close(server);
+  }
+
+  /**
+   * Clear singleton instance (for testing only)
+   * Allows tests to start with a fresh adapter
+   */
+  static clearInstance(): void {
+    BunAdapter.instance = null;
   }
 }

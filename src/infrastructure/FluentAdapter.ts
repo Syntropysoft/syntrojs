@@ -13,6 +13,7 @@ import type { Readable } from 'node:stream';
 import formbody from '@fastify/formbody';
 import multipart from '@fastify/multipart';
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
+import { createAcceptsHelper } from '../application/ContentNegotiator';
 import type { MiddlewareRegistry } from '../application/MiddlewareRegistry';
 import { MultipartParser } from '../application/MultipartParser';
 import { StreamingResponseHandler } from '../application/StreamingResponseHandler';
@@ -27,6 +28,7 @@ import type {
 import { createFileDownload, isFileDownloadResponse } from './FileDownloadHelper';
 import { setComponentLoggingEnabled } from './LoggerHelper';
 import { integrateLogger, type LoggerIntegrationConfig } from './LoggerIntegration';
+import { createRedirect, isRedirectResponse } from './RedirectHelper';
 
 export interface FluentAdapterConfig {
   /** Enable Fastify built-in logger (legacy) */
@@ -400,6 +402,10 @@ export class FluentAdapter {
         },
         // File download helper (functional)
         download: (data, options) => createFileDownload(data, options),
+        // HTTP redirect helper (functional)
+        redirect: (url, statusCode) => createRedirect(url, statusCode),
+        // Content negotiation helper (functional)
+        accepts: createAcceptsHelper(request.headers.accept as string),
       };
 
       // Parse multipart form data if present (Dependency Inversion: use service)
@@ -433,9 +439,27 @@ export class FluentAdapter {
         // Ejecutar handler
         const result = await route.handler(context);
 
+        // REDIRECT SUPPORT: Check if result is a redirect response
+        // Pattern: { statusCode: 301|302|303|307|308, headers: { 'Location': ... }, body: null }
+        // Priority: Check FIRST (redirects have no body, exit early)
+        if (isRedirectResponse(result)) {
+          // Cleanup dependencies before sending
+          if (cleanupFn) {
+            setImmediate(() => cleanupFn!());
+          }
+
+          // Set all headers from redirect response (immutable)
+          for (const [key, value] of Object.entries(result.headers)) {
+            reply.header(key, value);
+          }
+
+          // Send redirect with appropriate status code (body is always null)
+          return reply.status(result.statusCode).send();
+        }
+
         // FILE DOWNLOAD SUPPORT: Check if result is a file download response
         // Pattern: { data: Buffer|Stream|string, headers: { 'Content-Disposition': ... }, __isFileDownload: true }
-        // Priority: Check BEFORE Stream/Buffer to allow custom headers
+        // Priority: Check AFTER redirect but BEFORE Stream/Buffer to allow custom headers
         if (isFileDownloadResponse(result)) {
           // Cleanup dependencies before sending
           if (cleanupFn) {

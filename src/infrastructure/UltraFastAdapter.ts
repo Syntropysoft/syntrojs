@@ -11,10 +11,12 @@
 
 import type { Readable } from 'node:stream';
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
+import { createAcceptsHelper } from '../application/ContentNegotiator';
 import { StreamingResponseHandler } from '../application/StreamingResponseHandler';
 import type { Route } from '../domain/Route';
 import type { HttpMethod } from '../domain/types';
-import { createFileDownload } from './FileDownloadHelper';
+import { createFileDownload, isFileDownloadResponse } from './FileDownloadHelper';
+import { createRedirect, isRedirectResponse } from './RedirectHelper';
 
 export interface UltraFastConfig {
   logger?: boolean;
@@ -66,6 +68,22 @@ interface OptimizedContext {
     data: Buffer | Readable | string,
     options: { filename: string; mimeType?: string; disposition?: 'attachment' | 'inline' },
   ) => { data: Buffer | Readable | string; headers: Record<string, string>; statusCode: number };
+  redirect: (
+    url: string,
+    statusCode?: 301 | 302 | 303 | 307 | 308,
+  ) => {
+    statusCode: 301 | 302 | 303 | 307 | 308;
+    headers: Record<string, string>;
+    body: null;
+  };
+  accepts: {
+    json: () => boolean;
+    html: () => boolean;
+    xml: () => boolean;
+    text: () => boolean;
+    toon: () => boolean;
+    type: (types: string[]) => string | false;
+  };
 }
 
 class UltraFastAdapterImpl {
@@ -90,6 +108,8 @@ class UltraFastAdapterImpl {
           addTask: (task: () => void) => setImmediate(task),
         },
         download: (data, options) => createFileDownload(data, options),
+        redirect: (url, statusCode) => createRedirect(url, statusCode),
+        accepts: createAcceptsHelper(''), // Will be set per request
       }),
       (ctx) => {
         // Reset del contexto
@@ -173,6 +193,8 @@ class UltraFastAdapterImpl {
         context.cookies = (request as { cookies?: Record<string, string> }).cookies || {};
         context.correlationId = Math.random().toString(36).substring(2, 15);
         context.timestamp = new Date();
+        // Update accepts helper with current request's Accept header
+        context.accepts = createAcceptsHelper(request.headers.accept as string);
 
         // Validación ultra-rápida usando schemas pre-compilados
         if (compiledParams) {
@@ -188,6 +210,22 @@ class UltraFastAdapterImpl {
 
         // Ejecutar handler
         const result = await route.handler(context);
+
+        // REDIRECT SUPPORT
+        if (isRedirectResponse(result)) {
+          for (const [key, value] of Object.entries(result.headers)) {
+            reply.header(key, value);
+          }
+          return reply.status(result.statusCode).send();
+        }
+
+        // FILE DOWNLOAD SUPPORT
+        if (isFileDownloadResponse(result)) {
+          for (const [key, value] of Object.entries(result.headers)) {
+            reply.header(key, value);
+          }
+          return reply.status(result.statusCode).send(result.data);
+        }
 
         // STREAMING SUPPORT: Check if result is a Stream
         if (StreamingResponseHandler.isReadableStream(result)) {

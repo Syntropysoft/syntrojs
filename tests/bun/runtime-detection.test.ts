@@ -25,7 +25,7 @@ describe('Bun Runtime Detection', () => {
       await app.listen(0); // Random port
       expect(output).toContain('🚀 SyntroJS-BUN');
       expect(output).toContain('Bun (JavaScriptCore)');
-      expect(output).toContain('⚡ Ultra-fast Performance: 6x faster than Fastify');
+      expect(output).toContain('⚡ Performance: 3.8x faster than Node.js');
     } finally {
       console.log = originalLog;
       await app.close();

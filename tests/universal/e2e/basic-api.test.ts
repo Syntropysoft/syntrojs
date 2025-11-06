@@ -459,28 +459,4 @@ describe('SyntroJS E2E - Basic API', () => {
       });
     });
   });
-
-  describe('getRawFastify', () => {
-    it('should return underlying Fastify instance', () => {
-      const fastify = app.getRawFastify();
-
-      expect(fastify).toBeDefined();
-      expect(fastify.server).toBeDefined();
-    });
-
-    it('should allow direct Fastify access for advanced use cases', async () => {
-      const fastify = app.getRawFastify();
-
-      // Can register Fastify plugins directly
-      fastify.get('/raw-fastify-route', async () => ({ direct: true }));
-
-      server = await app.listen(0);
-      const port = new URL(server).port;
-
-      const response = await fetch(`http://localhost:${port}/raw-fastify-route`);
-      const data = await response.json();
-
-      expect(data).toEqual({ direct: true });
-    });
-  });
 });

@@ -1,8 +1,8 @@
 /**
- * BackgroundTasks - Application Service
+ * BackgroundTasks - Application Service (Node.js Implementation)
  *
  * Responsibility: Execute non-blocking background tasks
- * Pattern: Singleton (Module Pattern)
+ * Pattern: Strategy Pattern (IBackgroundTasks implementation for Node.js)
  * Principles: SOLID, Guard Clauses, Functional
  *
  * ⚠️ CRITICAL WARNING:
@@ -26,35 +26,21 @@
  * ```
  */
 
+import type {
+  BackgroundTask,
+  BackgroundTaskOptions,
+  IBackgroundTasks,
+} from '../domain/IBackgroundTasks';
 import { extractLoggerErrorInfo } from '../infrastructure/ErrorExtractor';
 import { getComponentLogger } from '../infrastructure/LoggerHelper';
 
-/**
- * Background task function type
- */
-export type BackgroundTask = () => void | Promise<void>;
+// Re-export types for backwards compatibility
+export type { BackgroundTask, BackgroundTaskOptions } from '../domain/IBackgroundTasks';
 
 /**
- * Background task options
+ * Background tasks implementation (Node.js)
  */
-export interface BackgroundTaskOptions {
-  /** Task name for logging/debugging */
-  name?: string;
-
-  /** Timeout in milliseconds (default: 30000 = 30s) */
-  timeout?: number;
-
-  /** Callback when task completes */
-  onComplete?: () => void;
-
-  /** Callback when task fails */
-  onError?: (error: unknown) => void;
-}
-
-/**
- * Background tasks implementation
- */
-class BackgroundTasksImpl {
+class NodeBackgroundTasksImpl implements IBackgroundTasks {
   /** Warning threshold in milliseconds */
   private readonly WARNING_THRESHOLD_MS = 100;
 
@@ -136,7 +122,6 @@ class BackgroundTasksImpl {
         );
 
         // Call onError callback
-        // error is already unknown type, safe to pass
         if (options?.onError) {
           options.onError(error);
         }
@@ -181,11 +166,27 @@ class BackgroundTasksImpl {
 }
 
 /**
- * Exported singleton (Module Pattern)
+ * Factory: Create BackgroundTasks instance based on runtime
+ * Strategy Pattern: Returns correct implementation for Node.js vs Bun
  */
-export const BackgroundTasks = new BackgroundTasksImpl();
+function createBackgroundTasksForRuntime(): IBackgroundTasks {
+  // Detect Bun runtime
+  if (typeof (globalThis as any).Bun !== 'undefined') {
+    const { BunBackgroundTasks } = require('./BunBackgroundTasks');
+    return new BunBackgroundTasks();
+  }
+
+  // Default: Node.js
+  return new NodeBackgroundTasksImpl();
+}
+
+/**
+ * Exported singleton (Module Pattern)
+ * Uses runtime-specific implementation
+ */
+export const BackgroundTasks = createBackgroundTasksForRuntime();
 
 /**
  * Factory for testing
  */
-export const createBackgroundTasks = (): BackgroundTasksImpl => new BackgroundTasksImpl();
+export const createBackgroundTasks = (): IBackgroundTasks => createBackgroundTasksForRuntime();

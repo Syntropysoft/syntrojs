@@ -11,6 +11,7 @@ import formbody from '@fastify/formbody';
 import multipart from '@fastify/multipart';
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import { BackgroundTasks } from '../application/BackgroundTasks';
+import { createAcceptsHelper } from '../application/ContentNegotiator';
 import type { DependencyMetadata } from '../application/DependencyInjector';
 import { DependencyInjector } from '../application/DependencyInjector';
 import { ErrorHandler } from '../application/ErrorHandler';
@@ -22,6 +23,7 @@ import type { Route } from '../domain/Route';
 import type { HttpMethod, RequestContext } from '../domain/types';
 import { createFileDownload, isFileDownloadResponse } from './FileDownloadHelper';
 import { integrateLogger, type LoggerIntegrationConfig } from './LoggerIntegration';
+import { createRedirect, isRedirectResponse } from './RedirectHelper';
 
 /**
  * Fastify adapter configuration
@@ -155,9 +157,27 @@ class FastifyAdapterImpl {
         // Execute handler
         const result = await route.handler(context);
 
+        // REDIRECT SUPPORT: Check if result is a redirect response
+        // Pattern: { statusCode: 301|302|303|307|308, headers: { 'Location': ... }, body: null }
+        // Priority: Check FIRST (redirects have no body, exit early)
+        if (isRedirectResponse(result)) {
+          // Cleanup dependencies before sending
+          if (cleanup) {
+            await cleanup();
+          }
+
+          // Set all headers from redirect response (immutable)
+          for (const [key, value] of Object.entries(result.headers)) {
+            reply.header(key, value);
+          }
+
+          // Send redirect with appropriate status code (body is always null)
+          return reply.status(result.statusCode).send();
+        }
+
         // FILE DOWNLOAD SUPPORT: Check if result is a file download response
         // Pattern: { data: Buffer|Stream|string, headers: { 'Content-Disposition': ... } }
-        // Priority: Check BEFORE Stream/Buffer to allow custom headers
+        // Priority: Check AFTER redirect but BEFORE Stream/Buffer to allow custom headers
         if (isFileDownloadResponse(result)) {
           // Cleanup dependencies before sending
           if (cleanup) {
@@ -292,6 +312,10 @@ class FastifyAdapterImpl {
       },
       // File download helper (functional)
       download: (data, options) => createFileDownload(data, options),
+      // HTTP redirect helper (functional)
+      redirect: (url, statusCode) => createRedirect(url, statusCode),
+      // Content negotiation helper (functional)
+      accepts: createAcceptsHelper(request.headers.accept),
     };
   }
 

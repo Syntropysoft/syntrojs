@@ -1,17 +1,20 @@
 /**
  * Plugins E2E Tests
  * Tests for SyntroJS plugin wrappers
+ *
+ * NOTE: Plugins are Node.js/Fastify specific - skipped in Bun
  */
 
 import { describe, expect, test } from 'vitest';
-import { SyntroJS } from '../../../src/core';
+import { SyntroJS } from '../../src/core';
 import {
   registerCompression,
   registerCors,
   registerHelmet,
   registerRateLimit,
-} from '../../../src/plugins';
+} from '../../src/plugins';
 
+// Node.js/Fastify specific tests
 describe('Plugins E2E', () => {
   describe('Plugin Registration', () => {
     test('should throw error if server instance is not provided', async () => {

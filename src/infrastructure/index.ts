@@ -17,6 +17,7 @@ export * from './LoggerHelper';
 export * from './LoggerIntegration';
 export * from './LogLevelMapper';
 export * from './NoOpLogger';
+export * from './RedirectHelper';
 export * from './RuntimeOptimizer';
 export * from './UltraFastAdapter';
 export * from './UltraFastifyAdapter';

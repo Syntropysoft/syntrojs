@@ -512,7 +512,7 @@ describe('FileDownloadHelper - Unit Tests', () => {
   describe('Edge Cases', () => {
     test('handles very long filenames', () => {
       const buffer = Buffer.from('test');
-      const longFilename = 'a'.repeat(200) + '.pdf';
+      const longFilename = `${'a'.repeat(200)}.pdf`;
 
       const result = createFileDownload(buffer, { filename: longFilename });
 

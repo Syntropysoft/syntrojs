@@ -114,6 +114,32 @@ export interface RequestContext<
     statusCode: number;
   };
 
+  /** HTTP redirect helper */
+  redirect: (
+    url: string,
+    statusCode?: 301 | 302 | 303 | 307 | 308,
+  ) => {
+    statusCode: 301 | 302 | 303 | 307 | 308;
+    headers: Record<string, string>;
+    body: null;
+  };
+
+  /** Content negotiation helper */
+  accepts: {
+    /** Check if client accepts JSON */
+    json: () => boolean;
+    /** Check if client accepts HTML */
+    html: () => boolean;
+    /** Check if client accepts XML */
+    xml: () => boolean;
+    /** Check if client accepts plain text */
+    text: () => boolean;
+    /** Check if client accepts TOON format */
+    toon: () => boolean;
+    /** Negotiate best type from array */
+    type: (types: string[]) => string | false;
+  };
+
   /** Uploaded files (multipart/form-data only) */
   files?: UploadedFile[];
 

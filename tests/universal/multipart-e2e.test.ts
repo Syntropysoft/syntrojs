@@ -29,7 +29,7 @@ describe('Multipart E2E - Complete Flow', () => {
 
         const file = ctx.files![0];
         expect(file.filename).toBe('test.txt');
-        expect(file.mimetype).toBe('text/plain');
+        expect(file.mimetype).toContain('text/plain'); // May include charset
         expect(file.size).toBeGreaterThan(0);
 
         // Validate toBuffer() works

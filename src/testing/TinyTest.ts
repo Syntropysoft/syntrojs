@@ -88,6 +88,12 @@ export class TinyTest extends SyntroJS {
     super(config);
     // Clear route registry on instantiation for test isolation
     RouteRegistry.clear();
+
+    // Clear BunAdapter singleton in Bun runtime for test isolation
+    if (typeof (globalThis as any).Bun !== 'undefined') {
+      const { BunAdapter } = require('../infrastructure/BunAdapter');
+      BunAdapter.clearInstance();
+    }
   }
 
   // NOTE: Test registry is reserved for future SmartMutator integration
@@ -132,16 +138,19 @@ export class TinyTest extends SyntroJS {
    * - Binary data (need arrayBuffer())
    * - Streams (need body.getReader())
    * - Custom response handling
+   * - Testing redirects (set followRedirects = false)
    *
    * @param method - HTTP method
    * @param path - Request path
    * @param options - Request options
+   * @param followRedirects - Whether to follow redirects automatically (default: true)
    * @returns Native Fetch Response object
    */
   async rawRequest(
     method: HttpMethod,
     path: string,
     options: TestRequestOptions = {},
+    followRedirects = true,
   ): Promise<Response> {
     // Ensure server is started
     await this.ensureServer();
@@ -167,6 +176,7 @@ export class TinyTest extends SyntroJS {
       method,
       headers,
       body,
+      ...(followRedirects ? {} : { redirect: 'manual' }), // Only disable redirects when explicitly requested
     };
 
     // Make request and return raw Response
