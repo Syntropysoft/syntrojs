@@ -4,3 +4,4 @@
 
 export * from './SmartMutator';
 export * from './TinyTest';
+export * from './TestClient';

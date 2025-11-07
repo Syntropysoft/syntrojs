@@ -1,5 +1,22 @@
 # Changelog v0.4.0 - HTTP Redirects & Content Negotiation
 
+## ⚠️ Deprecated
+
+### TinyTest (will be removed in v0.5.0)
+
+**Status:** 🔴 Deprecated
+
+**Reason:** TinyTest does not provide sufficient value over standard testing approaches:
+- Requires recreating all routes (code duplication)
+- Does not test real application code
+- Adds unnecessary complexity
+
+**What to use instead:**
+- **Now:** Use Vitest/Jest with standard fetch (see [DEPRECATIONS.md](./DEPRECATIONS.md))
+- **v0.5.0:** Type-safe client with end-to-end type safety and autocomplete
+
+---
+
 ## 🎉 Completed Features
 
 ### ✅ HTTP Redirects Helper

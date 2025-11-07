@@ -43,7 +43,7 @@ Coming in v0.5.0: **TOON Format** - reduce your API bandwidth costs 40-60% (like
 - **🚀 Dual Runtime Support**: Write once, run on both Node.js and Bun. Zero code changes required.
 - **🔥 FastAPI-like Developer Experience**: Automatic validation with Zod, full TypeScript type safety, elegant error handling (`HTTPException`).
 - **🎨 Automatic Interactive Docs**: Beautiful landing page + Swagger UI + ReDoc out of the box at `/docs`.
-- **🧪 Testing Superpower**: `TinyTest` for effortless API testing + `SmartMutator` for mutation testing in seconds.
+- **🧪 Testing Superpower**: `SmartMutator` for mutation testing in seconds. Type-safe client coming in v0.5.0.
 - **🔌 Rich Ecosystem**: Middleware system, WebSockets, dependency injection, background tasks, structured logging.
 - **🔒 Security First**: JWT, OAuth2, API Keys, and security plugins built-in.
 
@@ -158,30 +158,42 @@ bun app.js
 
 ## 🧪 Testing Made Easy
 
-### TinyTest - API Testing
+### Standard Testing
 
 ```javascript
-import { TinyTest } from 'syntrojs/testing';
-import { z } from 'zod';
+import { describe, test, expect, beforeAll, afterAll } from 'vitest';
+import { app } from './app';
 
-test('POST /users creates a user', async () => {
-  const api = new TinyTest();
-
-  api.post('/users', {
-    body: z.object({ name: z.string(), email: z.string().email() }),
-    handler: ({ body }) => ({ id: 1, ...body }),
+describe('API Tests', () => {
+  let server: string;
+  
+  beforeAll(async () => {
+    server = await app.listen(0); // Random port
+  });
+  
+  afterAll(async () => {
+    await app.close();
   });
 
-  const { status, data } = await api.expectSuccess('POST', '/users', {
-    body: { name: 'John', email: 'john@example.com' }
+  test('POST /users creates a user', async () => {
+    const port = new URL(server).port;
+    const res = await fetch(`http://localhost:${port}/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'John', email: 'john@example.com' })
+    });
+    
+    const data = await res.json();
+    
+    expect(res.status).toBe(200);
+    expect(data.name).toBe('John');
   });
-
-  expect(status).toBe(201);
-  expect(data.name).toBe('John');
-
-  await api.close();
 });
 ```
+
+> **Note**: TinyTest is deprecated and will be removed in v0.5.0. See [DEPRECATIONS.md](./docs/DEPRECATIONS.md) for details.
+>
+> **Coming in v0.5.0**: Type-safe client with autocomplete and zero code duplication!
 
 ### SmartMutator - Mutation Testing in Seconds
 

@@ -1,25 +1,35 @@
 /**
  * TinyTest - Testing Wrapper
  *
- * Responsibility: Make testing APIs as easy as creating them
- * Pattern: Builder Pattern + Test Utilities
- * Principles: SOLID, DDD, Functional
+ * @deprecated TinyTest will be removed in v0.5.0
+ *
+ * **Why deprecated:**
+ * - Requires recreating all routes (duplicates code)
+ * - Does not test real application code
+ * - Provides no significant value over standard testing with fetch
+ *
+ * **What to use instead:**
+ * - For now: Use Vitest/Jest with standard fetch
+ * - Coming in v0.5.0: Type-safe client for end-to-end type safety
  *
  * @example
  * ```typescript
- * test('GET /users/:id', async () => {
- *   const api = new TinyTest();
+ * // ❌ Don't use TinyTest (deprecated)
+ * const api = new TinyTest()
+ * api.get('/users', { handler: ... })
  *
- *   api.get('/users/:id', {
- *     params: z.object({ id: z.coerce.number() }),
- *     handler: ({ params }) => ({ id: params.id, name: 'Gaby' }),
- *   });
+ * // ✅ Use standard testing instead
+ * import { test, expect } from 'vitest'
+ * test('get users', async () => {
+ *   const res = await fetch('http://localhost:3000/users')
+ *   const data = await res.json()
+ *   expect(data).toBeDefined()
+ * })
  *
- *   const { status, data } = await api.expectSuccess('GET', '/users/123');
- *   expect(data).toEqual({ id: 123, name: 'Gaby' });
- *
- *   await api.close();
- * });
+ * // ✅ Coming in v0.5.0: Type-safe client
+ * import { createClient } from 'syntrojs/client'
+ * const client = createClient<App>(app)
+ * const { data } = await client.users.get()
  * ```
  */
 
