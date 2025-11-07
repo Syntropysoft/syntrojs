@@ -276,15 +276,36 @@ All features implemented and tested:
 
 **Status:** 🎯 Next priority (2-3 weeks)
 
-#### TOON Format (Priority #1)
-- [ ] Hybrid REST API - JSON by default, TOON on demand
-- [ ] Parse requests with `Content-Type: application/toon`
-- [ ] Respond with TOON based on `Accept: application/toon` header
-- [ ] Automatic content negotiation (transparent to business logic) ✅ (foundation ready)
+**Strategy:** Develop as separate package first (`@syntrojs/toon`), integrate later if successful
+
+#### @syntrojs/toon - Separate Package
+- [ ] Create new package: `@syntrojs/toon`
+- [ ] TOON Serializer (Response encoding: JSON → TOON)
+- [ ] TOON Parser (Request parsing: TOON → JSON)
+- [ ] SyntroJS Plugin API integration
+- [ ] Content negotiation via Accept header
+- [ ] Integration with [@toon-format/toon](https://github.com/toon-format/toon) (v0.8.0)
 - [ ] **40-60% payload reduction** vs JSON
-- [ ] Integration with [@toon-format/toon](https://github.com/toon-format/toon)
 - [ ] Benchmarks showing bandwidth savings
 - [ ] Documentation with real-world examples
+- [ ] Tests (unit + E2E with SyntroJS)
+
+**Architecture:**
+```typescript
+// Installation
+npm install syntrojs @syntrojs/toon
+
+// Usage
+import { SyntroJS } from 'syntrojs'
+import { toon } from '@syntrojs/toon'
+
+const app = new SyntroJS()
+  .use(toon())  // Enable TOON support
+  .get('/users', { handler: () => getUsers() })
+  
+// Auto-responds with TOON if Accept: application/toon
+// Otherwise responds with JSON (backward compatible)
+```
 
 **Use Cases & ROI:**
 - **Microservices**: 1M tx/hour = 720GB/month saved = $200-500/month infrastructure cost reduction
@@ -292,6 +313,10 @@ All features implemented and tested:
 - **High-frequency APIs**: Lower latency, less CPU overhead
 - **Mobile apps**: Reduced data usage for users
 - **IoT**: Minimal bandwidth for embedded devices
+
+**Decision point after v0.5.0:**
+- If successful & widely adopted → Move to `syntrojs/toon` (monorepo)
+- If experimental → Keep as separate optional package
 
 **Estimated effort:** 2-3 weeks
 
