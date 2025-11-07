@@ -263,24 +263,28 @@ All features implemented and tested:
 - [x] SmartMutator functional ✅
 
 ### Documentation
-- [ ] Update CHANGELOG.md with v0.4.0 changes
-- [ ] Document new features in README
-- [ ] Add examples for file downloads, redirects
-- [ ] Update roadmap for v0.5.0 (TOON format)
+- [x] Update CHANGELOG.md with v0.4.0 changes ✅
+- [x] Document new features in README ✅
+- [x] Add examples for file downloads, redirects ✅
+- [x] Update roadmap for v0.5.0 (TOON format) ✅
 
 ---
 
 ## 🚀 Post v0.4.0 (Future versions)
 
-### v0.5.0 - TOON Format Support + Advanced Features 🎯 GAME CHANGER
+### v0.5.0 - TOON Format Support 🎯 GAME CHANGER
+
+**Status:** 🎯 Next priority (2-3 weeks)
 
 #### TOON Format (Priority #1)
 - [ ] Hybrid REST API - JSON by default, TOON on demand
 - [ ] Parse requests with `Content-Type: application/toon`
 - [ ] Respond with TOON based on `Accept: application/toon` header
-- [ ] Automatic content negotiation (transparent to business logic)
+- [ ] Automatic content negotiation (transparent to business logic) ✅ (foundation ready)
 - [ ] **40-60% payload reduction** vs JSON
 - [ ] Integration with [@toon-format/toon](https://github.com/toon-format/toon)
+- [ ] Benchmarks showing bandwidth savings
+- [ ] Documentation with real-world examples
 
 **Use Cases & ROI:**
 - **Microservices**: 1M tx/hour = 720GB/month saved = $200-500/month infrastructure cost reduction
@@ -288,6 +292,73 @@ All features implemented and tested:
 - **High-frequency APIs**: Lower latency, less CPU overhead
 - **Mobile apps**: Reduced data usage for users
 - **IoT**: Minimal bandwidth for embedded devices
+
+**Estimated effort:** 2-3 weeks
+
+---
+
+### v0.6.0 - Type-Safe Client + Advanced Testing 🚀
+
+**Status:** 📋 Planned (1-2 weeks after v0.5.0)
+
+#### Type-Safe Client (Priority #1)
+- [ ] Remove TinyTest completely (deprecated in v0.4.0)
+- [ ] Implement `createClient<App>()` function
+- [ ] Type inference from backend routes (treaty-like)
+- [ ] Autocomplete for all routes, params, body, response
+- [ ] Support local mode (testing, no server)
+- [ ] Support remote mode (frontend, with URL)
+- [ ] Zero code generation (pure TypeScript inference)
+- [ ] Documentation with monorepo examples
+- [ ] Migration guide from TinyTest
+
+**Use Cases:**
+- **Monorepo**: Frontend + Backend with zero type duplication
+- **Testing**: Type-safe tests without recreating routes
+- **Refactoring**: Compile-time errors when API changes
+- **DX**: Autocomplete everywhere
+
+**Architecture:**
+```typescript
+// Backend exports type
+export const app = new SyntroJS()
+  .get('/users', { ... })
+  .post('/users', { ... })
+export type App = typeof app
+
+// Frontend/Tests use it
+import { createClient } from 'syntrojs/client'
+import type { App } from './backend/app'
+
+const api = createClient<App>('https://api.example.com')
+const { data } = await api.users.get()  // ✨ Autocomplete + Type-safe
+```
+
+**Estimated effort:** 1-2 weeks
+
+#### Advanced Testing Features
+- [ ] Integration with SmartMutator
+- [ ] Mutation-aware test helpers
+- [ ] Property-based testing helpers (optional)
+
+---
+
+### v0.7.0 - Router + Advanced Middleware
+- [ ] `SyntroRouter` - Group endpoints with prefixes
+- [ ] `Middleware` type - `(context, next) => Promise<void>`
+- [ ] `app.use()` - Global middleware (already exists, enhance)
+- [ ] `app.use(path, middleware)` - Scoped middleware
+- [ ] `router.use()` - Router-level middleware
+- [ ] `app.include(router)` - Include router in app
+- [ ] Tests: Router registration, middleware execution order
+- [ ] Docs: `docs/ROUTER.md` with examples
+- [ ] Example: `example-app/src/router-example.ts`
+
+**Justification:** Code organization and DRY. FastAPI has `APIRouter`, we should too.
+
+---
+
+### v0.8.0 - Security & Real-time Features
 
 #### Security Features
 - [ ] CSRF protection
@@ -302,20 +373,9 @@ All features implemented and tested:
 - [ ] WebSocket authentication
 - [ ] WebSocket middleware
 
-### v0.6.0 - Router + Advanced Middleware
-- [ ] `SyntroRouter` - Group endpoints with prefixes
-- [ ] `Middleware` type - `(context, next) => Promise<void>`
-- [ ] `app.use()` - Global middleware (already exists, enhance)
-- [ ] `app.use(path, middleware)` - Scoped middleware
-- [ ] `router.use()` - Router-level middleware
-- [ ] `app.include(router)` - Include router in app
-- [ ] Tests: Router registration, middleware execution order
-- [ ] Docs: `docs/ROUTER.md` with examples
-- [ ] Example: `example-app/src/router-example.ts`
+---
 
-**Justification:** Code organization and DRY. FastAPI has `APIRouter`, we should too.
-
-### v0.7.0 - Integration Patterns - GLUE CODE ONLY
+### v0.9.0 - Integration Patterns - GLUE CODE ONLY
 **NO tutorials. Only the "glue code" between SyntroJS DI and external libraries:**
 
 #### `docs/INTEGRATIONS.md` - Ultra-Minimal Guide
@@ -361,7 +421,9 @@ app.get('/endpoint', {
 
 **Philosophy:** The developer already knows how to use libraries. They just need to see how to connect them with SyntroJS DI.
 
-### v0.8.0 - Enhanced Plugins
+---
+
+### v0.10.0 - Enhanced Plugins
 - [x] CORS wrapper ✅ (Already implemented)
 - [x] Helmet wrapper ✅ (Already implemented)
 - [x] Compression wrapper ✅ (Already implemented)
@@ -370,7 +432,9 @@ app.get('/endpoint', {
 - [ ] Plugin marketplace preparation
 - [ ] Custom plugin development guide
 
-### v0.9.0 - Completeness (Optional Features)
+---
+
+### v0.11.0 - Completeness (Optional Features)
 
 #### Lifecycle Hooks
 - [ ] `app.onStartup(callback)` - Run on server start
