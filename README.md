@@ -764,8 +764,18 @@ app.registerExceptionHandler(MyError, (error, ctx) => ({
   - ✅ Human-readable (like JSON) - debug with `curl`
   - ✅ No compilation needed (like JSON) - no protoc, no tooling
   - ✅ Efficient (like gRPC) - 40-60% smaller payloads
-  - ✅ One line of code: `serialization: 'toon'`
+  - ✅ Official `@toon-format/toon` package integration
+  - ✅ Content negotiation via Accept header
   - ✅ Perfect for: High-traffic APIs, mobile apps, microservices, public APIs
+- [x] **Serialization Architecture Refactor**
+  - ✅ ResponseHandler centralized (SOLID)
+  - ✅ Adapters unified: 5 → 2 (FluentAdapter + BunAdapter)
+  - ✅ DTO-based serialization (runtime-agnostic)
+  - ✅ O(1) content negotiation
+  - ✅ Bundle size: -21KB (-10%)
+
+### 🎨 v0.6.0 - Polish & Performance
+
 - [ ] Native Bun plugins (CORS, Helmet, etc.)
 - [ ] Server-Sent Events (SSE)
 - [ ] CSRF protection
