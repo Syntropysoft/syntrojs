@@ -322,7 +322,7 @@ const app = new SyntroJS()
 
 ---
 
-### v0.6.0 - Type-Safe Client + Advanced Testing 🚀
+### v0.6.0 - Type-Safe Client + Advanced Serializers 🚀
 
 **Status:** 📋 Planned (1-2 weeks after v0.5.0)
 
@@ -336,6 +336,28 @@ const app = new SyntroJS()
 - [ ] Zero code generation (pure TypeScript inference)
 - [ ] Documentation with monorepo examples
 - [ ] Migration guide from TinyTest
+
+#### Serializer Enhancements (Priority #2) 🔥 NEW
+- [ ] **Chain of Responsibility with `next()`**
+  - Add `next()` parameter to `IResponseSerializer.serialize()`
+  - Allows decorators/interceptors (middleware pattern for serializers)
+  - Enables OpenTelemetry, logging, metrics as serializers
+  - Pattern: `serialize(result, status, request, next) => next() can call next serializer`
+- [ ] **Priority System**
+  - Numeric priorities for explicit serializer ordering
+  - Default priorities: CustomResponse=10, Redirect=20, FileDownload=30, Stream=40, Buffer=50, Custom=100, Json=999
+  - API: `app.registerSerializer(serializer, name, { priority: 30 })`
+  - JsonSerializer always last (priority=999)
+- [ ] **Helper Methods for Positioning**
+  - `app.registerSerializerBefore(targetName, serializer)` - Insert before specific serializer
+  - `app.registerSerializerAfter(targetName, serializer)` - Insert after specific serializer
+  - `app.registerSerializerFirst(serializer)` - Highest priority (intercepts everything)
+- [ ] **Real-World Use Cases**
+  - OpenTelemetry as decorator serializer (metrics, tracing, headers)
+  - Custom logging serializers (audit trails, analytics)
+  - Response transformation pipelines
+  - Compression serializers (gzip, brotli)
+  - Encryption serializers (sensitive data)
 
 **Use Cases:**
 - **Monorepo**: Frontend + Backend with zero type duplication

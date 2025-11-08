@@ -5,7 +5,7 @@
  * Handles serialization of standard JSON responses (default)
  */
 
-import type { IResponseSerializer } from '../../domain/interfaces';
+import type { IResponseSerializer, SerializedResponseDTO } from '../../domain/interfaces';
 
 /**
  * JSON Response Serializer
@@ -31,12 +31,31 @@ export class JsonSerializer implements IResponseSerializer {
    *
    * @param result - Object to serialize
    * @param statusCode - HTTP status code
-   * @returns HTTP Response with JSON
+   * @param request - HTTP Request (for content negotiation)
+   * @returns HTTP Response with JSON, or null if client wants another format
    */
-  serialize(result: any, statusCode: number): Response {
-    return new Response(JSON.stringify(result), {
-      status: statusCode,
+  serialize(result: any, statusCode: number, request: Request): SerializedResponseDTO | null {
+    // Content Negotiation: Check if client explicitly wants another format
+    const acceptHeader = request.headers.get('accept') || '';
+
+    // If client explicitly requests a non-JSON format, pass to next serializer
+    // This allows TOON, XML, etc. to handle their formats first
+    if (
+      acceptHeader &&
+      !acceptHeader.includes('*/*') &&
+      !acceptHeader.includes('application/json')
+    ) {
+      // Client wants a specific format that's not JSON
+      // Return null to let other serializers handle it
+      return null;
+    }
+
+    // Default: Return raw object (adapter will serialize based on runtime)
+    // This is more efficient - let Fastify/Bun serialize in their optimal way
+    return {
+      body: result, // Raw object, not serialized
+      statusCode,
       headers: { 'Content-Type': 'application/json' },
-    });
+    };
   }
 }

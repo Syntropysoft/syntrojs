@@ -5,7 +5,7 @@
  * Handles serialization of streaming responses
  */
 
-import type { IResponseSerializer } from '../../domain/interfaces';
+import type { IResponseSerializer, SerializedResponseDTO } from '../../domain/interfaces';
 import { StreamingResponseHandler } from '../StreamingResponseHandler';
 
 /**
@@ -32,9 +32,11 @@ export class StreamSerializer implements IResponseSerializer {
    * @param statusCode - Default status code
    * @returns HTTP Response with stream
    */
-  serialize(result: any, statusCode: number): Response {
-    return new Response(result as any, {
-      status: statusCode,
-    });
+  serialize(result: any, statusCode: number, request: Request): SerializedResponseDTO {
+    return {
+      body: result,
+      statusCode,
+      headers: {},
+    };
   }
 }

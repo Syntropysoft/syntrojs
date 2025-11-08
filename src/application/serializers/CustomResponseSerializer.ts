@@ -6,7 +6,7 @@
  * Pattern: { status?: number, headers?: Record<string, string>, body: any }
  */
 
-import type { IResponseSerializer } from '../../domain/interfaces';
+import type { IResponseSerializer, SerializedResponseDTO } from '../../domain/interfaces';
 
 /**
  * Custom Response Serializer
@@ -41,24 +41,23 @@ export class CustomResponseSerializer implements IResponseSerializer {
    * @param defaultStatus - Default HTTP status code
    * @returns HTTP Response with custom status/headers
    */
-  serialize(result: any, defaultStatus: number): Response {
+  serialize(result: any, defaultStatus: number, request: Request): SerializedResponseDTO {
     // Extract custom fields
     const status = result.status ?? defaultStatus;
     const customHeaders = result.headers ?? {};
     const body = result.body ?? result; // If no body field, use entire object
 
     // Build headers (merge custom with defaults)
-    const headers = new Headers({
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...customHeaders,
-    });
+    };
 
-    // Serialize body
-    const bodyToSend = body !== null && body !== undefined ? JSON.stringify(body) : null;
-
-    return new Response(bodyToSend, {
-      status,
+    // Return raw body (adapter will serialize based on Content-Type)
+    return {
+      body: body !== null && body !== undefined ? body : null,
+      statusCode: status,
       headers,
-    });
+    };
   }
 }

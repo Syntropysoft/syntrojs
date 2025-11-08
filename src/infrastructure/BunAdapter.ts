@@ -24,7 +24,9 @@ import { DependencyInjector } from '../application/DependencyInjector';
 import { ErrorHandler } from '../application/ErrorHandler';
 import type { MiddlewareRegistry } from '../application/MiddlewareRegistry';
 import { MultipartParser } from '../application/MultipartParser';
-import type { IRequestParser, IResponseSerializer, IValidator } from '../domain/interfaces';
+import { ResponseHandler } from '../application/ResponseHandler';
+import { SerializerRegistry } from '../application/SerializerRegistry';
+import type { IRequestParser, IValidator } from '../domain/interfaces';
 import type { Route } from '../domain/Route';
 
 /**
@@ -35,19 +37,32 @@ class BunAdapterImpl {
   private server: BunServer | null = null;
   private routes: Map<string, Route> = new Map();
   private middlewareRegistry?: MiddlewareRegistry;
+  private responseHandler: ResponseHandler;
 
   // DEPENDENCY INJECTION: Services injected via constructor
   constructor(
     private requestParser: IRequestParser,
     private validator: IValidator,
-    private responseSerializers: IResponseSerializer[],
-  ) {}
+    private serializerRegistry: SerializerRegistry,
+  ) {
+    // Create ResponseHandler with SerializerRegistry (Composition + DI)
+    this.responseHandler = new ResponseHandler(serializerRegistry);
+  }
 
   /**
    * Set middleware registry
    */
   setMiddlewareRegistry(registry: MiddlewareRegistry): void {
     this.middlewareRegistry = registry;
+  }
+
+  /**
+   * Set serializer registry
+   */
+  setSerializerRegistry(registry: SerializerRegistry): void {
+    this.serializerRegistry = registry;
+    // Update ResponseHandler with new registry (Composition + DI)
+    this.responseHandler = new ResponseHandler(registry);
   }
 
   /**
@@ -134,12 +149,12 @@ class BunAdapterImpl {
       // 6.5. RESPONSE VALIDATION: Validate response against schema if provided
       if (route.config.response) {
         const validatedResult = this.validator.validateOrThrow(route.config.response, result);
-        // 7. SERIALIZATION: Delegate to Response Serializers (Strategy Pattern + Open/Closed)
-        return this.serializeResponse(validatedResult, route.config.status ?? 200);
+        // 7. SERIALIZATION: Delegate to ResponseHandler (Composition + DI)
+        return await this.serializeResponse(validatedResult, route.config.status ?? 200, request);
       }
 
-      // 7. SERIALIZATION: Delegate to Response Serializers (Strategy Pattern + Open/Closed)
-      return this.serializeResponse(result, route.config.status ?? 200);
+      // 7. SERIALIZATION: Delegate to ResponseHandler (Composition + DI)
+      return await this.serializeResponse(result, route.config.status ?? 200, request);
     } catch (error) {
       return await this.handleError(error, context);
     }
@@ -234,22 +249,26 @@ class BunAdapterImpl {
   }
 
   /**
-   * Serialize response
-   * Strategy Pattern: Uses first serializer that can handle the result
-   * Open/Closed: New serializers can be added without modifying this code
+   * Serialize response using ResponseHandler (SOLID: Composition over Duplication)
+   *
+   * Optimized: Uses ResponseHandler DTO approach
+   * Bun-friendly: Returns Web Standard Response directly
    */
-  private serializeResponse(result: any, defaultStatus: number): Response {
-    // Find first serializer that can handle this result
-    for (const serializer of this.responseSerializers) {
-      if (serializer.canSerialize(result)) {
-        return serializer.serialize(result, defaultStatus);
-      }
-    }
+  private async serializeResponse(
+    result: any,
+    defaultStatus: number,
+    request: Request,
+  ): Promise<Response> {
+    // Extract Accept header for content negotiation
+    const acceptHeader = request.headers.get('accept') ?? undefined;
 
-    // Fallback: Should never reach here if JsonSerializer is last
-    return new Response(JSON.stringify(result), {
-      status: defaultStatus,
-      headers: { 'Content-Type': 'application/json' },
+    // Use ResponseHandler for serialization (Composition + DI)
+    const serialized = await this.responseHandler.serialize(result, defaultStatus, acceptHeader);
+
+    // Convert DTO to Web Standard Response (Bun native format)
+    return new Response(serialized.body, {
+      status: serialized.statusCode,
+      headers: serialized.headers,
     });
   }
 
@@ -293,9 +312,9 @@ export class BunAdapter {
   static createWithDependencies(
     requestParser: IRequestParser,
     validator: IValidator,
-    serializers: IResponseSerializer[],
+    serializerRegistry: SerializerRegistry,
   ): BunAdapterImpl {
-    return new BunAdapterImpl(requestParser, validator, serializers);
+    return new BunAdapterImpl(requestParser, validator, serializerRegistry);
   }
 
   /**
@@ -316,18 +335,21 @@ export class BunAdapter {
         JsonSerializer,
       } = require('../application/serializers');
 
+      // Create serializer registry with defaults
+      const registry = new SerializerRegistry();
+      registry
+        .register(new CustomResponseSerializer(), 'CustomResponse')
+        .register(new RedirectSerializer(), 'Redirect')
+        .register(new FileDownloadSerializer(), 'FileDownload')
+        .register(new StreamSerializer(), 'Stream')
+        .register(new BufferSerializer(), 'Buffer')
+        .register(new JsonSerializer(), 'Json'); // Last: default fallback
+
       // Create with default dependencies
       BunAdapter.instance = new BunAdapterImpl(
         new BunRequestParser(),
         SchemaValidator, // Singleton
-        [
-          new RedirectSerializer(), // First: 3xx status code, no body
-          new FileDownloadSerializer(), // Second: custom headers + data
-          new CustomResponseSerializer(), // Third: custom status/headers/body
-          new StreamSerializer(), // Fourth: Node.js Readable streams
-          new BufferSerializer(), // Fifth: binary data
-          new JsonSerializer(), // Last: default fallback
-        ],
+        registry,
       );
     }
     return BunAdapter.instance;
@@ -336,6 +358,10 @@ export class BunAdapter {
   // Static methods for backward compatibility
   static setMiddlewareRegistry(registry: any): void {
     BunAdapter.getInstance().setMiddlewareRegistry(registry);
+  }
+
+  static setSerializerRegistry(registry: SerializerRegistry): void {
+    BunAdapter.getInstance().setSerializerRegistry(registry);
   }
 
   static create(): unknown {

@@ -133,7 +133,10 @@ export class TestClient {
   /**
    * Shorthand for GET request
    */
-  async get<T = unknown>(path: string, options?: Omit<TestRequestOptions, 'body'>): Promise<TestResponse<T>> {
+  async get<T = unknown>(
+    path: string,
+    options?: Omit<TestRequestOptions, 'body'>,
+  ): Promise<TestResponse<T>> {
     return this.request<T>('GET', path, options);
   }
 
@@ -161,7 +164,10 @@ export class TestClient {
   /**
    * Shorthand for DELETE request
    */
-  async delete<T = unknown>(path: string, options?: Omit<TestRequestOptions, 'body'>): Promise<TestResponse<T>> {
+  async delete<T = unknown>(
+    path: string,
+    options?: Omit<TestRequestOptions, 'body'>,
+  ): Promise<TestResponse<T>> {
     return this.request<T>('DELETE', path, options);
   }
 
@@ -231,4 +237,3 @@ export class TestClient {
 export function test(app: SyntroJS): TestClient {
   return new TestClient(app);
 }
-

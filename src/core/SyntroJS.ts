@@ -13,6 +13,15 @@ import { MiddlewareRegistry } from '../application/MiddlewareRegistry';
 import type { OpenAPIConfig } from '../application/OpenAPIGenerator';
 import { OpenAPIGenerator } from '../application/OpenAPIGenerator';
 import { RouteRegistry } from '../application/RouteRegistry';
+import { SerializerRegistry } from '../application/SerializerRegistry';
+import {
+  BufferSerializer,
+  CustomResponseSerializer,
+  FileDownloadSerializer,
+  JsonSerializer,
+  RedirectSerializer,
+  StreamSerializer,
+} from '../application/serializers';
 import { WebSocketRegistry } from '../application/WebSocketRegistry';
 import { Route } from '../domain/Route';
 import type {
@@ -24,13 +33,9 @@ import type {
   WebSocketHandler,
 } from '../domain/types';
 import { BunAdapter } from '../infrastructure/BunAdapter';
-import { FastifyAdapter } from '../infrastructure/FastifyAdapter';
 import { FluentAdapter } from '../infrastructure/FluentAdapter';
 import type { LoggerIntegrationConfig } from '../infrastructure/LoggerIntegration';
 import { RuntimeOptimizer } from '../infrastructure/RuntimeOptimizer';
-import { UltraFastAdapter } from '../infrastructure/UltraFastAdapter';
-import { UltraFastifyAdapter } from '../infrastructure/UltraFastifyAdapter';
-import { UltraMinimalAdapter } from '../infrastructure/UltraMinimalAdapter';
 
 /**
  * Route definition for object-based API
@@ -69,19 +74,7 @@ export interface SyntroJSConfig {
   /** Routes defined as object (alternative to method chaining) */
   routes?: RouteDefinition;
 
-  /** Use ultra-optimized adapter for maximum performance */
-  ultraOptimized?: boolean;
-
-  /** Use ultra-minimal adapter for absolute maximum performance */
-  ultraMinimal?: boolean;
-
-  /** Use ultra-fast adapter for maximum performance with features */
-  ultraFast?: boolean;
-
-  /** Use fluent adapter for dynamic tree shaking */
-  fluent?: boolean;
-
-  /** Fluent adapter configuration */
+  /** Fluent adapter configuration (Node.js only) */
   fluentConfig?: {
     /** Enable Fastify built-in logger (legacy) */
     logger?: boolean;
@@ -132,19 +125,15 @@ export interface SyntroJSConfig {
 export class SyntroJS {
   private readonly config: SyntroJSConfig;
   private readonly server: unknown; // Generic server (FastifyInstance or Bun Server)
-  private readonly adapter:
-    | typeof FastifyAdapter
-    | typeof UltraFastAdapter
-    | typeof UltraFastifyAdapter
-    | typeof UltraMinimalAdapter
-    | typeof BunAdapter
-    | typeof FluentAdapter;
+  private readonly adapter: typeof FluentAdapter | typeof BunAdapter;
   private readonly runtime: 'node' | 'bun';
   private readonly optimizer: RuntimeOptimizer;
   private middlewareRegistry: MiddlewareRegistry;
   private websocketRegistry: WebSocketRegistry;
+  private serializerRegistry: SerializerRegistry;
   private isStarted = false;
   private openAPIEndpointsRegistered = false;
+  private fluentAdapterInstance?: FluentAdapter; // Store configured FluentAdapter instance
 
   constructor(config: SyntroJSConfig = {}) {
     // Guard clause: validate config
@@ -160,6 +149,7 @@ export class SyntroJS {
     this.optimizer = new RuntimeOptimizer();
     this.middlewareRegistry = new MiddlewareRegistry();
     this.websocketRegistry = new WebSocketRegistry();
+    this.serializerRegistry = this.initializeDefaultSerializers();
 
     // Auto-detect runtime (pure function)
     this.runtime = this.detectRuntime();
@@ -207,6 +197,27 @@ export class SyntroJS {
   }
 
   /**
+   * Initialize default response serializers
+   *
+   * @returns Configured SerializerRegistry
+   */
+  private initializeDefaultSerializers(): SerializerRegistry {
+    const registry = new SerializerRegistry();
+
+    // Register default serializers in priority order
+    // Content-type based serializers include their MIME types for O(1) lookup
+    registry
+      .register(new CustomResponseSerializer(), 'CustomResponse')
+      .register(new RedirectSerializer(), 'Redirect')
+      .register(new FileDownloadSerializer(), 'FileDownload')
+      .register(new StreamSerializer(), 'Stream')
+      .register(new BufferSerializer(), 'Buffer')
+      .register(new JsonSerializer(), 'Json', ['application/json']); // Last: default fallback
+
+    return registry;
+  }
+
+  /**
    * Create server instance using composition pattern
    *
    * @returns Configured server instance
@@ -216,15 +227,15 @@ export class SyntroJS {
       return this.createFluentAdapter();
     }
 
-    // Create adapter with logger configuration
-    if (this.adapter === FastifyAdapter) {
-      return FastifyAdapter.create({
-        logger: this.config.logger ?? false,
-        syntroLogger: this.config.syntroLogger,
-      });
+    // Bun: Use BunAdapter
+    if (this.adapter === BunAdapter) {
+      const server = this.adapter.create();
+      BunAdapter.setSerializerRegistry(this.serializerRegistry);
+      return server;
     }
 
-    return this.adapter.create();
+    // Node.js: Use FluentAdapter (always)
+    return this.createFluentAdapter();
   }
 
   /**
@@ -240,6 +251,12 @@ export class SyntroJS {
 
     // Configure middleware registry
     configuredAdapter.withMiddlewareRegistry(this.middlewareRegistry);
+
+    // Configure serializer registry (SOLID: Dependency Injection)
+    configuredAdapter.withSerializerRegistry(this.serializerRegistry);
+
+    // Store the configured instance for later use (CRITICAL for registerRoute)
+    this.fluentAdapterInstance = configuredAdapter;
 
     return configuredAdapter.create();
   }
@@ -318,28 +335,16 @@ export class SyntroJS {
   }
 
   /**
-   * Select optimal adapter based on runtime and configuration
+   * Select adapter based on runtime
+   * Simple: FluentAdapter for Node.js, BunAdapter for Bun
    */
-  private selectOptimalAdapter():
-    | typeof FastifyAdapter
-    | typeof UltraFastAdapter
-    | typeof UltraFastifyAdapter
-    | typeof UltraMinimalAdapter
-    | typeof BunAdapter
-    | typeof FluentAdapter {
-    // Force specific adapter if configured
-    if (this.config.fluent) return FluentAdapter;
-    if (this.config.ultraMinimal) return UltraMinimalAdapter;
-    if (this.config.ultraFast) return UltraFastAdapter;
-    if (this.config.ultraOptimized) return UltraFastifyAdapter;
-
-    // Runtime-specific optimal adapter selection
+  private selectOptimalAdapter(): typeof FluentAdapter | typeof BunAdapter {
+    // Runtime-based selection (no complexity)
     if (this.runtime === 'bun') {
-      // Use BunAdapter for maximum Bun performance
       return BunAdapter;
     }
 
-    // Node.js: Use FluentAdapter as default (tree shaking enabled)
+    // Node.js: Use FluentAdapter (configurable, tree-shakeable)
     return FluentAdapter;
   }
 
@@ -679,9 +684,9 @@ export class SyntroJS {
       return async (server, port, host) =>
         FluentAdapter.listen(server as FastifyInstance, port, host);
     }
-    // FastifyAdapter or other Fastify-based adapters
+    // Fallback to FluentAdapter
     return async (server, port, host) =>
-      FastifyAdapter.listen(server as FastifyInstance, port, host);
+      FluentAdapter.listen(server as FastifyInstance, port, host);
   }
 
   /**
@@ -727,8 +732,8 @@ export class SyntroJS {
     if (this.adapter === FluentAdapter) {
       return async (server) => FluentAdapter.close(server as FastifyInstance);
     }
-    // FastifyAdapter or other Fastify-based adapters
-    return async (server) => FastifyAdapter.close(server as FastifyInstance);
+    // Fallback to FluentAdapter
+    return async (server) => FluentAdapter.close(server as FastifyInstance);
   }
 
   /**
@@ -792,11 +797,9 @@ export class SyntroJS {
    * Registers all routes from RouteRegistry with the appropriate adapter
    */
   private registerAllRoutes(): void {
-    // Configure middleware registry for adapters that support it
+    // Middleware registry already configured via FluentAdapter instance
     if (this.adapter === BunAdapter) {
       (BunAdapter as any).setMiddlewareRegistry(this.middlewareRegistry);
-    } else if (this.adapter === FastifyAdapter) {
-      FastifyAdapter.setMiddlewareRegistry(this.middlewareRegistry);
     }
 
     const routes = RouteRegistry.getAll();
@@ -805,12 +808,14 @@ export class SyntroJS {
     for (const route of routes) {
       if (this.adapter === BunAdapter) {
         BunAdapter.registerRoute(this.server, route);
-      } else if (this.adapter === FluentAdapter) {
-        // FluentAdapter handles its own registration during listen
-        FluentAdapter.registerRoute(this.server as FastifyInstance, route);
       } else {
-        // FastifyAdapter or other Fastify-based adapters
-        FastifyAdapter.registerRoute(this.server as FastifyInstance, route);
+        // Node.js: Use FluentAdapter instance
+        if (this.fluentAdapterInstance) {
+          this.fluentAdapterInstance.registerRoute(this.server as FastifyInstance, route);
+        } else {
+          // Fallback to static method (shouldn't happen)
+          FluentAdapter.registerRoute(this.server as FastifyInstance, route);
+        }
       }
     }
   }
@@ -1176,6 +1181,69 @@ export class SyntroJS {
    */
   getMiddlewareRegistry(): MiddlewareRegistry {
     return this.middlewareRegistry;
+  }
+
+  /**
+   * Register a response serializer
+   *
+   * Allows extending SyntroJS with custom response formats
+   *
+   * @param serializer - Serializer to register
+   * @param name - Optional name (defaults to constructor name)
+   * @returns this (for chaining)
+   *
+   * @example
+   * ```typescript
+   * import { TOONSerializer } from '@syntrojs/toon'
+   *
+   * app.registerSerializer(new TOONSerializer(), 'TOON')
+   * ```
+   */
+  registerSerializer(serializer: any, name?: string): this {
+    this.serializerRegistry.register(serializer, name);
+    return this;
+  }
+
+  /**
+   * Replace an existing serializer
+   *
+   * Useful for customizing default serializers
+   *
+   * @param name - Name of serializer to replace
+   * @param serializer - New serializer
+   * @returns this (for chaining)
+   *
+   * @example
+   * ```typescript
+   * app.replaceSerializer('Json', new CustomJsonSerializer())
+   * ```
+   */
+  replaceSerializer(name: string, serializer: any): this {
+    this.serializerRegistry.replace(name, serializer);
+    return this;
+  }
+
+  /**
+   * Unregister a serializer
+   *
+   * @param name - Name of serializer to remove
+   * @returns this (for chaining)
+   *
+   * @example
+   * ```typescript
+   * app.unregisterSerializer('Json') // Remove JSON support
+   * ```
+   */
+  unregisterSerializer(name: string): this {
+    this.serializerRegistry.unregister(name);
+    return this;
+  }
+
+  /**
+   * Get serializer registry (for internal use)
+   */
+  getSerializerRegistry(): SerializerRegistry {
+    return this.serializerRegistry;
   }
 
   /**

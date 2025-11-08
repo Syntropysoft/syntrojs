@@ -5,7 +5,7 @@
  * Handles serialization of HTTP redirect responses
  */
 
-import type { IResponseSerializer } from '../../domain/interfaces';
+import type { IResponseSerializer, SerializedResponseDTO } from '../../domain/interfaces';
 import { isRedirectResponse } from '../../infrastructure/RedirectHelper';
 
 /**
@@ -43,17 +43,18 @@ export class RedirectSerializer implements IResponseSerializer {
    * @param _statusCode - Ignored (uses result.statusCode)
    * @returns HTTP Response with redirect
    */
-  serialize(result: any, _statusCode: number): Response {
-    // Extract headers (immutable)
-    const headers = new Headers();
+  serialize(result: any, _statusCode: number, request: Request): SerializedResponseDTO {
+    // Extract headers
+    const headers: Record<string, string> = {};
     for (const [key, value] of Object.entries(result.headers)) {
-      headers.set(key, value as string);
+      headers[key] = value as string;
     }
 
-    // Return response with redirect (no body)
-    return new Response(null, {
-      status: result.statusCode,
+    // Return DTO with redirect (no body)
+    return {
+      body: null,
+      statusCode: result.statusCode,
       headers,
-    });
+    };
   }
 }

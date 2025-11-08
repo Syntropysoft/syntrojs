@@ -16,6 +16,8 @@ import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest }
 import { createAcceptsHelper } from '../application/ContentNegotiator';
 import type { MiddlewareRegistry } from '../application/MiddlewareRegistry';
 import { MultipartParser } from '../application/MultipartParser';
+import { ResponseHandler } from '../application/ResponseHandler';
+import type { SerializerRegistry } from '../application/SerializerRegistry';
 import { StreamingResponseHandler } from '../application/StreamingResponseHandler';
 import type { Route } from '../domain/Route';
 import type {
@@ -52,6 +54,8 @@ export interface FluentAdapterConfig {
 export class FluentAdapter {
   private readonly config: FluentAdapterConfig;
   private middlewareRegistry?: MiddlewareRegistry;
+  private serializerRegistry?: SerializerRegistry;
+  private responseHandler?: ResponseHandler;
 
   // Factory instances for type-safe operations
   private dependencyFactories: Map<string, DependencyResolverFactory> = new Map();
@@ -229,7 +233,13 @@ export class FluentAdapter {
     const newConfig = Object.freeze({ ...this.config, ...updates });
     const newInstance = Object.create(Object.getPrototypeOf(this));
     newInstance.config = newConfig;
+    // Copy ALL instance properties (CRITICAL for proper functionality)
     newInstance.middlewareRegistry = this.middlewareRegistry;
+    newInstance.serializerRegistry = this.serializerRegistry;
+    newInstance.responseHandler = this.responseHandler;
+    newInstance.dependencyFactories = this.dependencyFactories;
+    newInstance.errorHandlerFactories = this.errorHandlerFactories;
+    newInstance.schemaFactories = this.schemaFactories;
     return newInstance;
   }
 
@@ -368,6 +378,16 @@ export class FluentAdapter {
     return this;
   }
 
+  /**
+   * Configure serializer registry
+   */
+  withSerializerRegistry(registry: SerializerRegistry): this {
+    this.serializerRegistry = registry;
+    // Create ResponseHandler with registry (Composition + DI)
+    this.responseHandler = new ResponseHandler(registry);
+    return this;
+  }
+
   // Registrar ruta con funcionalidades dinámicas
   async registerRoute(fastify: FastifyInstance, route: Route): Promise<void> {
     if (!fastify || !route) return;
@@ -501,21 +521,19 @@ export class FluentAdapter {
 
         // VALIDACIÓN DE RESPUESTA - Solo si está habilitada
         // Skip validation for streams and buffers (already handled above)
+        let finalResult = result;
         if (this.config.validation && route.config.response) {
-          const validatedResult = route.config.response.parse(result);
-          const statusCode = route.config.status ?? 200;
-
-          // Ejecutar cleanup después de enviar la respuesta
-          if (cleanupFn) {
-            setImmediate(() => cleanupFn!());
-          }
-
-          return reply.status(statusCode).send(validatedResult);
+          finalResult = route.config.response.parse(result);
         }
 
         // Check if result is a RouteResponse object (has status, body, headers)
-        if (result && typeof result === 'object' && 'status' in result && 'body' in result) {
-          const response = result as {
+        if (
+          finalResult &&
+          typeof finalResult === 'object' &&
+          'status' in finalResult &&
+          'body' in finalResult
+        ) {
+          const response = finalResult as {
             status: number;
             body: unknown;
             headers?: Record<string, string>;
@@ -545,12 +563,40 @@ export class FluentAdapter {
 
         const statusCode = route.config.status ?? 200;
 
-        // Ejecutar cleanup después de enviar la respuesta
+        // SERIALIZATION: Use ResponseHandler (SOLID: Composition over Duplication)
+        // ALL responses go through ResponseHandler for content negotiation
+        if (this.responseHandler) {
+          // Extract Accept header for content negotiation (O(1) optimization)
+          const acceptHeader = request.headers.accept as string | undefined;
+
+          // Use ResponseHandler for serialization (optimized DTO approach)
+          const serialized = await this.responseHandler.serialize(
+            finalResult,
+            statusCode,
+            acceptHeader,
+          );
+
+          // Apply serialized response to Fastify reply
+          reply.status(serialized.statusCode);
+
+          for (const [key, value] of Object.entries(serialized.headers)) {
+            reply.header(key, value);
+          }
+
+          // Send response and cleanup after
+          if (cleanupFn) {
+            setImmediate(() => cleanupFn!());
+          }
+          
+          return reply.send(serialized.body);
+        }
+
+        // Fallback: direct send (no serializer - should never happen)
         if (cleanupFn) {
           setImmediate(() => cleanupFn!());
         }
-
-        return reply.status(statusCode).send(result);
+        
+        return reply.status(statusCode).send(finalResult);
       } catch (error) {
         // ERROR HANDLING - Solo si está habilitado
         if (this.config.errorHandling) {

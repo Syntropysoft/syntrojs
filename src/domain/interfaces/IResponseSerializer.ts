@@ -6,8 +6,20 @@
  */
 
 /**
+ * Serialized response data (DTO)
+ * Runtime-agnostic format that adapters convert to their native response
+ */
+export interface SerializedResponseDTO {
+  body: any;
+  statusCode: number;
+  headers: Record<string, string>;
+}
+
+/**
  * Response Serializer Interface
  * Defines contract for converting handler results to HTTP responses
+ * 
+ * Returns DTO instead of Web Standard Response for runtime-agnosticism
  */
 export interface IResponseSerializer {
   /**
@@ -20,12 +32,13 @@ export interface IResponseSerializer {
   canSerialize(result: any): boolean;
 
   /**
-   * Serialize handler result to HTTP response
+   * Serialize handler result to DTO
    * Guard clause contract: Only called if canSerialize returns true
    *
    * @param result - Handler result
    * @param statusCode - Default status code
-   * @returns HTTP response
+   * @param request - HTTP Request (for Content Negotiation via Accept header)
+   * @returns Serialized DTO, or null to pass to next serializer
    */
-  serialize(result: any, statusCode: number): Response;
+  serialize(result: any, statusCode: number, request: Request): SerializedResponseDTO | null;
 }
