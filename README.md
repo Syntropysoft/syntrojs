@@ -460,6 +460,229 @@ app.get('/users', {
 
 ---
 
+### Pagination
+
+**Helper function for pagination**:
+
+```typescript
+function paginate<T>(
+  items: T[],
+  page: number = 1,
+  limit: number = 10
+) {
+  const offset = (page - 1) * limit;
+  const paginatedItems = items.slice(offset, offset + limit);
+  
+  return {
+    data: paginatedItems,
+    pagination: {
+      page,
+      limit,
+      total: items.length,
+      totalPages: Math.ceil(items.length / limit),
+      hasNext: offset + limit < items.length,
+      hasPrev: page > 1
+    }
+  };
+}
+```
+
+**Example**:
+
+```typescript
+app.get('/products', {
+  query: z.object({
+    page: z.coerce.number().min(1).default(1),
+    limit: z.coerce.number().min(1).max(100).default(10)
+  }),
+  handler: ({ query }) => {
+    const allProducts = getProducts();
+    return paginate(allProducts, query.page, query.limit);
+  }
+});
+```
+
+---
+
+### Background Tasks
+
+**`ctx.background.addTask(task, options?)`** - Queues asynchronous task (non-blocking).
+
+- **Parameters**:
+  - `task: () => void | Promise<void>` - Task function
+  - `options.name?: string` - Task name (for logging)
+  - `options.timeout?: number` - Max execution time (ms)
+
+**Example**:
+
+```typescript
+app.post('/users', {
+  body: z.object({ email: z.string().email() }),
+  handler: ({ body, background }) => {
+    // Queue email send (non-blocking)
+    background.addTask(async () => {
+      await sendWelcomeEmail(body.email);
+    }, { name: 'welcome-email', timeout: 5000 });
+    
+    return { success: true };
+  }
+});
+```
+
+---
+
+### File Uploads
+
+**Multipart form data** is automatically parsed:
+
+```typescript
+app.post('/upload', {
+  handler: ({ body, files }) => {
+    // files array contains uploaded files
+    const file = files[0];
+    return {
+      filename: file.filename,
+      size: file.size,
+      mimetype: file.mimetype
+    };
+  }
+});
+```
+
+**File structure**:
+
+```typescript
+interface UploadedFile {
+  filename: string;
+  mimetype: string;
+  size: number;
+  buffer: Buffer;
+  stream: Readable;
+}
+```
+
+---
+
+### WebSockets
+
+**`app.ws(path, handler)`** - Registers WebSocket endpoint.
+
+```typescript
+app.ws('/chat', {
+  onConnect: (socket, request) => {
+    console.log('Client connected');
+  },
+  onMessage: (socket, message) => {
+    socket.send(`Echo: ${message}`);
+  },
+  onClose: (socket) => {
+    console.log('Client disconnected');
+  }
+});
+```
+
+---
+
+### OpenAPI / Swagger
+
+Documentation is auto-generated from routes and schemas:
+
+**Endpoints** (enabled by default):
+- `GET /` - Landing page with API overview
+- `GET /docs` - Swagger UI
+- `GET /redoc` - ReDoc UI
+- `GET /openapi.json` - OpenAPI 3.0 spec
+
+**Configure**:
+
+```typescript
+new SyntroJS({
+  title: 'My API',
+  version: '1.0.0',
+  description: 'API description',
+  docs: {
+    swagger: true,    // Swagger UI
+    redoc: true,      // ReDoc
+    landingPage: true,
+    openapi: true     // JSON spec
+  }
+});
+```
+
+---
+
+### Security
+
+#### OAuth2 Password Bearer
+
+```typescript
+import { OAuth2PasswordBearer } from 'syntrojs';
+
+const oauth2 = new OAuth2PasswordBearer({ tokenUrl: '/token' });
+
+app.get('/protected', {
+  dependencies: { user: oauth2 },
+  handler: ({ dependencies }) => {
+    return { user: dependencies.user };
+  }
+});
+```
+
+#### HTTP Bearer
+
+```typescript
+import { HTTPBearer } from 'syntrojs';
+
+const bearer = new HTTPBearer();
+
+app.get('/api/data', {
+  dependencies: { token: bearer },
+  handler: ({ dependencies }) => {
+    const token = dependencies.token; // Validated token
+    return { data: 'protected' };
+  }
+});
+```
+
+#### API Key
+
+```typescript
+import { APIKeyHeader, APIKeyQuery } from 'syntrojs';
+
+// Via header
+const apiKeyHeader = new APIKeyHeader({ name: 'X-API-Key' });
+
+// Via query parameter  
+const apiKeyQuery = new APIKeyQuery({ name: 'api_key' });
+
+app.get('/api/data', {
+  dependencies: { apiKey: apiKeyHeader },
+  handler: ({ dependencies }) => {
+    const key = dependencies.apiKey; // Validated key
+    return { data: 'protected' };
+  }
+});
+```
+
+#### HTTP Basic Auth
+
+```typescript
+import { HTTPBasic } from 'syntrojs';
+
+const basicAuth = new HTTPBasic();
+
+app.get('/admin', {
+  dependencies: { credentials: basicAuth },
+  handler: ({ dependencies }) => {
+    const { username, password } = dependencies.credentials;
+    // Validate credentials
+    return { admin: true };
+  }
+});
+```
+
+---
+
 ### Middleware
 
 **`app.use(middleware)`** - Registers global middleware.  
@@ -469,6 +692,24 @@ app.get('/users', {
 interface Middleware {
   (ctx: RequestContext, next: () => Promise<void>): Promise<void>;
 }
+```
+
+**Example**:
+
+```typescript
+// Global middleware
+app.use(async (ctx, next) => {
+  console.log(`${ctx.method} ${ctx.path}`);
+  await next();
+});
+
+// Path-specific
+app.use('/api/*', async (ctx, next) => {
+  if (!ctx.headers.authorization) {
+    throw new UnauthorizedException('Token required');
+  }
+  await next();
+});
 ```
 
 ---
