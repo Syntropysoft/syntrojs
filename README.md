@@ -22,9 +22,9 @@
 - ✅ **Battle-tested** - 937 tests across Node.js and Bun (99.3% passing)
 - ✅ **Stable core API** - We follow semantic versioning
 - ✅ **Active development** - Regular updates and community support
-- 🎯 **v0.5.0 coming soon** - TOON Format support (40-60% payload reduction)
+- 🎯 **v0.5.0 in progress** - TOON Format + Architecture Refactor
 
-**Latest Release**: **v0.4.0** - HTTP Redirects + Content Negotiation - [CHANGELOG](./docs/CHANGELOG_v0.4.0.md)
+**Latest Release**: **v0.5.0** - TOON Format + Serialization Refactor - [CHANGELOG](./docs/CHANGELOG_v0.5.0.md)
 
 > 💡 **Note**: While the core is stable, we recommend pinning to specific versions until v1.0.0
 
@@ -756,11 +756,11 @@ app.registerExceptionHandler(MyError, (error, ctx) => ({
 - [x] HTTP redirects (`ctx.redirect()`)
 - [x] Content negotiation (`ctx.accepts`)
 
-### 🚀 v0.5.0 - TOON Format (Game Changer)
+### ✅ v0.5.0 - TOON Format + Architecture Refactor (100% COMPLETE 🎉)
 
 **TOON: The sweet spot between JSON's simplicity and gRPC's efficiency**
 
-- [ ] **TOON Format Support**: 40-60% payload reduction for any API
+- [x] **TOON Format Support**: 40-60% payload reduction for any API
   - ✅ Human-readable (like JSON) - debug with `curl`
   - ✅ No compilation needed (like JSON) - no protoc, no tooling
   - ✅ Efficient (like gRPC) - 40-60% smaller payloads
