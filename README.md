@@ -307,6 +307,203 @@ const app = new SyntroJS({
 
 ---
 
+## 📖 API Reference
+
+### Core API
+
+#### Creating an Application
+
+**`new SyntroJS(config?: SyntroJSConfig)`** - Creates a new SyntroJS application instance.
+
+- **Parameters**:
+  - `config.title?: string` - API title for OpenAPI docs
+  - `config.version?: string` - API version
+  - `config.description?: string` - API description
+  - `config.logger?: boolean` - Enable Fastify logger
+  - `config.syntroLogger?: LoggerIntegrationConfig | boolean` - Enable @syntrojs/logger
+  - `config.runtime?: 'auto' | 'node' | 'bun'` - Force specific runtime
+  - `config.docs?: boolean | object` - Configure documentation endpoints
+  - `config.fluentConfig?: object` - Advanced adapter configuration
+
+#### Route Registration
+
+**`app.get(path, config)`** - Registers a GET route.  
+**`app.post(path, config)`** - Registers a POST route.  
+**`app.put(path, config)`** - Registers a PUT route.  
+**`app.delete(path, config)`** - Registers a DELETE route.  
+**`app.patch(path, config)`** - Registers a PATCH route.
+
+- **Parameters**:
+  - `path: string` - Route path (e.g., `/users/:id`)
+  - `config.handler: (ctx) => any` - Route handler function
+  - `config.params?: ZodSchema` - Path parameter validation
+  - `config.query?: ZodSchema` - Query parameter validation
+  - `config.body?: ZodSchema` - Request body validation
+  - `config.response?: ZodSchema` - Response validation
+  - `config.status?: number` - Default status code
+  - `config.dependencies?: object` - Dependency injection
+
+#### Server Management
+
+**`app.listen(port, host?)`** - Starts the HTTP server.
+
+- **Parameters**:
+  - `port: number` - Port to listen on
+  - `host?: string` - Host address (default: '::')
+- **Returns**: `Promise<string>` - Server address
+
+**`app.close()`** - Stops the HTTP server gracefully.
+
+---
+
+### Request Context
+
+The request context is passed to all handlers:
+
+```typescript
+interface RequestContext {
+  method: HttpMethod;              // HTTP method
+  path: string;                    // Request path
+  params: any;                     // Path parameters
+  query: any;                      // Query parameters
+  body: any;                       // Request body
+  headers: Record<string, string>; // Request headers
+  cookies: Record<string, string>; // Cookies
+  correlationId: string;           // Request tracking ID
+  timestamp: Date;                 // Request timestamp
+  dependencies: Record<string, any>; // Injected dependencies
+  background: {
+    addTask(task: () => void): void; // Queue background task
+  };
+  download(data, options): FileDownloadResponse; // File download helper
+  redirect(url, statusCode?): RedirectResponse;  // Redirect helper
+  accepts: AcceptsHelper;          // Content negotiation helper
+}
+```
+
+---
+
+### Serialization & Content Negotiation
+
+#### ResponseHandler
+
+**`new ResponseHandler(serializerRegistry)`** - Creates response handler (used internally).
+
+**`handler.serialize(result, statusCode, acceptHeader?)`** - Serializes response with content negotiation.
+
+- **Parameters**:
+  - `result: any` - Handler return value
+  - `statusCode: number` - HTTP status code
+  - `acceptHeader?: string` - Accept header for content negotiation
+- **Returns**: `Promise<SerializedResponseDTO>`
+- **Performance**: O(1) for content-type based lookup
+
+#### Custom Serializers
+
+Implement `IResponseSerializer` interface:
+
+```typescript
+interface IResponseSerializer {
+  canSerialize(result: any): boolean;
+  serialize(
+    result: any,
+    statusCode: number,
+    request: Request
+  ): SerializedResponseDTO | null;
+}
+
+interface SerializedResponseDTO {
+  body: any;              // Raw object or string
+  statusCode: number;
+  headers: Record<string, string>;
+}
+```
+
+**Register custom serializer**:
+
+```typescript
+app.registerSerializer(new MySerializer(), 'MyFormat', ['application/my-format']);
+```
+
+#### Built-in Serializers
+
+**`JsonSerializer`** - Default JSON serialization (raw objects).  
+**`TOONSerializer`** - Bandwidth-optimized format (40-60% reduction).  
+**`CustomResponseSerializer`** - Custom status/headers pattern.  
+**`RedirectSerializer`** - HTTP redirects (3xx).  
+**`StreamSerializer`** - Node.js Readable streams.  
+**`BufferSerializer`** - Binary buffers.  
+**`FileDownloadSerializer`** - File downloads with Content-Disposition.
+
+---
+
+### Dependency Injection
+
+**`inject(factory, options?)`** - Creates a dependency injection token.
+
+- **Parameters**:
+  - `factory: (ctx?) => T` - Factory function
+  - `options.scope?: 'singleton' | 'request'` - Lifecycle scope
+  - `options.cleanup?: (instance) => Promise<void>` - Cleanup function
+- **Returns**: Dependency token
+
+**Example**:
+
+```typescript
+const dbService = inject(() => new Database(), { scope: 'singleton' });
+
+app.get('/users', {
+  dependencies: { db: dbService },
+  handler: ({ dependencies }) => dependencies.db.getUsers()
+});
+```
+
+---
+
+### Middleware
+
+**`app.use(middleware)`** - Registers global middleware.  
+**`app.use(path, middleware)`** - Registers path-specific middleware.
+
+```typescript
+interface Middleware {
+  (ctx: RequestContext, next: () => Promise<void>): Promise<void>;
+}
+```
+
+---
+
+### Error Handling
+
+**`app.registerExceptionHandler(errorClass, handler)`** - Registers custom error handler.
+
+```typescript
+app.registerExceptionHandler(MyError, (error, ctx) => ({
+  status: 400,
+  body: { error: error.message }
+}));
+```
+
+**Built-in Exceptions**:
+- `BadRequestException` (400)
+- `UnauthorizedException` (401)
+- `ForbiddenException` (403)
+- `NotFoundException` (404)
+- `ConflictException` (409)
+- `UnprocessableEntityException` (422)
+- `ServiceUnavailableException` (503)
+
+---
+
+### Registry Access
+
+**`app.getSerializerRegistry()`** - Access serializer registry.  
+**`app.getMiddlewareRegistry()`** - Access middleware registry.  
+**`app.getRouteRegistry()`** - Access route registry.  
+**`app.getWebSocketRegistry()`** - Access WebSocket registry.
+
+---
+
 ## 🗺️ Roadmap
 
 ### ✅ v0.4.0 - REST Completion (100% COMPLETE 🎉)
