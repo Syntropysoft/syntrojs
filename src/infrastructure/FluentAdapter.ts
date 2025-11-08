@@ -261,8 +261,8 @@ export class FluentAdapter {
     return this.withLogger(true)
       .withValidation(true)
       .withErrorHandling(true)
-      .withDependencyInjection(false)
-      .withBackgroundTasks(false)
+      .withDependencyInjection(true) // Enable DI by default
+      .withBackgroundTasks(true) // Enable background tasks by default
       .withOpenAPI(true)
       .withCompression(false)
       .withCors(false)
@@ -447,8 +447,12 @@ export class FluentAdapter {
 
         // DEPENDENCY INJECTION - Solo si está habilitada
         let cleanupFn: (() => Promise<void>) | undefined;
+        console.error('[FluentAdapter] DI enabled?', this.config.dependencyInjection);
+        console.error('[FluentAdapter] Route has dependencies?', !!route.config.dependencies);
         if (this.config.dependencyInjection && route.config.dependencies) {
+          console.error('[FluentAdapter] Calling injectDependencies...');
           cleanupFn = await this.injectDependencies(context, route);
+          console.error('[FluentAdapter] After DI, context.dependencies:', Object.keys(context.dependencies));
         }
 
         // BACKGROUND TASKS - Solo si están habilitadas
