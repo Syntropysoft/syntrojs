@@ -271,8 +271,16 @@ export class SyntroJS {
     const fluentConfig = this.config.fluentConfig;
 
     if (!fluentConfig) {
+      // Build from user config (no presets - respect user choices)
+      let configuredAdapter = adapter
+        .withLogger(this.config.logger ?? false) // Default false, user can enable
+        .withValidation(true)
+        .withErrorHandling(true)
+        .withDependencyInjection(true)
+        .withBackgroundTasks(true)
+        .withOpenAPI(true);
+      
       // Use syntroLogger from main config if available
-      let configuredAdapter = adapter.standard();
       if (this.config.syntroLogger) {
         configuredAdapter = configuredAdapter.withSyntroLogger(
           typeof this.config.syntroLogger === 'boolean'
@@ -280,6 +288,7 @@ export class SyntroJS {
             : this.config.syntroLogger,
         );
       }
+      
       return configuredAdapter;
     }
 
