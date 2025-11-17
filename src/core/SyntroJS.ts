@@ -722,8 +722,13 @@ export class SyntroJS {
       this.openAPIEndpointsRegistered = true;
     }
 
-    // Register all routes
+    // Register all routes FIRST (functional: pure registration)
     this.registerAllRoutes();
+
+    // Register CORS plugin AFTER routes (critical for OPTIONS handling)
+    // This ensures @fastify/cors can handle OPTIONS requests for all registered routes
+    // The plugin must be registered after routes so it can intercept OPTIONS for all routes
+    await this.registerCorsPluginIfEnabled();
 
     // Start server via adapter
     const address = await this.getAdapterListenMethod()(this.server, port, host);
@@ -897,7 +902,43 @@ export class SyntroJS {
   }
 
   /**
+   * Register CORS plugin if enabled (pure function with necessary side effect)
+   * Functional: uses guard clauses and pure predicates
+   * 
+   * Principles:
+   * - Single Responsibility: Only handles CORS registration
+   * - Guard Clauses: Early validation
+   * - Functional: Delegates to FluentAdapter's pure methods
+   */
+  private async registerCorsPluginIfEnabled(): Promise<void> {
+    // Guard clause: only in REST mode
+    if (!this.isRestMode) {
+      return;
+    }
+
+    // Guard clause: FluentAdapter instance must exist
+    if (!this.fluentAdapterInstance) {
+      return;
+    }
+
+    // Guard clause: Server instance must exist
+    if (!this.server) {
+      return;
+    }
+
+    // Guard clause: CORS must be enabled in fluentConfig
+    const corsConfig = this.config.fluentConfig?.cors;
+    if (corsConfig === undefined || corsConfig === false) {
+      return;
+    }
+
+    // Delegate to FluentAdapter (uses pure predicate shouldRegisterCors internally)
+    await this.fluentAdapterInstance.registerCorsPlugin(this.server as FastifyInstance);
+  }
+
+  /**
    * Registers all routes from RouteRegistry with the appropriate adapter
+   * Functional: pure registration, no side effects beyond route registration
    */
   private registerAllRoutes(): void {
     // Middleware registry already configured via FluentAdapter instance

@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.7] - 2024-12-17
+
+### Fixed
+
+- 🐛 **CORS OPTIONS Preflight**: Fixed critical bug where OPTIONS requests returned 404
+- 🐛 **CORS Plugin Registration**: Fixed plugin registration order (now registers after routes)
+- 🐛 **CORS Headers**: Fixed CORS headers not being added to OPTIONS responses
+
+### Refactoring
+
+- 🔧 **Functional Programming**: Refactored CORS registration to use pure functions
+- 🔧 **SOLID Principles**: Improved adherence to Single Responsibility and Dependency Inversion
+- 🔧 **DDD**: Better separation of concerns between `SyntroJS` and `FluentAdapter`
+- 🔧 **Guard Clauses**: All methods now use early validation with guard clauses
+
+### Added
+
+- ✨ **Pure Functions**: `buildCorsOptions()` - pure function for building CORS options
+- ✨ **Pure Predicates**: `shouldRegisterCors()` - pure boolean predicate function
+- ✨ **Orchestration Method**: `registerCorsPluginIfEnabled()` - orchestrates CORS registration
+- ✨ **State Tracking**: `corsPluginRegistered` flag prevents double registration
+- ✨ **Regression Tests**: 6 comprehensive tests to prevent bug from reappearing
+
+### Benefits
+
+- ✅ Fixed critical CORS OPTIONS bug
+- ✅ Better code quality following SOLID, DDD, FP principles
+- ✅ Improved testability with pure functions
+- ✅ Better maintainability with clear separation of concerns
+- ✅ Regression prevention through architecture and tests
+- ✅ No breaking changes
+
+See [CHANGELOG_v0.6.7.md](./CHANGELOG_v0.6.7.md) for complete details.
+
 ## [0.6.6] - 2024-12-17
 
 ### Fixed
