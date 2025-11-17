@@ -91,3 +91,37 @@ await app.listen(3000);
 
 This refactoring improves the codebase's adherence to functional programming principles and ensures proper plugin initialization order, making the framework more robust and maintainable.
 
+---
+
+## [0.6.6] - 2024-12-17
+
+### Fixed
+
+- 🐛 **Dependency Versioning**: Fixed `@fastify/cors` version compatibility issue
+- 🐛 **Peer Dependencies**: Updated `peerDependencies` to only allow `@fastify/cors@^9.0.0` (compatible with Fastify v4)
+
+### Changed
+
+- 🔄 **devDependencies**: Updated `@fastify/cors` from `^9.0.0` to `^9.0.1` for better version pinning
+- 🔄 **peerDependencies**: Removed `^10.0.0` and `^11.0.0` from `@fastify/cors` peer dependencies (these require Fastify v5)
+
+### Technical Details
+
+**Problem**: The server had `@fastify/cors@11.1.0` installed, but the project uses Fastify v4 (`^4.26.0`). `@fastify/cors` v11 requires Fastify v5, causing incompatibility.
+
+**Solution**: 
+- Updated `devDependencies` to use `@fastify/cors@^9.0.1` (compatible with Fastify v4)
+- Updated `peerDependencies` to only allow `^9.0.0` to prevent users from installing incompatible versions
+
+**Compatibility Matrix**:
+- `@fastify/cors` v9 → Fastify v4 ✅ (current)
+- `@fastify/cors` v10 → Fastify v5 ❌ (not supported)
+- `@fastify/cors` v11 → Fastify v5 ❌ (not supported)
+
+### Benefits
+
+- ✅ Prevents version conflicts
+- ✅ Clear compatibility requirements
+- ✅ Better error messages when incompatible versions are installed
+- ✅ Stable and tested version combination
+

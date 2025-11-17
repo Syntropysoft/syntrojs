@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.6] - 2024-12-17
+
+### Fixed
+
+- 🐛 **Dependency Versioning**: Fixed `@fastify/cors` version compatibility issue
+- 🐛 **Peer Dependencies**: Updated `peerDependencies` to only allow `@fastify/cors@^9.0.0` (compatible with Fastify v4)
+
+### Changed
+
+- 🔄 **devDependencies**: Updated `@fastify/cors` from `^9.0.0` to `^9.0.1` for better version pinning
+- 🔄 **peerDependencies**: Removed `^10.0.0` and `^11.0.0` from `@fastify/cors` peer dependencies (these require Fastify v5)
+
+### Benefits
+
+- ✅ Prevents version conflicts
+- ✅ Clear compatibility requirements
+- ✅ Better error messages when incompatible versions are installed
+- ✅ Stable and tested version combination
+
+See [CHANGELOG_v0.6.6.md](./CHANGELOG_v0.6.6.md) for complete details.
+
 ## [0.6.5] - 2024-12-17
 
 ### Changed
