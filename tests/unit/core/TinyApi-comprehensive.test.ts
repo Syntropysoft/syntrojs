@@ -395,10 +395,10 @@ describe('SyntroJS - Comprehensive Coverage Tests', () => {
   });
 
   describe('Raw Fastify Access (SOLID)', () => {
-    it('should provide access to raw Fastify instance', () => {
+    it('should provide access to raw Fastify instance', async () => {
       const api = new SyntroJS();
 
-      const fastify = api.getRawFastify();
+      const fastify = await api.getRawFastify();
       expect(fastify).toBeDefined();
     });
   });

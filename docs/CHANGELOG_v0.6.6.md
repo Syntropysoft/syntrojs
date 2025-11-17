@@ -26,6 +26,13 @@ This release fixes a dependency versioning issue with `@fastify/cors` to ensure 
 - **devDependencies**: Updated `@fastify/cors` from `^9.0.0` to `^9.0.1` for better version pinning
 - **peerDependencies**: Removed `^10.0.0` and `^11.0.0` from `@fastify/cors` peer dependencies
 
+### API Changes
+
+- **`SyntroJS.getRawFastify()`**: Now returns `Promise<FastifyInstance>` instead of `FastifyInstance`
+  - Supports lazy initialization: creates server instance if not already created
+  - Ensures server is ready before returning Fastify instance
+  - Breaking change for direct usage, but improves consistency with async server creation
+
 ### Compatibility Matrix
 
 | `@fastify/cors` Version | Fastify Version | Status |
@@ -74,7 +81,17 @@ This release fixes a dependency versioning issue with `@fastify/cors` to ensure 
 
 ### For Users
 
-**No action required** - This is a maintenance release that fixes version compatibility. If you're using SyntroJS with Fastify v4, ensure you have `@fastify/cors@^9.0.0` installed:
+**Action required if using `getRawFastify()`**: This method is now async. Update your code:
+
+```typescript
+// Before
+const fastify = app.getRawFastify();
+
+// After
+const fastify = await app.getRawFastify();
+```
+
+**No action required for normal usage** - This is a maintenance release that fixes version compatibility. If you're using SyntroJS with Fastify v4, ensure you have `@fastify/cors@^9.0.0` installed:
 
 ```bash
 pnpm add -D @fastify/cors@^9.0.0

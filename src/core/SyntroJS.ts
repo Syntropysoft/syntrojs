@@ -821,11 +821,17 @@ export class SyntroJS {
    *
    * @returns Fastify instance
    */
-  getRawFastify(): FastifyInstance {
+  async getRawFastify(): Promise<FastifyInstance> {
     // Guard clause: validate mode
     if (!this.isRestMode) {
       throw new Error('Fastify instance not available in Lambda mode');
     }
+    
+    // Lazy initialization: create server if not already created
+    if (!this.server) {
+      this.server = await this.createServerInstance();
+    }
+    
     return this.server as FastifyInstance;
   }
 

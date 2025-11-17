@@ -13,11 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - 🐛 **Dependency Versioning**: Fixed `@fastify/cors` version compatibility issue
 - 🐛 **Peer Dependencies**: Updated `peerDependencies` to only allow `@fastify/cors@^9.0.0` (compatible with Fastify v4)
+- 🐛 **Test Failures**: Fixed tests failing due to lazy server initialization
 
 ### Changed
 
 - 🔄 **devDependencies**: Updated `@fastify/cors` from `^9.0.0` to `^9.0.1` for better version pinning
 - 🔄 **peerDependencies**: Removed `^10.0.0` and `^11.0.0` from `@fastify/cors` peer dependencies (these require Fastify v5)
+- 🔄 **API**: `SyntroJS.getRawFastify()` is now async (returns `Promise<FastifyInstance>`) to support lazy initialization
 
 ### Benefits
 

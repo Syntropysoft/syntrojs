@@ -31,13 +31,13 @@ describe('Plugins E2E', () => {
       const app = new SyntroJS();
 
       // All plugins should register without errors
-      await expect(registerCors(app.getRawFastify())).resolves.toBeUndefined();
+      await expect(registerCors(await app.getRawFastify())).resolves.toBeUndefined();
 
-      await expect(registerHelmet(app.getRawFastify())).resolves.toBeUndefined();
+      await expect(registerHelmet(await app.getRawFastify())).resolves.toBeUndefined();
 
-      await expect(registerCompression(app.getRawFastify())).resolves.toBeUndefined();
+      await expect(registerCompression(await app.getRawFastify())).resolves.toBeUndefined();
 
-      await expect(registerRateLimit(app.getRawFastify())).resolves.toBeUndefined();
+      await expect(registerRateLimit(await app.getRawFastify())).resolves.toBeUndefined();
 
       // No need to close - server was never started
     });
@@ -76,7 +76,7 @@ describe('Plugins E2E', () => {
       const app = new SyntroJS();
 
       // Register CORS plugin
-      await registerCors(app.getRawFastify(), {
+      await registerCors(await app.getRawFastify(), {
         origin: '*',
         credentials: true,
       });
@@ -105,7 +105,7 @@ describe('Plugins E2E', () => {
       const app = new SyntroJS();
 
       // Register Helmet plugin
-      await registerHelmet(app.getRawFastify());
+      await registerHelmet(await app.getRawFastify());
 
       app.get('/secure-test', {
         handler: () => ({ message: 'Security headers enabled' }),
@@ -128,7 +128,7 @@ describe('Plugins E2E', () => {
       const app = new SyntroJS();
 
       // Register Compression plugin
-      await registerCompression(app.getRawFastify(), {
+      await registerCompression(await app.getRawFastify(), {
         threshold: 1024, // Only compress responses > 1KB
       });
 
@@ -157,7 +157,7 @@ describe('Plugins E2E', () => {
       const app = new SyntroJS();
 
       // Register Rate Limiting plugin with low limit for testing
-      await registerRateLimit(app.getRawFastify(), {
+      await registerRateLimit(await app.getRawFastify(), {
         max: 5, // Only 5 requests
         timeWindow: 60000, // Per minute
         addHeaders: {
