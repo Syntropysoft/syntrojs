@@ -1,39 +1,39 @@
-# Extracción de Adapters Lambda a Paquete Separado
+# Lambda Adapters Extraction to Separate Package
 
-## 📋 Objetivo
+## 📋 Objective
 
-Este documento explica cómo los adapters Lambda están preparados para ser extraídos a un paquete separado (`@syntrojs/lambda-adapters`) en el futuro, manteniendo compatibilidad con SyntroJS core.
+This document explains how Lambda adapters are prepared to be extracted to a separate package (`@syntrojs/lambda-adapters`) in the future, while maintaining compatibility with SyntroJS core.
 
 ---
 
-## 🏗️ Arquitectura Actual
+## 🏗️ Current Architecture
 
-### Estructura Preparada para Extracción
+### Structure Prepared for Extraction
 
 ```
 syntrojs/
 ├── src/
 │   ├── domain/
 │   │   └── interfaces/
-│   │       └── ILambdaAdapter.ts      # ✅ Interface compartida (permanece en core)
+│   │       └── ILambdaAdapter.ts      # ✅ Shared interface (stays in core)
 │   ├── lambda/
 │   │   ├── adapters/
-│   │   │   ├── ApiGatewayAdapter.ts   # 🔄 Puede moverse a paquete separado
-│   │   │   └── LambdaAdapterFactory.ts # 🔄 Puede moverse a paquete separado
+│   │   │   ├── ApiGatewayAdapter.ts   # 🔄 Can be moved to separate package
+│   │   │   └── LambdaAdapterFactory.ts # 🔄 Can be moved to separate package
 │   │   ├── handlers/
-│   │   │   └── LambdaHandler.ts       # ✅ Permanece en core (usa factory)
-│   │   ├── types.ts                    # ✅ Tipos compartidos (permanece)
-│   │   └── index.ts                    # ✅ Exports públicos
+│   │   │   └── LambdaHandler.ts       # ✅ Stays in core (uses factory)
+│   │   ├── types.ts                    # ✅ Shared types (stays)
+│   │   └── index.ts                    # ✅ Public exports
 ```
 
 ---
 
-## 🔄 Plan de Extracción Futuro
+## 🔄 Future Extraction Plan
 
-### Paso 1: Crear Paquete Separado
+### Step 1: Create Separate Package
 
 ```bash
-# Estructura del nuevo paquete
+# Structure of the new package
 @syntrojs/lambda-adapters/
 ├── src/
 │   ├── adapters/
@@ -48,14 +48,14 @@ syntrojs/
 └── tsconfig.json
 ```
 
-### Paso 2: Dependencias del Paquete
+### Step 2: Package Dependencies
 
 ```json
 {
   "name": "@syntrojs/lambda-adapters",
   "version": "1.0.0",
   "peerDependencies": {
-    "syntrojs": "^0.5.0"
+    "syntrojs": "^0.6.x"
   },
   "dependencies": {
     "zod": "^3.22.4"
@@ -63,9 +63,9 @@ syntrojs/
 }
 ```
 
-### Paso 3: Implementar ILambdaAdapter
+### Step 3: Implement ILambdaAdapter
 
-Los adapters en el paquete separado implementan la interfaz de SyntroJS:
+Adapters in the separate package implement the SyntroJS interface:
 
 ```typescript
 // @syntrojs/lambda-adapters/src/adapters/ApiGatewayAdapter.ts
@@ -87,20 +87,20 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
 }
 ```
 
-### Paso 4: Uso en SyntroJS
+### Step 4: Usage in SyntroJS
 
 ```typescript
 // src/lambda/handlers/LambdaHandler.ts
 import { lambdaAdapterFactory } from '../adapters/LambdaAdapterFactory';
-// En el futuro:
+// In the future:
 // import { ApiGatewayAdapter } from '@syntrojs/lambda-adapters';
 
 constructor(config: LambdaHandlerConfig = {}) {
-  // Opción 1: Usar adapters internos (actual)
+  // Option 1: Use internal adapters (current)
   const apiGatewayAdapter = new ApiGatewayAdapter(routeRegistry, validator);
   this.adapterFactory.register('api-gateway', apiGatewayAdapter);
 
-  // Opción 2: Usar adapters externos (futuro)
+  // Option 2: Use external adapters (future)
   // import { ApiGatewayAdapter } from '@syntrojs/lambda-adapters';
   // const apiGatewayAdapter = new ApiGatewayAdapter(routeRegistry, validator);
   // this.adapterFactory.register('api-gateway', apiGatewayAdapter);
@@ -109,42 +109,42 @@ constructor(config: LambdaHandlerConfig = {}) {
 
 ---
 
-## ✅ Principios Aplicados
+## ✅ Principles Applied
 
 ### SOLID
 
-1. **Single Responsibility**: Cada adapter tiene una única responsabilidad
-2. **Open/Closed**: Fácil agregar nuevos adapters sin modificar core
-3. **Liskov Substitution**: Todos los adapters implementan `ILambdaAdapter`
-4. **Interface Segregation**: Interfaz pequeña y específica
-5. **Dependency Inversion**: SyntroJS depende de `ILambdaAdapter`, no implementaciones concretas
+1. **Single Responsibility**: Each adapter has a single responsibility
+2. **Open/Closed**: Easy to add new adapters without modifying core
+3. **Liskov Substitution**: All adapters implement `ILambdaAdapter`
+4. **Interface Segregation**: Small and specific interface
+5. **Dependency Inversion**: SyntroJS depends on `ILambdaAdapter`, not concrete implementations
 
 ### DDD
 
-- **Domain Interface**: `ILambdaAdapter` está en domain layer
-- **Infrastructure**: Adapters están en infrastructure layer
-- **Separation**: Core no depende de implementaciones específicas
+- **Domain Interface**: `ILambdaAdapter` is in domain layer
+- **Infrastructure**: Adapters are in infrastructure layer
+- **Separation**: Core does not depend on specific implementations
 
-### Programación Funcional
+### Functional Programming
 
-- **Funciones Puras**: `getEventType()`, `canHandle()` son puras
-- **Inmutabilidad**: Factory no muta adapters después de registro
-- **Composición**: Factory compone adapters dinámicamente
+- **Pure Functions**: `getEventType()`, `canHandle()` are pure
+- **Immutability**: Factory does not mutate adapters after registration
+- **Composition**: Factory composes adapters dynamically
 
 ### Guard Clauses
 
-- Validación temprana en todos los métodos
-- Errores claros y descriptivos
-- Salida temprana en caso de error
+- Early validation in all methods
+- Clear and descriptive errors
+- Early exit on error
 
 ---
 
-## 🧪 Testing Independiente
+## 🧪 Independent Testing
 
-Los adapters pueden ser testeados completamente aislados:
+Adapters can be tested completely isolated:
 
 ```typescript
-// Test del adapter sin SyntroJS
+// Test adapter without SyntroJS
 import { ApiGatewayAdapter } from '@syntrojs/lambda-adapters';
 import { MockRouteRegistry, MockValidator } from './mocks';
 
@@ -159,56 +159,55 @@ describe('ApiGatewayAdapter - Isolated', () => {
 
 ---
 
-## 📦 Migración Gradual
+## 📦 Gradual Migration
 
-### Fase 1: Preparación (Actual)
-- ✅ Interface `ILambdaAdapter` creada
-- ✅ Factory pattern implementado
-- ✅ Adapters implementan interfaz
-- ✅ Tests unitarios independientes
+### Phase 1: Preparation (Current)
+- ✅ `ILambdaAdapter` interface created
+- ✅ Factory pattern implemented
+- ✅ Adapters implement interface
+- ✅ Independent unit tests
 
-### Fase 2: Extracción
-1. Crear paquete `@syntrojs/lambda-adapters`
-2. Mover adapters al nuevo paquete
-3. Mantener compatibilidad con SyntroJS core
-4. Actualizar imports en SyntroJS
+### Phase 2: Extraction
+1. Create `@syntrojs/lambda-adapters` package
+2. Move adapters to new package
+3. Maintain compatibility with SyntroJS core
+4. Update imports in SyntroJS
 
-### Fase 3: Uso Externo
+### Phase 3: External Usage
 ```typescript
-// Usuario puede usar adapters externos
+// Users can use external adapters
 import { SyntroJS } from 'syntrojs';
 import { ApiGatewayAdapter } from '@syntrojs/lambda-adapters';
 
 const app = new SyntroJS({ rest: false });
-// Registrar adapter externo
+// Register external adapter
 lambdaAdapterFactory.register('api-gateway', new ApiGatewayAdapter(...));
 ```
 
 ---
 
-## 🔍 Ventajas de la Estructura Actual
+## 🔍 Advantages of Current Structure
 
-1. **Testabilidad**: Adapters pueden testearse sin SyntroJS completo
-2. **Extensibilidad**: Fácil agregar nuevos adapters
-3. **Separación**: Core no depende de implementaciones específicas
-4. **Reutilización**: Adapters pueden usarse en otros proyectos
-5. **Mantenibilidad**: Cambios en adapters no afectan core
-
----
-
-## 📝 Checklist para Extracción
-
-- [x] Interface `ILambdaAdapter` creada en domain layer
-- [x] Factory pattern implementado
-- [x] Adapters implementan interfaz
-- [x] Tests unitarios independientes creados
-- [ ] Paquete separado creado
-- [ ] Adapters movidos al nuevo paquete
-- [ ] Documentación de migración
-- [ ] Ejemplos de uso actualizados
+1. **Testability**: Adapters can be tested without full SyntroJS
+2. **Extensibility**: Easy to add new adapters
+3. **Separation**: Core does not depend on specific implementations
+4. **Reusability**: Adapters can be used in other projects
+5. **Maintainability**: Changes in adapters do not affect core
 
 ---
 
-**Última actualización**: 2024-11-17
-**Estado**: Estructura preparada, lista para extracción cuando sea necesario
+## 📝 Extraction Checklist
 
+- [x] `ILambdaAdapter` interface created in domain layer
+- [x] Factory pattern implemented
+- [x] Adapters implement interface
+- [x] Independent unit tests created
+- [ ] Separate package created
+- [ ] Adapters moved to new package
+- [ ] Migration documentation
+- [ ] Usage examples updated
+
+---
+
+**Last updated**: 2024-11-17
+**Status**: Structure prepared, ready for extraction when needed

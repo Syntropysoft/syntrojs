@@ -1,34 +1,34 @@
 # SyntroJS Lambda Example
 
-Este ejemplo muestra cómo usar SyntroJS en modo Lambda para AWS Lambda.
+This example shows how to use SyntroJS in Lambda mode for AWS Lambda.
 
-## Características
+## Features
 
-- ✅ Mismo código funciona en desarrollo (REST) y producción (Lambda)
-- ✅ Validación automática con Zod
-- ✅ Type safety completo
-- ✅ Rutas dinámicas con parámetros
-- ✅ Query parameters validados
+- ✅ Same code works in development (REST) and production (Lambda)
+- ✅ Automatic validation with Zod
+- ✅ Full type safety
+- ✅ Dynamic routes with parameters
+- ✅ Validated query parameters
 
-## Uso
+## Usage
 
-### Desarrollo Local (REST Mode)
+### Local Development (REST Mode)
 
 ```javascript
-// Cambiar rest: false a rest: true
+// Change rest: false to rest: true
 const app = new SyntroJS({ rest: true });
 await app.listen(3000);
 ```
 
-### Producción (Lambda Mode)
+### Production (Lambda Mode)
 
 ```javascript
-// rest: false (default para Lambda)
+// rest: false (default for Lambda)
 const app = new SyntroJS({ rest: false });
 export const handler = app.handler();
 ```
 
-## Despliegue en AWS Lambda
+## AWS Lambda Deployment
 
 ### 1. Build
 
@@ -36,7 +36,7 @@ export const handler = app.handler();
 npm run build
 ```
 
-### 2. Deploy con AWS SAM
+### 2. Deploy with AWS SAM
 
 ```yaml
 # template.yaml
@@ -63,22 +63,21 @@ sam deploy
 
 ## Endpoints
 
-- `GET /orders` - Listar órdenes (con paginación)
-- `GET /orders/:id` - Obtener orden por ID
-- `POST /orders` - Crear nueva orden
+- `GET /orders` - List orders (with pagination)
+- `GET /orders/:id` - Get order by ID
+- `POST /orders` - Create new order
 
-## Testing Local
+## Local Testing
 
-Para probar localmente, puedes usar [SAM Local](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html):
+To test locally, you can use [SAM Local](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html):
 
 ```bash
 sam local start-api
 ```
 
-O cambiar a modo REST para desarrollo:
+Or switch to REST mode for development:
 
 ```javascript
 const app = new SyntroJS({ rest: true });
 await app.listen(3000);
 ```
-

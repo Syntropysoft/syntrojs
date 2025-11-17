@@ -10,8 +10,7 @@
 [![⚡ Bun Performance](https://img.shields.io/badge/⚡-3.8x%20Faster%20than%20Fastify-green.svg)](https://github.com/Syntropysoft/sintrojs)
 [![🚀 Node.js Performance](https://img.shields.io/badge/🚀-89.5%25%20of%20Fastify-blue.svg)](https://github.com/Syntropysoft/sintrojs)
 [![Coverage](https://img.shields.io/badge/coverage-71.55%25-brightgreen)](./coverage)
-[![Tests](https://img.shields.io/badge/tests-937%20passing-brightgreen)](./tests)
-[![Bun Tests](https://img.shields.io/badge/bun-674%20passing-brightgreen)](./tests)
+[![Tests](https://img.shields.io/badge/tests-1,019+-passing-brightgreen)](./tests)
 
 ---
 
@@ -25,7 +24,7 @@
 - ✅ **AWS Lambda Support** - Same code works in REST and Lambda modes
 - 🎯 **v0.7.0 planned** - Router + Advanced Middleware
 
-**Latest Release**: **v0.6.0** - AWS Lambda Support - [CHANGELOG](./docs/CHANGELOG_v0.6.0.md)
+**Latest Release**: **v0.6.x** - AWS Lambda Support - [CHANGELOG](./docs/CHANGELOG.md)
 
 > 💡 **Note**: While the core is stable, we recommend pinning to specific versions until v1.0.0
 
@@ -35,32 +34,24 @@
 
 **SyntroJS is the world's first dual-runtime framework** that brings the simplicity and developer experience of FastAPI to the TypeScript ecosystem. Write your code once and run it on either **Node.js** for stability or **Bun** for maximum performance.
 
-Coming in v0.5.0: **TOON Format** - reduce your API bandwidth costs 40-60% (like gRPC) while keeping responses human-readable and debuggable (like JSON). No compilation. No protobuf. Just savings. Perfect for any high-traffic API.
-
----
-
-## ✨ Key Features
-
-- **🚀 Dual Runtime Support**: Write once, run on both Node.js and Bun. Zero code changes required.
-- **☁️ AWS Lambda Support**: Same code works in REST mode (development) and Lambda mode (production). Just set `rest: false`. Full API Gateway integration with automatic event detection.
-- **🔥 FastAPI-like Developer Experience**: Automatic validation with Zod, full TypeScript type safety, elegant error handling (`HTTPException`).
-- **🎨 Automatic Interactive Docs**: Beautiful landing page + Swagger UI + ReDoc out of the box at `/docs`.
-- **🧪 Testing Superpower**: `SmartMutator` for mutation testing in seconds. Type-safe client coming in v0.5.0.
-- **🔌 Rich Ecosystem**: Middleware system, WebSockets, dependency injection, background tasks, structured logging.
-- **🔒 Security First**: JWT, OAuth2, API Keys, and security plugins built-in.
-- **🏗️ Extensible Architecture**: Lambda adapters follow SOLID principles and can be extracted to separate packages. Test adapters independently without full framework.
+**Key Highlights:**
+- 🚀 **Dual Runtime**: Same code runs on Node.js and Bun
+- ☁️ **AWS Lambda**: Same code works in REST (dev) and Lambda (prod) modes
+- 🔥 **FastAPI DX**: Automatic validation, type safety, elegant error handling
+- 🎨 **Auto Docs**: Interactive Swagger UI + ReDoc out of the box
+- 🧪 **Testing**: SmartMutator for mutation testing in seconds
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Install
+### Installation
 
 ```bash
 npm install syntrojs zod
 ```
 
-### 2. Create Your First API
+### Basic REST API
 
 ```javascript
 import { SyntroJS } from 'syntrojs';
@@ -69,7 +60,9 @@ import { z } from 'zod';
 const app = new SyntroJS({ title: 'My API' });
 
 // Simple GET endpoint
-app.get('/hello', { handler: () => ({ message: 'Hello World!' }) });
+app.get('/hello', { 
+  handler: () => ({ message: 'Hello World!' }) 
+});
 
 // POST with automatic validation
 app.post('/users', {
@@ -85,9 +78,9 @@ await app.listen(3000);
 
 **That's it!** 🎉 Visit `http://localhost:3000/docs` for interactive documentation.
 
-### ☁️ AWS Lambda Mode
+### AWS Lambda Mode
 
-**Same code, Lambda deployment** - Zero changes needed:
+**Same code, Lambda deployment** - Just change one flag:
 
 ```javascript
 import { SyntroJS } from 'syntrojs';
@@ -110,67 +103,59 @@ export const handler = app.handler();
 
 **That's it!** 🎉 Deploy to AWS Lambda. Same validation, same type safety, same code.
 
-#### Lambda Features
+See [Lambda Usage Guide](./docs/LAMBDA_USAGE.md) for complete examples.
 
-- ✅ **API Gateway Integration**: Automatic event detection and handling
-- ✅ **Dynamic Routes**: Full support for `/users/:id` with path parameter extraction
-- ✅ **Validation**: Same Zod schemas work in both modes
-- ✅ **Error Handling**: Consistent error responses across REST and Lambda
-- ✅ **Tree-shaking**: Optimized bundle size for Lambda deployments
-- ✅ **Testable**: Adapters can be tested independently without full framework
+---
 
-#### Lambda Architecture
+## ✨ Key Features
 
-- **Domain Interface**: `ILambdaAdapter` for easy extension
-- **Factory Pattern**: `LambdaAdapterFactory` for adapter management
-- **Extensible**: Adapters can be extracted to separate packages (`@syntrojs/lambda-adapters`)
-- **SOLID Principles**: Each adapter follows Single Responsibility and Dependency Inversion
+### 🚀 Dual Runtime Support
+Write once, run on both Node.js and Bun. Zero code changes required.
 
-See [Lambda Usage Guide](./docs/LAMBDA_USAGE.md) for complete examples and [Lambda Adapters Extraction](./docs/LAMBDA_ADAPTERS_EXTRACTION.md) for architecture details.
+### ☁️ AWS Lambda Support
+Same code works in REST mode (development) and Lambda mode (production). Just set `rest: false`. Full API Gateway integration with automatic event detection.
 
-### HTTP Redirects
+### 🔥 FastAPI-like Developer Experience
+Automatic validation with Zod, full TypeScript type safety, elegant error handling (`HTTPException`).
 
-```javascript
-// Permanent redirect (301 - SEO friendly)
-app.get('/old-url', {
-  handler: ({ redirect }) => redirect('/new-url', 301)
-});
+### 🎨 Automatic Interactive Docs
+Beautiful landing page + Swagger UI + ReDoc out of the box at `/docs`.
 
-// After form submission (303 - POST → GET)
-app.post('/submit', {
-  body: z.object({ name: z.string() }),
-  handler: ({ body, redirect }) => {
-    saveData(body);
-    return redirect('/success', 303);
-  }
-});
-```
+### 🧪 Testing Superpower
+`SmartMutator` for mutation testing in seconds. Type-safe client coming in v0.7.0.
 
-### Content Negotiation
+### 🔌 Rich Ecosystem
+Middleware system, WebSockets, dependency injection, background tasks, structured logging.
 
-```javascript
-// Serve JSON or HTML based on Accept header
-app.get('/users', {
-  handler: ({ accepts }) => {
-    if (accepts.html()) {
-      return '<html><h1>Users</h1>...</html>';
-    }
-    
-    // Default: JSON
-    return { users: [...] };
-  }
-});
+### 🔒 Security First
+JWT, OAuth2, API Keys, and security plugins built-in.
 
-// TOON format ready (v0.5.0)
-app.get('/data', {
-  handler: ({ accepts }) => {
-    if (accepts.toon()) {
-      return data; // Will be serialized as TOON
-    }
-    return data; // JSON
-  }
-});
-```
+### 🏗️ Extensible Architecture
+Lambda adapters follow SOLID principles and can be extracted to separate packages. Test adapters independently without full framework.
+
+---
+
+## 📚 Examples
+
+We have comprehensive examples in the [`examples/`](./examples/) directory:
+
+### Getting Started
+- **[Quick Start](./examples/quick-start/)** - Basic API example with tests
+- **[Dual Runtime](./examples/dual-runtime/)** - Same code on Node.js and Bun
+
+### Features
+- **[HTTP Methods](./examples/http-methods/)** - Redirects, content negotiation, HEAD/OPTIONS
+- **[Middleware](./examples/middleware-example/)** - Global and path-specific middleware
+- **[WebSockets](./examples/websocket-example/)** - Real-time communication
+- **[Documentation Config](./examples/docs-config/)** - Customizing OpenAPI docs
+
+### Advanced
+- **[Lambda Example](./examples/lambda-example/)** - Complete AWS Lambda deployment
+- **[Bun Runtime](./examples/syntrojs-bun/)** - Bun-specific optimizations
+- **[Demo Brutal](./examples/demo-brutal/)** - Performance benchmarks
+
+### See All Examples
+Check the [examples README](./examples/README.md) for a complete list.
 
 ---
 
@@ -196,13 +181,260 @@ bun app.js
 | Feature | Node.js | Bun | Status |
 |---------|---------|-----|--------|
 | Core API | ✅ Full | ✅ Full | Identical |
-| Plugins (CORS, Helmet, etc.) | ✅ Full | ⚠️ Warnings only | v0.5.0 planned |
-| Static files | ✅ Full | ❌ Not available | v0.5.0 planned |
+| Plugins (CORS, Helmet, etc.) | ✅ Full | ⚠️ Warnings only | v0.7.0 planned |
+| Static files | ✅ Full | ❌ Not available | v0.7.0 planned |
 | `getRawFastify()` | ✅ Works | ❌ Use `getRawServer()` | - |
 
 ---
 
-## 🧪 Testing Made Easy
+## 💡 Core Concepts
+
+### Request Validation
+
+Automatic validation with Zod schemas:
+
+```javascript
+app.post('/users', {
+  body: z.object({
+    name: z.string().min(1),
+    email: z.string().email(),
+  }),
+  params: z.object({
+    id: z.string().uuid(),
+  }),
+  query: z.object({
+    page: z.coerce.number().min(1).default(1),
+  }),
+  handler: ({ body, params, query }) => {
+    // All validated and type-safe!
+    return { ...body, id: params.id, page: query.page };
+  },
+});
+```
+
+### Dependency Injection
+
+Share services across routes:
+
+```javascript
+import { inject } from 'syntrojs';
+
+const dbService = inject(() => new Database(), { scope: 'singleton' });
+
+app.get('/users', {
+  dependencies: { db: dbService },
+  handler: ({ dependencies }) => dependencies.db.getUsers()
+});
+```
+
+### Error Handling
+
+FastAPI-style exceptions:
+
+```javascript
+import { NotFoundException, BadRequestException } from 'syntrojs';
+
+app.get('/users/:id', {
+  handler: ({ params }) => {
+    const user = findUser(params.id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  },
+});
+```
+
+### Middleware
+
+Global or path-specific:
+
+```javascript
+// Global middleware
+app.use(async (ctx, next) => {
+  console.log(`${ctx.method} ${ctx.path}`);
+  await next();
+});
+
+// Path-specific
+app.use('/api/*', async (ctx, next) => {
+  if (!ctx.headers.authorization) {
+    throw new UnauthorizedException('Token required');
+  }
+  await next();
+});
+```
+
+### Background Tasks
+
+Non-blocking async tasks:
+
+```javascript
+app.post('/users', {
+  handler: ({ body, background }) => {
+    // Queue email send (non-blocking)
+    background.addTask(async () => {
+      await sendWelcomeEmail(body.email);
+    });
+    
+    return { success: true };
+  }
+});
+```
+
+---
+
+## 📖 API Reference
+
+### Creating an Application
+
+```typescript
+new SyntroJS(config?: SyntroJSConfig)
+```
+
+**Configuration Options:**
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `title` | `string` | - | API title for OpenAPI docs |
+| `version` | `string` | - | API version |
+| `description` | `string` | - | API description |
+| `runtime` | `'auto' \| 'node' \| 'bun'` | `'auto'` | Force specific runtime |
+| `rest` | `boolean` | `true` | REST mode (HTTP server) or Lambda mode |
+| `docs` | `boolean \| object` | `true` | Configure documentation endpoints |
+| `logger` | `boolean` | `false` | Enable Fastify logger |
+| `syntroLogger` | `boolean \| object` | `false` | Enable @syntrojs/logger |
+
+### Route Registration
+
+```typescript
+app.get(path: string, config: RouteConfig)
+app.post(path: string, config: RouteConfig)
+app.put(path: string, config: RouteConfig)
+app.delete(path: string, config: RouteConfig)
+app.patch(path: string, config: RouteConfig)
+```
+
+**Route Config:**
+
+```typescript
+interface RouteConfig {
+  handler: (ctx: RequestContext) => any;
+  body?: ZodSchema;        // Request body validation
+  params?: ZodSchema;      // Path parameters validation
+  query?: ZodSchema;       // Query parameters validation
+  response?: ZodSchema;    // Response validation
+  status?: number;         // Default status code
+  dependencies?: object;   // Dependency injection
+}
+```
+
+### Server Management
+
+**REST Mode:**
+```typescript
+// Start server
+const address = await app.listen(port: number, host?: string);
+
+// Stop server
+await app.close();
+```
+
+**Lambda Mode:**
+```typescript
+// Export handler
+export const handler = app.handler();
+```
+
+### Request Context
+
+```typescript
+interface RequestContext {
+  method: HttpMethod;              // HTTP method
+  path: string;                    // Request path
+  params: any;                     // Path parameters (validated)
+  query: any;                      // Query parameters (validated)
+  body: any;                       // Request body (validated)
+  headers: Record<string, string>; // Request headers
+  cookies: Record<string, string>; // Cookies
+  correlationId: string;           // Request tracking ID
+  timestamp: Date;                 // Request timestamp
+  dependencies: Record<string, any>; // Injected dependencies
+  background: {
+    addTask(task: () => void): void; // Queue background task
+  };
+  download(data, options): FileDownloadResponse; // File download helper
+  redirect(url, statusCode?): RedirectResponse;  // Redirect helper
+  accepts: AcceptsHelper;          // Content negotiation helper
+}
+```
+
+---
+
+## 🔒 Security
+
+### OAuth2 Password Bearer
+
+```typescript
+import { OAuth2PasswordBearer } from 'syntrojs';
+
+const oauth2 = new OAuth2PasswordBearer({ tokenUrl: '/token' });
+
+app.get('/protected', {
+  dependencies: { user: oauth2 },
+  handler: ({ dependencies }) => ({ user: dependencies.user }),
+});
+```
+
+### HTTP Bearer
+
+```typescript
+import { HTTPBearer } from 'syntrojs';
+
+const bearer = new HTTPBearer();
+
+app.get('/api/data', {
+  dependencies: { token: bearer },
+  handler: ({ dependencies }) => ({ data: 'protected' }),
+});
+```
+
+### API Key
+
+```typescript
+import { APIKeyHeader, APIKeyQuery } from 'syntrojs';
+
+// Via header
+const apiKeyHeader = new APIKeyHeader({ name: 'X-API-Key' });
+
+// Via query parameter
+const apiKeyQuery = new APIKeyQuery({ name: 'api_key' });
+
+app.get('/api/data', {
+  dependencies: { apiKey: apiKeyHeader },
+  handler: ({ dependencies }) => ({ data: 'protected' }),
+});
+```
+
+### HTTP Basic Auth
+
+```typescript
+import { HTTPBasic } from 'syntrojs';
+
+const basicAuth = new HTTPBasic();
+
+app.get('/admin', {
+  dependencies: { credentials: basicAuth },
+  handler: ({ dependencies }) => {
+    const { username, password } = dependencies.credentials;
+    return { admin: true };
+  },
+});
+```
+
+---
+
+## 🧪 Testing
 
 ### Standard Testing
 
@@ -230,27 +462,22 @@ describe('API Tests', () => {
     });
     
     const data = await res.json();
-    
     expect(res.status).toBe(200);
     expect(data.name).toBe('John');
   });
 });
 ```
 
-> **Note**: TinyTest is deprecated and will be removed in v0.5.0. See [DEPRECATIONS.md](./docs/DEPRECATIONS.md) for details.
->
-> **Coming in v0.5.0**: Type-safe client with autocomplete and zero code duplication!
+### SmartMutator - Mutation Testing
 
-### SmartMutator - Mutation Testing in Seconds
+```bash
+pnpm test:mutate
+```
 
 | Method | Mutants | Tests | Time |
 |--------|---------|-------|------|
 | Stryker (vanilla) | 1,247 | 187,050 | 43 min |
 | **SmartMutator** | **142** | **284** | **12 sec** |
-
-```bash
-pnpm test:mutate
-```
 
 **Mutation Score: 58.72%** (742 killed, 144 survived)
 
@@ -258,8 +485,8 @@ pnpm test:mutate
 
 ## 📊 Quality Metrics
 
-- **Tests**: 728/728 passing (Node.js 100%, Bun 94%)
-- **Coverage**: 77.14% (Branch: 80.73%)
+- **Tests**: 1,019+ passing (Node.js 100%, Bun 94%)
+- **Coverage**: 71.55% (Branch: 80.73%)
 - **Mutation Score**: 58.72%
 - **Code Quality**: 100% SOLID + DDD + Functional Programming
 - **Top Performers**: RouteRegistry (100%), ZodAdapter (100%), DependencyInjector (95.83%)
@@ -285,619 +512,72 @@ const app = new SyntroJS({
 
 ---
 
-## 💎 Why TOON Format?
+## 💎 TOON Format (v0.5.0+)
 
-**The Developer's Dilemma:**
-
-Traditionally, you had to choose between simplicity and efficiency:
+**Reduce API bandwidth costs 40-60%** while keeping responses human-readable.
 
 | Feature | JSON | **TOON** 🎯 | gRPC/Protobuf |
 |---------|------|------------|---------------|
-| **Payload Size** | 100% (large) | **40-50%** ⚡ | 35-45% |
+| **Payload Size** | 100% | **40-50%** ⚡ | 35-45% |
 | **Human-Readable** | ✅ Yes | ✅ **Yes** | ❌ Binary |
 | **Debug with curl** | ✅ Easy | ✅ **Easy** | ❌ Requires tools |
 | **Setup Time** | 5 minutes | **5 minutes** | 2+ hours |
 | **Tooling Needed** | None | **None** | protoc, plugins |
-| **Learning Curve** | Low | **Low** | High |
-| **Type Safety** | Runtime only | ✅ **Built-in** | ✅ Built-in |
-| **Production Costs** | High | **Low** ⚡ | Low |
 
 **TOON gives you the best of both worlds:** gRPC's efficiency with JSON's simplicity.
 
-### 🎯 Who Benefits from TOON?
-
-**High-Traffic APIs**  
-Save thousands on cloud bills by reducing bandwidth 40-60%
-
-**Startups & MVPs**  
-Get gRPC-level efficiency without the complexity overhead
-
-**Public APIs**  
-Give developers human-readable responses that are also bandwidth-efficient
-
-**Mobile Apps**  
-Reduce data usage for your users - faster loads, lower costs
-
-**Microservices**  
-Efficient service-to-service communication without binary protocols
-
-**IoT Devices**  
-Minimal bandwidth for resource-constrained environments
-
-***Bonus:** LLM Integrations*  
-*Reduce token costs when sending API context to AI models*
-
-### Real-World Example
-
-**Same endpoint, different formats:**
-
-```bash
-# JSON Response (traditional)
-GET /api/users
-Content-Length: 2,487 bytes
-Monthly cost (1M requests): $225
-
-# TOON Response (SyntroJS)
-GET /api/users
-Accept: application/toon
-Content-Length: 1,024 bytes  # -59%
-Monthly cost (1M requests): $92  # Save $133/month
-```
-
-**One line of code:**
-```typescript
-const app = new SyntroJS({ 
-  serialization: 'toon'  // ✨ That's it
-});
-```
-
----
-
-## 📖 API Reference
-
-### Core API
-
-#### Creating an Application
-
-**`new SyntroJS(config?: SyntroJSConfig)`** - Creates a new SyntroJS application instance.
-
-- **Parameters**:
-  - `config.title?: string` - API title for OpenAPI docs
-  - `config.version?: string` - API version
-  - `config.description?: string` - API description
-  - `config.logger?: boolean` - Enable Fastify logger
-  - `config.syntroLogger?: LoggerIntegrationConfig | boolean` - Enable @syntrojs/logger
-  - `config.runtime?: 'auto' | 'node' | 'bun'` - Force specific runtime
-  - `config.rest?: boolean` - Enable REST mode (HTTP server) or Lambda mode (default: `true`)
-  - `config.docs?: boolean | object` - Configure documentation endpoints
-  - `config.fluentConfig?: object` - Advanced adapter configuration
-
-#### Route Registration
-
-**`app.get(path, config)`** - Registers a GET route.  
-**`app.post(path, config)`** - Registers a POST route.  
-**`app.put(path, config)`** - Registers a PUT route.  
-**`app.delete(path, config)`** - Registers a DELETE route.  
-**`app.patch(path, config)`** - Registers a PATCH route.
-
-- **Parameters**:
-  - `path: string` - Route path (e.g., `/users/:id`)
-  - `config.handler: (ctx) => any` - Route handler function
-  - `config.params?: ZodSchema` - Path parameter validation
-  - `config.query?: ZodSchema` - Query parameter validation
-  - `config.body?: ZodSchema` - Request body validation
-  - `config.response?: ZodSchema` - Response validation
-  - `config.status?: number` - Default status code
-  - `config.dependencies?: object` - Dependency injection
-
-#### Server Management
-
-**`app.listen(port, host?)`** - Starts the HTTP server.
-
-- **Parameters**:
-  - `port: number` - Port to listen on
-  - `host?: string` - Host address (default: '::')
-- **Returns**: `Promise<string>` - Server address
-
-**`app.close()`** - Stops the HTTP server gracefully (REST mode only).
-
-**`app.handler()`** - Returns Lambda handler function (Lambda mode only).
-
-- **Returns**: `(event: unknown, context?: unknown) => Promise<LambdaResponse>`
-- **Throws**: Error if called in REST mode
-
----
-
-### Request Context
-
-The request context is passed to all handlers:
-
-```typescript
-interface RequestContext {
-  method: HttpMethod;              // HTTP method
-  path: string;                    // Request path
-  params: any;                     // Path parameters
-  query: any;                      // Query parameters
-  body: any;                       // Request body
-  headers: Record<string, string>; // Request headers
-  cookies: Record<string, string>; // Cookies
-  correlationId: string;           // Request tracking ID
-  timestamp: Date;                 // Request timestamp
-  dependencies: Record<string, any>; // Injected dependencies
-  background: {
-    addTask(task: () => void): void; // Queue background task
-  };
-  download(data, options): FileDownloadResponse; // File download helper
-  redirect(url, statusCode?): RedirectResponse;  // Redirect helper
-  accepts: AcceptsHelper;          // Content negotiation helper
-}
-```
-
----
-
-### Serialization & Content Negotiation
-
-#### ResponseHandler
-
-**`new ResponseHandler(serializerRegistry)`** - Creates response handler (used internally).
-
-**`handler.serialize(result, statusCode, acceptHeader?)`** - Serializes response with content negotiation.
-
-- **Parameters**:
-  - `result: any` - Handler return value
-  - `statusCode: number` - HTTP status code
-  - `acceptHeader?: string` - Accept header for content negotiation
-- **Returns**: `Promise<SerializedResponseDTO>`
-- **Performance**: O(1) for content-type based lookup
-
-#### Custom Serializers
-
-Implement `IResponseSerializer` interface:
-
-```typescript
-interface IResponseSerializer {
-  canSerialize(result: any): boolean;
-  serialize(
-    result: any,
-    statusCode: number,
-    request: Request
-  ): SerializedResponseDTO | null;
-}
-
-interface SerializedResponseDTO {
-  body: any;              // Raw object or string
-  statusCode: number;
-  headers: Record<string, string>;
-}
-```
-
-**Register custom serializer**:
-
-```typescript
-app.registerSerializer(new MySerializer(), 'MyFormat', ['application/my-format']);
-```
-
-#### Built-in Serializers
-
-**`JsonSerializer`** - Default JSON serialization (raw objects).  
-**`TOONSerializer`** - Bandwidth-optimized format (40-60% reduction).  
-**`CustomResponseSerializer`** - Custom status/headers pattern.  
-**`RedirectSerializer`** - HTTP redirects (3xx).  
-**`StreamSerializer`** - Node.js Readable streams.  
-**`BufferSerializer`** - Binary buffers.  
-**`FileDownloadSerializer`** - File downloads with Content-Disposition.
-
----
-
-### Dependency Injection
-
-**`inject(factory, options?)`** - Creates a dependency injection token.
-
-- **Parameters**:
-  - `factory: (ctx?) => T` - Factory function
-  - `options.scope?: 'singleton' | 'request'` - Lifecycle scope
-  - `options.cleanup?: (instance) => Promise<void>` - Cleanup function
-- **Returns**: Dependency token
-
-**Example**:
-
-```typescript
-const dbService = inject(() => new Database(), { scope: 'singleton' });
-
-app.get('/users', {
-  dependencies: { db: dbService },
-  handler: ({ dependencies }) => dependencies.db.getUsers()
-});
-```
-
----
-
-### Pagination
-
-**Helper function for pagination**:
-
-```typescript
-function paginate<T>(
-  items: T[],
-  page: number = 1,
-  limit: number = 10
-) {
-  const offset = (page - 1) * limit;
-  const paginatedItems = items.slice(offset, offset + limit);
-  
-  return {
-    data: paginatedItems,
-    pagination: {
-      page,
-      limit,
-      total: items.length,
-      totalPages: Math.ceil(items.length / limit),
-      hasNext: offset + limit < items.length,
-      hasPrev: page > 1
-    }
-  };
-}
-```
-
-**Example**:
-
-```typescript
-app.get('/products', {
-  query: z.object({
-    page: z.coerce.number().min(1).default(1),
-    limit: z.coerce.number().min(1).max(100).default(10)
-  }),
-  handler: ({ query }) => {
-    const allProducts = getProducts();
-    return paginate(allProducts, query.page, query.limit);
-  }
-});
-```
-
----
-
-### Background Tasks
-
-**`ctx.background.addTask(task, options?)`** - Queues asynchronous task (non-blocking).
-
-- **Parameters**:
-  - `task: () => void | Promise<void>` - Task function
-  - `options.name?: string` - Task name (for logging)
-  - `options.timeout?: number` - Max execution time (ms)
-
-**Example**:
-
-```typescript
-app.post('/users', {
-  body: z.object({ email: z.string().email() }),
-  handler: ({ body, background }) => {
-    // Queue email send (non-blocking)
-    background.addTask(async () => {
-      await sendWelcomeEmail(body.email);
-    }, { name: 'welcome-email', timeout: 5000 });
-    
-    return { success: true };
-  }
-});
-```
-
----
-
-### File Uploads
-
-**Multipart form data** is automatically parsed:
-
-```typescript
-app.post('/upload', {
-  handler: ({ body, files }) => {
-    // files array contains uploaded files
-    const file = files[0];
-    return {
-      filename: file.filename,
-      size: file.size,
-      mimetype: file.mimetype
-    };
-  }
-});
-```
-
-**File structure**:
-
-```typescript
-interface UploadedFile {
-  filename: string;
-  mimetype: string;
-  size: number;
-  buffer: Buffer;
-  stream: Readable;
-}
-```
-
----
-
-### WebSockets
-
-**`app.ws(path, handler)`** - Registers WebSocket endpoint.
-
-```typescript
-app.ws('/chat', {
-  onConnect: (socket, request) => {
-    console.log('Client connected');
-  },
-  onMessage: (socket, message) => {
-    socket.send(`Echo: ${message}`);
-  },
-  onClose: (socket) => {
-    console.log('Client disconnected');
-  }
-});
-```
-
----
-
-### OpenAPI / Swagger
-
-Documentation is auto-generated from routes and schemas:
-
-**Endpoints** (enabled by default):
-- `GET /` - Landing page with API overview
-- `GET /docs` - Swagger UI
-- `GET /redoc` - ReDoc UI
-- `GET /openapi.json` - OpenAPI 3.0 spec
-
-**Configure**:
-
-```typescript
-new SyntroJS({
-  title: 'My API',
-  version: '1.0.0',
-  description: 'API description',
-  docs: {
-    swagger: true,    // Swagger UI
-    redoc: true,      // ReDoc
-    landingPage: true,
-    openapi: true     // JSON spec
-  }
-});
-```
-
----
-
-### Security
-
-#### OAuth2 Password Bearer
-
-```typescript
-import { OAuth2PasswordBearer } from 'syntrojs';
-
-const oauth2 = new OAuth2PasswordBearer({ tokenUrl: '/token' });
-
-app.get('/protected', {
-  dependencies: { user: oauth2 },
-  handler: ({ dependencies }) => {
-    return { user: dependencies.user };
-  }
-});
-```
-
-#### HTTP Bearer
-
-```typescript
-import { HTTPBearer } from 'syntrojs';
-
-const bearer = new HTTPBearer();
-
-app.get('/api/data', {
-  dependencies: { token: bearer },
-  handler: ({ dependencies }) => {
-    const token = dependencies.token; // Validated token
-    return { data: 'protected' };
-  }
-});
-```
-
-#### API Key
-
-```typescript
-import { APIKeyHeader, APIKeyQuery } from 'syntrojs';
-
-// Via header
-const apiKeyHeader = new APIKeyHeader({ name: 'X-API-Key' });
-
-// Via query parameter  
-const apiKeyQuery = new APIKeyQuery({ name: 'api_key' });
-
-app.get('/api/data', {
-  dependencies: { apiKey: apiKeyHeader },
-  handler: ({ dependencies }) => {
-    const key = dependencies.apiKey; // Validated key
-    return { data: 'protected' };
-  }
-});
-```
-
-#### HTTP Basic Auth
-
-```typescript
-import { HTTPBasic } from 'syntrojs';
-
-const basicAuth = new HTTPBasic();
-
-app.get('/admin', {
-  dependencies: { credentials: basicAuth },
-  handler: ({ dependencies }) => {
-    const { username, password } = dependencies.credentials;
-    // Validate credentials
-    return { admin: true };
-  }
-});
-```
-
----
-
-### Middleware
-
-**`app.use(middleware)`** - Registers global middleware.  
-**`app.use(path, middleware)`** - Registers path-specific middleware.
-
-```typescript
-interface Middleware {
-  (ctx: RequestContext, next: () => Promise<void>): Promise<void>;
-}
-```
-
-**Example**:
-
-```typescript
-// Global middleware
-app.use(async (ctx, next) => {
-  console.log(`${ctx.method} ${ctx.path}`);
-  await next();
-});
-
-// Path-specific
-app.use('/api/*', async (ctx, next) => {
-  if (!ctx.headers.authorization) {
-    throw new UnauthorizedException('Token required');
-  }
-  await next();
-});
-```
-
----
-
-### Error Handling
-
-**`app.registerExceptionHandler(errorClass, handler)`** - Registers custom error handler.
-
-```typescript
-app.registerExceptionHandler(MyError, (error, ctx) => ({
-  status: 400,
-  body: { error: error.message }
-}));
-```
-
-**Built-in Exceptions**:
-- `BadRequestException` (400)
-- `UnauthorizedException` (401)
-- `ForbiddenException` (403)
-- `NotFoundException` (404)
-- `ConflictException` (409)
-- `UnprocessableEntityException` (422)
-- `ServiceUnavailableException` (503)
-
----
-
-### Registry Access
-
-**`app.getSerializerRegistry()`** - Access serializer registry.  
-**`app.getMiddlewareRegistry()`** - Access middleware registry.  
-**`app.getRouteRegistry()`** - Access route registry.  
-**`app.getWebSocketRegistry()`** - Access WebSocket registry.
+See [TOON Format Documentation](./docs/TOON_FORMAT.md) for details.
 
 ---
 
 ## 🗺️ Roadmap
 
 ### ✅ v0.4.0 - REST Completion (100% COMPLETE 🎉)
+- [x] File downloads, streaming, uploads
+- [x] HTTP redirects, content negotiation
 
-- [x] File downloads (`ctx.download()`)
-- [x] Streaming responses
-- [x] File uploads (multipart)
-- [x] Form data support
-- [x] HTTP redirects (`ctx.redirect()`)
-- [x] Content negotiation (`ctx.accepts`)
-
-### ✅ v0.5.0 - TOON Format + Architecture Refactor (100% COMPLETE 🎉)
-
-**TOON: The sweet spot between JSON's simplicity and gRPC's efficiency**
-
-- [x] **TOON Format Support**: 40-60% payload reduction for any API
-  - ✅ Human-readable (like JSON) - debug with `curl`
-  - ✅ No compilation needed (like JSON) - no protoc, no tooling
-  - ✅ Efficient (like gRPC) - 40-60% smaller payloads
-  - ✅ Official `@toon-format/toon` package integration
-  - ✅ Content negotiation via Accept header
-  - ✅ Perfect for: High-traffic APIs, mobile apps, microservices, public APIs
-- [x] **Serialization Architecture Refactor**
-  - ✅ ResponseHandler centralized (SOLID)
-  - ✅ Adapters unified: 5 → 2 (FluentAdapter + BunAdapter)
-  - ✅ DTO-based serialization (runtime-agnostic)
-  - ✅ O(1) content negotiation
-  - ✅ Bundle size: -21KB (-10%)
+### ✅ v0.5.0 - TOON Format (100% COMPLETE 🎉)
+- [x] TOON Format Support (40-60% payload reduction)
+- [x] Serialization Architecture Refactor
 
 ### ✅ v0.6.0 - AWS Lambda Support (100% COMPLETE 🎉)
-
-**Native AWS Lambda support - Same code, REST and Lambda modes**
-
-- [x] **Lambda Mode**: `rest: false` flag for Lambda deployment
-- [x] **API Gateway Integration**: Full API Gateway v1 (REST API) support
-- [x] **Dynamic Routes**: Pattern matching (`/users/:id`) with parameter extraction
-- [x] **Adapter Architecture**: `ILambdaAdapter` interface + Factory pattern
-- [x] **Tree-shaking**: Optimized Lambda bundle exports
-- [x] **Testable Adapters**: Independent testing without full framework
-- [x] **SOLID + DDD**: Clean architecture prepared for extraction
-- [x] **82 Lambda tests** passing
-- [x] **Documentation**: Complete guides and examples
-
-**Why Lambda Support?**
-- Same code works in development (REST) and production (Lambda)
-- No code changes needed between modes
-- Full validation and type safety in Lambda
-- Optimized bundle size for serverless deployments
+- [x] Lambda Mode (`rest: false`)
+- [x] API Gateway Integration
+- [x] Dynamic Routes with pattern matching
+- [x] 82 Lambda tests passing
 
 ### 🎨 v0.7.0 - Router + Advanced Middleware
-
 - [ ] `SyntroRouter` - Group endpoints with prefixes
 - [ ] Router-level middleware
-- [ ] `app.include(router)` - Include router in app
 - [ ] Advanced middleware patterns
-- [ ] Middleware composition helpers
 
 ### 🎨 v0.8.0 - Security & Real-time Features
-
 - [ ] CSRF protection
 - [ ] Server-Sent Events (SSE)
 - [ ] WebSocket rooms/namespaces
 - [ ] Session management
-- [ ] JWT refresh tokens
 
 ### 🎨 v0.9.0 - Completeness (Optional Features)
-
 - [ ] Static file serving _(optional)_
 - [ ] Template rendering integrations _(optional)_
-- [ ] Additional middleware helpers _(optional)_
-- [ ] Native Bun plugins (CORS, Helmet, etc.)
+- [ ] Native Bun plugins
 
 ### 🏗️ v1.0.0 - Production Ready
-
 - [ ] Official CLI (`create-syntrojs`)
 - [ ] Graceful shutdown
 - [ ] Complete documentation (Docusaurus)
-- [ ] Migration guides (Express, Fastify)
-- [ ] Production deployment guide
+- [ ] Migration guides
 - [ ] Security audit
-
-### 🚀 v2.0.0 - Enterprise & Multi-Protocol
-
-- [ ] **gRPC Support** - For maximum performance scenarios
-  - Use alongside TOON for hybrid architectures
-  - Public APIs: TOON (DX), Internal: gRPC (performance)
-- [ ] GraphQL integration
-- [ ] ORM adapters (Prisma, TypeORM, Drizzle)
-- [ ] Metrics/Prometheus integration
-- [ ] Distributed tracing (OpenTelemetry)
 
 ---
 
-## 📚 Examples & Documentation
+## 📚 Documentation
 
-- **Examples Repository**: [syntrojs-example](https://github.com/Syntropysoft/syntrojs-example)
-- **Lambda Example**: [examples/lambda-example](./examples/lambda-example) - Complete Lambda deployment example
-- **Lambda Usage Guide**: [LAMBDA_USAGE.md](./docs/LAMBDA_USAGE.md) - Comprehensive Lambda documentation
-- **Lambda Architecture**: [LAMBDA_ADAPTERS_EXTRACTION.md](./docs/LAMBDA_ADAPTERS_EXTRACTION.md) - Adapter architecture and extraction guide
-- **Architecture**: [ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md)
-- **Full Documentation**: Coming soon
+- **[Lambda Usage Guide](./docs/LAMBDA_USAGE.md)** - Complete Lambda documentation
+- **[Lambda Architecture](./docs/LAMBDA_ADAPTERS_EXTRACTION.md)** - Adapter architecture guide
+- **[Architecture](./docs/architecture/ARCHITECTURE.md)** - Framework architecture
+- **[Examples](./examples/)** - Code examples and demos
+- **[CHANGELOG](./docs/CHANGELOG.md)** - Version history
 
 ---
 

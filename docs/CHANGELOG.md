@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2024-11-17
+
+### Changed
+
+- 🔄 **README.md** - Complete reorganization (911 → 591 lines) for better readability
+- 🔄 **Documentation** - Translated Lambda documentation to English
+- 🔄 **Version references** - Updated to use `0.6.x` for flexibility
+
+### Documentation
+
+- 📚 README reorganization with better structure
+- 📚 Lambda usage guide translated to English
+- 📚 Lambda adapters extraction guide translated to English
+- 📚 Examples README translated to English
+
+See [CHANGELOG_v0.6.1.md](./CHANGELOG_v0.6.1.md) for complete details.
+
 ## [0.6.0] - 2024-11-17
 
 ### Added

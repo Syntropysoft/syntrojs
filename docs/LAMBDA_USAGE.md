@@ -1,18 +1,18 @@
-# SyntroJS Lambda - Guía de Uso
+# SyntroJS Lambda - Usage Guide
 
-## 📋 Resumen
+## 📋 Overview
 
-SyntroJS soporta dos modos de operación:
-- **REST Mode** (`rest: true`): Servidor HTTP completo (default)
-- **Lambda Mode** (`rest: false`): Handler Lambda para AWS Lambda
+SyntroJS supports two operation modes:
+- **REST Mode** (`rest: true`): Full HTTP server (default)
+- **Lambda Mode** (`rest: false`): Lambda handler for AWS Lambda
 
-El mismo código funciona en ambos modos sin cambios.
+The same code works in both modes without changes.
 
 ---
 
 ## 🚀 Quick Start
 
-### Modo REST (Desarrollo Local)
+### REST Mode (Local Development)
 
 ```typescript
 import { SyntroJS } from 'syntrojs';
@@ -36,7 +36,7 @@ app.post('/users', {
 await app.listen(3000);
 ```
 
-### Modo Lambda (Producción AWS)
+### Lambda Mode (AWS Production)
 
 ```typescript
 import { SyntroJS } from 'syntrojs';
@@ -63,9 +63,9 @@ export const handler = app.handler();
 
 ---
 
-## 📝 Ejemplos Completos
+## 📝 Complete Examples
 
-### Ejemplo 1: API RESTful Simple
+### Example 1: Simple RESTful API
 
 ```typescript
 import { SyntroJS } from 'syntrojs';
@@ -107,7 +107,7 @@ app.post('/users', {
 export const handler = app.handler();
 ```
 
-### Ejemplo 2: Validación Completa
+### Example 2: Complete Validation
 
 ```typescript
 import { SyntroJS } from 'syntrojs';
@@ -131,7 +131,7 @@ app.post('/orders', {
     source: z.enum(['web', 'mobile', 'api']).optional(),
   }),
   handler: async ({ body, query }) => {
-    // body y query están validados automáticamente
+    // body and query are automatically validated
     return {
       orderId: 'order-123',
       items: body.items,
@@ -143,7 +143,7 @@ app.post('/orders', {
 export const handler = app.handler();
 ```
 
-### Ejemplo 3: Rutas Dinámicas
+### Example 3: Dynamic Routes
 
 ```typescript
 import { SyntroJS } from 'syntrojs';
@@ -169,7 +169,7 @@ app.get('/users/:userId/posts/:postId', {
 export const handler = app.handler();
 ```
 
-### Ejemplo 4: Manejo de Errores
+### Example 4: Error Handling
 
 ```typescript
 import { SyntroJS, HTTPException } from 'syntrojs';
@@ -182,7 +182,7 @@ app.get('/users/:id', {
     id: z.string().uuid(),
   }),
   handler: async ({ params }) => {
-    // Simular búsqueda de usuario
+    // Simulate user lookup
     const user = await findUser(params.id);
     
     if (!user) {
@@ -193,7 +193,7 @@ app.get('/users/:id', {
   },
 });
 
-// Manejo de errores personalizado
+// Custom error handling
 app.exceptionHandler(HTTPException, async (error, context) => {
   return {
     status: error.statusCode,
@@ -209,44 +209,44 @@ export const handler = app.handler();
 
 ---
 
-## 🔧 Configuración
+## 🔧 Configuration
 
-### Opciones de Configuración
+### Configuration Options
 
 ```typescript
 const app = new SyntroJS({
-  rest: false, // Requerido para Lambda mode
+  rest: false, // Required for Lambda mode
   title: 'My API',
   version: '1.0.0',
   description: 'API description',
-  // docs: false, // Documentación deshabilitada en Lambda (recomendado)
+  // docs: false, // Documentation disabled in Lambda (recommended)
 });
 ```
 
-### Configuración Recomendada para Lambda
+### Recommended Lambda Configuration
 
 ```typescript
 const app = new SyntroJS({
   rest: false,
   title: 'My API',
-  docs: false, // Deshabilitar docs en producción Lambda
+  docs: false, // Disable docs in Lambda production
 });
 ```
 
 ---
 
-## 📦 Despliegue en AWS Lambda
+## 📦 AWS Lambda Deployment
 
-### 1. Estructura del Proyecto
+### 1. Project Structure
 
 ```
 my-lambda-function/
-├── index.ts          # Handler Lambda
+├── index.ts          # Lambda handler
 ├── package.json
 └── tsconfig.json
 ```
 
-### 2. Handler Lambda (`index.ts`)
+### 2. Lambda Handler (`index.ts`)
 
 ```typescript
 import { SyntroJS } from 'syntrojs';
@@ -272,27 +272,27 @@ export const handler = app.handler();
   "type": "module",
   "main": "index.js",
   "dependencies": {
-    "syntrojs": "^0.5.0",
+    "syntrojs": "^0.6.x",
     "zod": "^3.22.4"
   }
 }
 ```
 
-### 4. Build y Deploy
+### 4. Build and Deploy
 
 ```bash
 # Build
 npm run build
 
-# Deploy con AWS SAM
+# Deploy with AWS SAM
 sam build
 sam deploy
 
-# O con Serverless Framework
+# Or with Serverless Framework
 serverless deploy
 ```
 
-### 5. Configuración SAM Template (`template.yaml`)
+### 5. SAM Template Configuration (`template.yaml`)
 
 ```yaml
 Resources:
@@ -311,20 +311,20 @@ Resources:
 
 ---
 
-## 🎯 Características Lambda
+## 🎯 Lambda Features
 
-### ✅ Soportado
+### ✅ Supported
 
 - ✅ API Gateway REST API (v1)
-- ✅ Validación automática con Zod
-- ✅ Rutas dinámicas (`/users/:id`)
-- ✅ Manejo de errores
-- ✅ Type safety completo
+- ✅ Automatic validation with Zod
+- ✅ Dynamic routes (`/users/:id`)
+- ✅ Error handling
+- ✅ Full type safety
 - ✅ Query parameters
 - ✅ Path parameters
 - ✅ Request body parsing
 
-### 🚧 Próximamente
+### 🚧 Coming Soon
 
 - ⏳ API Gateway HTTP API (v2)
 - ⏳ SQS adapter
@@ -335,7 +335,7 @@ Resources:
 
 ## 🔍 Debugging
 
-### Logs en CloudWatch
+### CloudWatch Logs
 
 ```typescript
 app.post('/users', {
@@ -349,9 +349,9 @@ app.post('/users', {
 });
 ```
 
-### Errores de Validación
+### Validation Errors
 
-Los errores de validación se retornan automáticamente con formato:
+Validation errors are automatically returned in the following format:
 
 ```json
 {
@@ -367,34 +367,33 @@ Los errores de validación se retornan automáticamente con formato:
 
 ---
 
-## 📚 Más Información
+## 📚 More Information
 
-- [Arquitectura Lambda](./ARQUITECTURA_SYNTROJS_LAMBDA.md)
-- [Integración SyntroJS](./INTEGRACION_SYNTROJS.md)
-- [Plan SyntroJS](./PLAN_SYNTROJS.md)
+- [Lambda Architecture](./ARQUITECTURA_SYNTROJS_LAMBDA.md) - Architecture documentation (Spanish)
+- [Lambda Adapters Extraction](./LAMBDA_ADAPTERS_EXTRACTION.md) - Adapter extraction guide
 
 ---
 
 ## ❓ FAQ
 
-### ¿Puedo usar el mismo código en desarrollo y producción?
+### Can I use the same code in development and production?
 
-Sí, solo cambia el flag `rest`:
+Yes, just change the `rest` flag:
 
 ```typescript
 const isProduction = process.env.NODE_ENV === 'production';
 const app = new SyntroJS({ 
-  rest: !isProduction // false en producción (Lambda)
+  rest: !isProduction // false in production (Lambda)
 });
 ```
 
-### ¿Funciona con Serverless Framework?
+### Does it work with Serverless Framework?
 
-Sí, funciona con cualquier framework que soporte AWS Lambda.
+Yes, it works with any framework that supports AWS Lambda.
 
-### ¿Puedo usar middleware?
+### Can I use middleware?
 
-Sí, el sistema de middleware funciona igual en ambos modos:
+Yes, the middleware system works the same in both modes:
 
 ```typescript
 app.use(async (ctx) => {
@@ -402,11 +401,10 @@ app.use(async (ctx) => {
 });
 ```
 
-### ¿Cómo manejo CORS en Lambda?
+### How do I handle CORS in Lambda?
 
-CORS se maneja en API Gateway, no en el handler Lambda. Configura CORS en tu API Gateway.
+CORS is handled in API Gateway, not in the Lambda handler. Configure CORS in your API Gateway.
 
 ---
 
-**Última actualización**: 2024-11-17
-
+**Last updated**: 2024-11-17
