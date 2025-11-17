@@ -37,7 +37,10 @@ import { BunAdapter } from '../infrastructure/BunAdapter';
 import { FluentAdapter } from '../infrastructure/FluentAdapter';
 import type { LoggerIntegrationConfig } from '../infrastructure/LoggerIntegration';
 import { RuntimeOptimizer } from '../infrastructure/RuntimeOptimizer';
-import { LambdaHandler } from '../lambda/handlers/LambdaHandler';
+import {
+  LambdaHandler,
+  type LambdaAdaptersConfig,
+} from '../lambda/handlers/LambdaHandler';
 import type { LambdaResponse } from '../lambda/types';
 
 /**
@@ -116,6 +119,9 @@ export interface SyntroJSConfig {
         /** Enable OpenAPI JSON at /openapi.json (default: true) */
         openapi?: boolean;
       };
+
+  /** Lambda adapters configuration (only used in Lambda mode) */
+  lambdaAdapters?: LambdaAdaptersConfig;
 }
 
 /**
@@ -177,6 +183,7 @@ export class SyntroJS {
       this.lambdaHandler = new LambdaHandler({
         routeRegistry: RouteRegistry,
         validator: SchemaValidator,
+        adapters: this.config.lambdaAdapters,
       });
     }
 

@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.3] - 2024-11-17
+
+### Added
+
+- ✨ **LambdaAdapterFactory improvements**: `replace()`, `registerOrReplace()`, `getAdapterConfig()`, `hasCustomHandler()` methods
+- ✨ **Factory isolation**: `createLambdaAdapterFactory()` function for isolated instances
+- ✨ **Adapter inspection**: `hasHandler()` and `getConfig()` methods on SQS, S3, EventBridge adapters
+- ✨ **LambdaHandler configuration**: Support for adapter configs and custom factory instances
+- ✨ **SyntroJS integration**: `lambdaAdapters` config option for configuring adapters at creation
+
+### Changed
+
+- 🔄 **LambdaHandler**: Now accepts adapter configuration and custom factory
+- 🔄 **LambdaHandler**: Uses `registerOrReplace()` instead of `register()` for better flexibility
+
+### Testing
+
+- 🧪 **28 new tests** for factory improvements and configuration features
+
+### Benefits
+
+- ✅ Better Developer Experience - Simpler configuration, less boilerplate
+- ✅ Fewer Errors - No need to re-register all adapters
+- ✅ Better Testing - Isolated factory instances for test isolation
+- ✅ More Maintainable - Cleaner, easier to understand code
+
+See [CHANGELOG_v0.6.3.md](./CHANGELOG_v0.6.3.md) for complete details.
+
 ## [0.6.2] - 2024-11-17
 
 ### Added

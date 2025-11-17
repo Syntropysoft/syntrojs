@@ -9,12 +9,31 @@
 import { RouteRegistry } from '../../application/RouteRegistry';
 import { SchemaValidator } from '../../application/SchemaValidator';
 import { ApiGatewayAdapter } from '../adapters/ApiGatewayAdapter';
-import { SQSAdapter } from '../adapters/SQSAdapter';
-import { S3Adapter } from '../adapters/S3Adapter';
-import { EventBridgeAdapter } from '../adapters/EventBridgeAdapter';
-import { lambdaAdapterFactory } from '../adapters/LambdaAdapterFactory';
+import { SQSAdapter, type SQSAdapterConfig } from '../adapters/SQSAdapter';
+import { S3Adapter, type S3AdapterConfig } from '../adapters/S3Adapter';
+import {
+  EventBridgeAdapter,
+  type EventBridgeAdapterConfig,
+} from '../adapters/EventBridgeAdapter';
+import {
+  lambdaAdapterFactory,
+  type LambdaAdapterFactory,
+  createLambdaAdapterFactory,
+} from '../adapters/LambdaAdapterFactory';
 import type { LambdaResponse, LambdaEventType } from '../types';
 import type { ILambdaAdapter } from '../../domain/interfaces/ILambdaAdapter';
+
+/**
+ * Lambda Adapters Configuration
+ */
+export interface LambdaAdaptersConfig {
+  /** SQS adapter configuration */
+  sqs?: SQSAdapterConfig;
+  /** S3 adapter configuration */
+  s3?: S3AdapterConfig;
+  /** EventBridge adapter configuration */
+  eventbridge?: EventBridgeAdapterConfig;
+}
 
 /**
  * Lambda Handler Configuration
@@ -24,6 +43,10 @@ export interface LambdaHandlerConfig {
   routeRegistry?: typeof RouteRegistry;
   /** Schema validator instance */
   validator?: typeof SchemaValidator;
+  /** Adapter factory instance (for testing or custom configurations) */
+  adapterFactory?: LambdaAdapterFactory;
+  /** Lambda adapters configuration */
+  adapters?: LambdaAdaptersConfig;
 }
 
 /**
@@ -33,31 +56,35 @@ export interface LambdaHandlerConfig {
  * Uses LambdaAdapterFactory for adapter management (allows easy extraction)
  */
 export class LambdaHandler {
-  private readonly adapterFactory: typeof lambdaAdapterFactory;
+  private readonly adapterFactory: LambdaAdapterFactory;
 
   constructor(config: LambdaHandlerConfig = {}) {
     const routeRegistry = config.routeRegistry || RouteRegistry;
     const validator = config.validator || SchemaValidator;
 
-    // Use factory instance (can be replaced for testing)
-    this.adapterFactory = lambdaAdapterFactory;
+    // Use provided factory or create new instance (for isolation)
+    // If no factory provided, use singleton (backward compatibility)
+    this.adapterFactory =
+      config.adapterFactory || createLambdaAdapterFactory();
 
     // Register default adapters
     // In the future, adapters can be imported from external package
     const apiGatewayAdapter = new ApiGatewayAdapter(routeRegistry, validator);
-    this.adapterFactory.register('api-gateway', apiGatewayAdapter);
+    this.adapterFactory.registerOrReplace('api-gateway', apiGatewayAdapter);
 
-    // Register SQS adapter (no handler by default, users can configure)
-    const sqsAdapter = new SQSAdapter();
-    this.adapterFactory.register('sqs', sqsAdapter);
+    // Register SQS adapter with optional custom configuration
+    const sqsAdapter = new SQSAdapter(config.adapters?.sqs || {});
+    this.adapterFactory.registerOrReplace('sqs', sqsAdapter);
 
-    // Register S3 adapter (no handler by default, users can configure)
-    const s3Adapter = new S3Adapter();
-    this.adapterFactory.register('s3', s3Adapter);
+    // Register S3 adapter with optional custom configuration
+    const s3Adapter = new S3Adapter(config.adapters?.s3 || {});
+    this.adapterFactory.registerOrReplace('s3', s3Adapter);
 
-    // Register EventBridge adapter (no handler by default, users can configure)
-    const eventBridgeAdapter = new EventBridgeAdapter();
-    this.adapterFactory.register('eventbridge', eventBridgeAdapter);
+    // Register EventBridge adapter with optional custom configuration
+    const eventBridgeAdapter = new EventBridgeAdapter(
+      config.adapters?.eventbridge || {},
+    );
+    this.adapterFactory.registerOrReplace('eventbridge', eventBridgeAdapter);
   }
 
   /**

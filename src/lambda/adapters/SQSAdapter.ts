@@ -56,6 +56,29 @@ export class SQSAdapter implements ILambdaAdapter {
   }
 
   /**
+   * Checks if adapter has a custom handler configured
+   * Pure function: returns boolean
+   *
+   * @returns true if handler is configured
+   */
+  hasHandler(): boolean {
+    return this.handler !== undefined;
+  }
+
+  /**
+   * Gets adapter configuration
+   * Pure function: returns immutable config object
+   *
+   * @returns Adapter configuration
+   */
+  getConfig(): SQSAdapterConfig {
+    return {
+      handler: this.handler,
+      batchProcessing: this.batchProcessing,
+    };
+  }
+
+  /**
    * Gets the event type this adapter handles
    * Pure function: returns event type identifier
    *
