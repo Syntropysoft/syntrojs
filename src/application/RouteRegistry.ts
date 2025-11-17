@@ -65,6 +65,83 @@ class RouteRegistryImpl {
   }
 
   /**
+   * Finds a route by method and path with pattern matching support
+   * Supports dynamic routes like /users/:id
+   *
+   * @param method - HTTP method
+   * @param path - Request path to match
+   * @returns Route if found, undefined otherwise
+   */
+  find(method: HttpMethod, path: string): Route | undefined {
+    // Guard clauses
+    if (!method) {
+      throw new Error('Method is required');
+    }
+
+    if (!path) {
+      throw new Error('Path is required');
+    }
+
+    // Try exact match first (fast path)
+    const exactRoute = this.get(method, path);
+    if (exactRoute) {
+      return exactRoute;
+    }
+
+    // Try pattern matching for dynamic routes
+    // Functional: filter + find (doesn't mutate)
+    const matchingRoute = this.getAll().find((route) => {
+      // Guard clause: method must match
+      if (route.method.toUpperCase() !== method.toUpperCase()) {
+        return false;
+      }
+
+      // Pattern matching: convert /users/:id to regex
+      const pattern = route.path.replace(/:\w+/g, '([^/]+)');
+      const regex = new RegExp(`^${pattern}$`);
+      return regex.test(path);
+    });
+
+    return matchingRoute;
+  }
+
+  /**
+   * Extracts path parameters from a request path using route pattern
+   * Pure function: no side effects, returns new object
+   *
+   * @param routePath - Route pattern (e.g., /users/:id)
+   * @param requestPath - Actual request path (e.g., /users/123)
+   * @returns Object with extracted parameters or empty object
+   */
+  extractPathParams(routePath: string, requestPath: string): Record<string, string> {
+    // Guard clauses
+    if (!routePath || !requestPath) {
+      return {};
+    }
+
+    // Extract parameter names from route pattern
+    const paramNames: string[] = [];
+    const pattern = routePath.replace(/:(\w+)/g, (_, name) => {
+      paramNames.push(name);
+      return '([^/]+)';
+    });
+
+    // Match and extract values
+    const regex = new RegExp(`^${pattern}$`);
+    const match = requestPath.match(regex);
+
+    if (!match) {
+      return {};
+    }
+
+    // Build params object (functional: reduce)
+    return paramNames.reduce((params, name, index) => {
+      params[name] = match[index + 1] || '';
+      return params;
+    }, {} as Record<string, string>);
+  }
+
+  /**
    * Checks if a route exists
    *
    * @param method - HTTP method

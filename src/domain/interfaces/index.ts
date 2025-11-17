@@ -6,3 +6,4 @@
 export * from './IRequestParser';
 export * from './IResponseSerializer';
 export * from './IValidator';
+export * from './ILambdaAdapter';

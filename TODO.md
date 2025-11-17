@@ -1,14 +1,14 @@
 # SyntroJS - TODO
 
-## 🎯 Current Goal: v0.5.0 TOON Format
+## 🎯 Current Goal: v0.7.0 Router + Advanced Middleware
 
-**Version:** v0.4.0
+**Version:** v0.6.0
 
-**Status:** MVP Core ✅ | Advanced Features ✅ | Security ✅ | Plugins ✅ | SmartMutator ✅ | **v0.4.0 100% COMPLETE 🎉**
+**Status:** MVP Core ✅ | Advanced Features ✅ | Security ✅ | Plugins ✅ | SmartMutator ✅ | TOON Format ✅ | **AWS Lambda ✅ | v0.6.0 100% COMPLETE 🎉**
 
-**Current Focus:** TOON Format implementation (40-60% bandwidth savings)
+**Current Focus:** Router system and advanced middleware patterns
 
-**Last update:** 2025-11-06
+**Last update:** 2024-11-17
 
 ---
 
@@ -322,9 +322,9 @@ const app = new SyntroJS()
 
 ---
 
-### v0.6.0 - Type-Safe Client + Advanced Serializers 🚀
+### v0.7.0 - Router + Advanced Middleware 🚀
 
-**Status:** 📋 Planned (1-2 weeks after v0.5.0)
+**Status:** 📋 Planned (Next priority)
 
 #### Type-Safe Client (Priority #1)
 - [ ] Remove TinyTest completely (deprecated in v0.4.0)
@@ -405,7 +405,7 @@ const { data } = await api.users.get()  // ✨ Autocomplete + Type-safe
 
 ---
 
-### v0.8.0 - Security & Real-time Features
+### v0.9.0 - Completeness (Optional Features)
 
 #### Security Features
 - [ ] CSRF protection
@@ -422,7 +422,7 @@ const { data } = await api.users.get()  // ✨ Autocomplete + Type-safe
 
 ---
 
-### v0.9.0 - Integration Patterns - GLUE CODE ONLY
+### v0.10.0 - Enhanced Plugins
 **NO tutorials. Only the "glue code" between SyntroJS DI and external libraries:**
 
 #### `docs/INTEGRATIONS.md` - Ultra-Minimal Guide

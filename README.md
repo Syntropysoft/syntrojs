@@ -17,14 +17,15 @@
 
 ## 🚀 Status: Production Ready (Pre-1.0)
 
-**SyntroJS is production-ready** with 937 passing tests and 71.55% code coverage. The core API is stable, though we're still adding features before v1.0.0.
+**SyntroJS is production-ready** with 1,019+ passing tests and 71.55% code coverage. The core API is stable, though we're still adding features before v1.0.0.
 
-- ✅ **Battle-tested** - 937 tests across Node.js and Bun (99.3% passing)
+- ✅ **Battle-tested** - 1,019+ tests across Node.js and Bun (99.3% passing)
 - ✅ **Stable core API** - We follow semantic versioning
 - ✅ **Active development** - Regular updates and community support
-- 🎯 **v0.5.0 in progress** - TOON Format + Architecture Refactor
+- ✅ **AWS Lambda Support** - Same code works in REST and Lambda modes
+- 🎯 **v0.7.0 planned** - Router + Advanced Middleware
 
-**Latest Release**: **v0.5.0** - TOON Format + Serialization Refactor - [CHANGELOG](./docs/CHANGELOG_v0.5.0.md)
+**Latest Release**: **v0.6.0** - AWS Lambda Support - [CHANGELOG](./docs/CHANGELOG_v0.6.0.md)
 
 > 💡 **Note**: While the core is stable, we recommend pinning to specific versions until v1.0.0
 
@@ -41,11 +42,13 @@ Coming in v0.5.0: **TOON Format** - reduce your API bandwidth costs 40-60% (like
 ## ✨ Key Features
 
 - **🚀 Dual Runtime Support**: Write once, run on both Node.js and Bun. Zero code changes required.
+- **☁️ AWS Lambda Support**: Same code works in REST mode (development) and Lambda mode (production). Just set `rest: false`. Full API Gateway integration with automatic event detection.
 - **🔥 FastAPI-like Developer Experience**: Automatic validation with Zod, full TypeScript type safety, elegant error handling (`HTTPException`).
 - **🎨 Automatic Interactive Docs**: Beautiful landing page + Swagger UI + ReDoc out of the box at `/docs`.
 - **🧪 Testing Superpower**: `SmartMutator` for mutation testing in seconds. Type-safe client coming in v0.5.0.
 - **🔌 Rich Ecosystem**: Middleware system, WebSockets, dependency injection, background tasks, structured logging.
 - **🔒 Security First**: JWT, OAuth2, API Keys, and security plugins built-in.
+- **🏗️ Extensible Architecture**: Lambda adapters follow SOLID principles and can be extracted to separate packages. Test adapters independently without full framework.
 
 ---
 
@@ -81,6 +84,49 @@ await app.listen(3000);
 ```
 
 **That's it!** 🎉 Visit `http://localhost:3000/docs` for interactive documentation.
+
+### ☁️ AWS Lambda Mode
+
+**Same code, Lambda deployment** - Zero changes needed:
+
+```javascript
+import { SyntroJS } from 'syntrojs';
+import { z } from 'zod';
+
+// Lambda mode: rest: false
+const app = new SyntroJS({ rest: false, title: 'My API' });
+
+app.post('/users', {
+  body: z.object({
+    name: z.string().min(1),
+    email: z.string().email(),
+  }),
+  handler: ({ body }) => ({ id: 1, ...body }),
+});
+
+// Export handler for AWS Lambda
+export const handler = app.handler();
+```
+
+**That's it!** 🎉 Deploy to AWS Lambda. Same validation, same type safety, same code.
+
+#### Lambda Features
+
+- ✅ **API Gateway Integration**: Automatic event detection and handling
+- ✅ **Dynamic Routes**: Full support for `/users/:id` with path parameter extraction
+- ✅ **Validation**: Same Zod schemas work in both modes
+- ✅ **Error Handling**: Consistent error responses across REST and Lambda
+- ✅ **Tree-shaking**: Optimized bundle size for Lambda deployments
+- ✅ **Testable**: Adapters can be tested independently without full framework
+
+#### Lambda Architecture
+
+- **Domain Interface**: `ILambdaAdapter` for easy extension
+- **Factory Pattern**: `LambdaAdapterFactory` for adapter management
+- **Extensible**: Adapters can be extracted to separate packages (`@syntrojs/lambda-adapters`)
+- **SOLID Principles**: Each adapter follows Single Responsibility and Dependency Inversion
+
+See [Lambda Usage Guide](./docs/LAMBDA_USAGE.md) for complete examples and [Lambda Adapters Extraction](./docs/LAMBDA_ADAPTERS_EXTRACTION.md) for architecture details.
 
 ### HTTP Redirects
 
@@ -322,6 +368,7 @@ const app = new SyntroJS({
   - `config.logger?: boolean` - Enable Fastify logger
   - `config.syntroLogger?: LoggerIntegrationConfig | boolean` - Enable @syntrojs/logger
   - `config.runtime?: 'auto' | 'node' | 'bun'` - Force specific runtime
+  - `config.rest?: boolean` - Enable REST mode (HTTP server) or Lambda mode (default: `true`)
   - `config.docs?: boolean | object` - Configure documentation endpoints
   - `config.fluentConfig?: object` - Advanced adapter configuration
 
@@ -352,7 +399,12 @@ const app = new SyntroJS({
   - `host?: string` - Host address (default: '::')
 - **Returns**: `Promise<string>` - Server address
 
-**`app.close()`** - Stops the HTTP server gracefully.
+**`app.close()`** - Stops the HTTP server gracefully (REST mode only).
+
+**`app.handler()`** - Returns Lambda handler function (Lambda mode only).
+
+- **Returns**: `(event: unknown, context?: unknown) => Promise<LambdaResponse>`
+- **Throws**: Error if called in REST mode
 
 ---
 
@@ -774,24 +826,48 @@ app.registerExceptionHandler(MyError, (error, ctx) => ({
   - ✅ O(1) content negotiation
   - ✅ Bundle size: -21KB (-10%)
 
-### 🎨 v0.6.0 - Polish & Performance
+### ✅ v0.6.0 - AWS Lambda Support (100% COMPLETE 🎉)
 
-- [ ] Native Bun plugins (CORS, Helmet, etc.)
-- [ ] Server-Sent Events (SSE)
+**Native AWS Lambda support - Same code, REST and Lambda modes**
+
+- [x] **Lambda Mode**: `rest: false` flag for Lambda deployment
+- [x] **API Gateway Integration**: Full API Gateway v1 (REST API) support
+- [x] **Dynamic Routes**: Pattern matching (`/users/:id`) with parameter extraction
+- [x] **Adapter Architecture**: `ILambdaAdapter` interface + Factory pattern
+- [x] **Tree-shaking**: Optimized Lambda bundle exports
+- [x] **Testable Adapters**: Independent testing without full framework
+- [x] **SOLID + DDD**: Clean architecture prepared for extraction
+- [x] **82 Lambda tests** passing
+- [x] **Documentation**: Complete guides and examples
+
+**Why Lambda Support?**
+- Same code works in development (REST) and production (Lambda)
+- No code changes needed between modes
+- Full validation and type safety in Lambda
+- Optimized bundle size for serverless deployments
+
+### 🎨 v0.7.0 - Router + Advanced Middleware
+
+- [ ] `SyntroRouter` - Group endpoints with prefixes
+- [ ] Router-level middleware
+- [ ] `app.include(router)` - Include router in app
+- [ ] Advanced middleware patterns
+- [ ] Middleware composition helpers
+
+### 🎨 v0.8.0 - Security & Real-time Features
+
 - [ ] CSRF protection
-
-**Why TOON over gRPC?**
-- No protobuf compilation required
-- Readable in browser DevTools & logs
-- Simple setup (5 minutes vs 2 hours)
-- Same cost savings, zero complexity
-- Works with any HTTP client (curl, fetch, axios)
+- [ ] Server-Sent Events (SSE)
+- [ ] WebSocket rooms/namespaces
+- [ ] Session management
+- [ ] JWT refresh tokens
 
 ### 🎨 v0.9.0 - Completeness (Optional Features)
 
 - [ ] Static file serving _(optional)_
 - [ ] Template rendering integrations _(optional)_
 - [ ] Additional middleware helpers _(optional)_
+- [ ] Native Bun plugins (CORS, Helmet, etc.)
 
 ### 🏗️ v1.0.0 - Production Ready
 
@@ -817,6 +893,9 @@ app.registerExceptionHandler(MyError, (error, ctx) => ({
 ## 📚 Examples & Documentation
 
 - **Examples Repository**: [syntrojs-example](https://github.com/Syntropysoft/syntrojs-example)
+- **Lambda Example**: [examples/lambda-example](./examples/lambda-example) - Complete Lambda deployment example
+- **Lambda Usage Guide**: [LAMBDA_USAGE.md](./docs/LAMBDA_USAGE.md) - Comprehensive Lambda documentation
+- **Lambda Architecture**: [LAMBDA_ADAPTERS_EXTRACTION.md](./docs/LAMBDA_ADAPTERS_EXTRACTION.md) - Adapter architecture and extraction guide
 - **Architecture**: [ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md)
 - **Full Documentation**: Coming soon
 

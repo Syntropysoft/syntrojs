@@ -7,6 +7,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2024-11-17
+
+### Added
+
+- ✨ **AWS Lambda Support**: Native Lambda support with `rest: false` flag
+  - Same code works in REST mode (development) and Lambda mode (production)
+  - Full API Gateway v1 (REST API) integration
+  - Dynamic routes with pattern matching (`/users/:id`)
+  - Path parameter extraction
+  - Tree-shaking optimized bundle exports
+- ✨ **Lambda Adapter Architecture**: Clean, extensible adapter system
+  - `ILambdaAdapter` interface in domain layer (DDD)
+  - `LambdaAdapterFactory` for adapter management
+  - `ApiGatewayAdapter` for API Gateway events
+  - Prepared for extraction to separate package
+- ✨ **Route Registry Enhancements**: Pattern matching and parameter extraction
+  - `find(method, path)` with regex pattern matching
+  - `extractPathParams()` pure function
+  - Support for dynamic route segments (`:param`)
+- ✨ **Lambda Module Export**: New `./lambda` export for tree-shaking
+- ✨ **Comprehensive Documentation**: Lambda usage guides and examples
+  - `docs/LAMBDA_USAGE.md` - Complete usage guide
+  - `docs/LAMBDA_ADAPTERS_EXTRACTION.md` - Architecture guide
+  - `examples/lambda-example/` - Deployment example
+
+### Changed
+
+- 🔄 **SyntroJS Constructor**: Added `rest?: boolean` config option (default: `true`)
+- 🔄 **Route Registry**: Enhanced with pattern matching capabilities
+- 🔄 **README**: Lambda mode prominently featured in Quick Start
+
+### Testing
+
+- ✅ **82 Lambda tests** added and passing
+- ✅ Unit tests for adapters (isolated)
+- ✅ Integration tests with RouteRegistry
+- ✅ End-to-end tests with SyntroJS
+
+### Documentation
+
+- 📚 Lambda usage guide
+- 📚 Lambda architecture guide
+- 📚 Lambda deployment example
+- 📚 Updated README with Lambda features
+
+See [CHANGELOG_v0.6.0.md](./CHANGELOG_v0.6.0.md) for complete details.
+
+## [0.5.0] - 2025-11-08
+
+### Added
+
+- ✨ **TOON Format Support**: 40-60% payload reduction
+- ✨ **Serialization Architecture Refactor**: ResponseHandler centralized
+
+See [CHANGELOG_v0.5.0.md](./CHANGELOG_v0.5.0.md) for complete details.
+
 ## [0.4.0-alpha.3] - 2025-11-05
 
 ### 🎯 Critical Bugs Fixed + SOLID Refactoring

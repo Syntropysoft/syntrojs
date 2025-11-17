@@ -13,6 +13,7 @@ import { MiddlewareRegistry } from '../application/MiddlewareRegistry';
 import type { OpenAPIConfig } from '../application/OpenAPIGenerator';
 import { OpenAPIGenerator } from '../application/OpenAPIGenerator';
 import { RouteRegistry } from '../application/RouteRegistry';
+import { SchemaValidator } from '../application/SchemaValidator';
 import { SerializerRegistry } from '../application/SerializerRegistry';
 import {
   BufferSerializer,
@@ -36,6 +37,8 @@ import { BunAdapter } from '../infrastructure/BunAdapter';
 import { FluentAdapter } from '../infrastructure/FluentAdapter';
 import type { LoggerIntegrationConfig } from '../infrastructure/LoggerIntegration';
 import { RuntimeOptimizer } from '../infrastructure/RuntimeOptimizer';
+import { LambdaHandler } from '../lambda/handlers/LambdaHandler';
+import type { LambdaResponse } from '../lambda/types';
 
 /**
  * Route definition for object-based API
@@ -97,6 +100,9 @@ export interface SyntroJSConfig {
   /** Runtime to use: 'auto', 'node', or 'bun' */
   runtime?: 'auto' | 'node' | 'bun';
 
+  /** Enable REST mode (HTTP server) or Lambda mode (default: true) */
+  rest?: boolean;
+
   /** Documentation endpoints configuration */
   docs?:
     | boolean
@@ -124,8 +130,8 @@ export interface SyntroJSConfig {
  */
 export class SyntroJS {
   private readonly config: SyntroJSConfig;
-  private readonly server: unknown; // Generic server (FastifyInstance or Bun Server)
-  private readonly adapter: typeof FluentAdapter | typeof BunAdapter;
+  private readonly server: unknown; // Generic server (FastifyInstance or Bun Server) - null in Lambda mode
+  private readonly adapter: typeof FluentAdapter | typeof BunAdapter | null;
   private readonly runtime: 'node' | 'bun';
   private readonly optimizer: RuntimeOptimizer;
   private middlewareRegistry: MiddlewareRegistry;
@@ -134,6 +140,8 @@ export class SyntroJS {
   private isStarted = false;
   private openAPIEndpointsRegistered = false;
   private fluentAdapterInstance?: FluentAdapter; // Store configured FluentAdapter instance
+  private readonly lambdaHandler?: LambdaHandler; // Lambda handler (only in Lambda mode)
+  private readonly isRestMode: boolean; // Flag to track mode
 
   constructor(config: SyntroJSConfig = {}) {
     // Guard clause: validate config
@@ -142,8 +150,12 @@ export class SyntroJS {
     // Initialize immutable configuration
     this.config = Object.freeze({
       runtime: 'auto',
+      rest: true, // Default to REST mode for backward compatibility
       ...validatedConfig,
     });
+
+    // Determine mode (pure function)
+    this.isRestMode = this.config.rest !== false;
 
     // Initialize domain services (DDD)
     this.optimizer = new RuntimeOptimizer();
@@ -151,14 +163,22 @@ export class SyntroJS {
     this.websocketRegistry = new WebSocketRegistry();
     this.serializerRegistry = this.initializeDefaultSerializers();
 
-    // Auto-detect runtime (pure function)
-    this.runtime = this.detectRuntime();
-
-    // Choose adapter based on runtime and config (pure function)
-    this.adapter = this.selectOptimalAdapter();
-
-    // Create server instance via adapter (composition)
-    this.server = this.createServerInstance();
+    // Initialize based on mode
+    if (this.isRestMode) {
+      // REST mode: Initialize HTTP server
+      this.runtime = this.detectRuntime();
+      this.adapter = this.selectOptimalAdapter();
+      this.server = this.createServerInstance();
+    } else {
+      // Lambda mode: Initialize Lambda handler
+      this.runtime = 'node'; // Lambda always runs on Node.js
+      this.adapter = null;
+      this.server = null;
+      this.lambdaHandler = new LambdaHandler({
+        routeRegistry: RouteRegistry,
+        validator: SchemaValidator,
+      });
+    }
 
     // Note: OpenAPI endpoints are registered via regular routes
     // No special initialization needed - they use the standard route registration
@@ -219,10 +239,16 @@ export class SyntroJS {
 
   /**
    * Create server instance using composition pattern
+   * Pure function: creates server based on adapter
    *
-   * @returns Configured server instance
+   * @returns Configured server instance or null in Lambda mode
    */
   private createServerInstance(): unknown {
+    // Guard clause: Lambda mode doesn't need server
+    if (!this.isRestMode || !this.adapter) {
+      return null;
+    }
+
     if (this.adapter === FluentAdapter) {
       return this.createFluentAdapter();
     }
@@ -345,9 +371,18 @@ export class SyntroJS {
 
   /**
    * Select adapter based on runtime
-   * Simple: FluentAdapter for Node.js, BunAdapter for Bun
+   * Pure function: returns adapter type based on runtime
+   * Returns null in Lambda mode
    */
-  private selectOptimalAdapter(): typeof FluentAdapter | typeof BunAdapter {
+  private selectOptimalAdapter():
+    | typeof FluentAdapter
+    | typeof BunAdapter
+    | null {
+    // Guard clause: Lambda mode doesn't need adapter
+    if (!this.isRestMode) {
+      return null;
+    }
+
     // Runtime-based selection (no complexity)
     if (this.runtime === 'bun') {
       return BunAdapter;
@@ -644,6 +679,13 @@ export class SyntroJS {
    * @returns Server address
    */
   async listen(port: number, host = '::'): Promise<string> {
+    // Guard clause: validate mode
+    if (!this.isRestMode) {
+      throw new Error(
+        'Cannot start HTTP server in Lambda mode. Use handler() method instead.',
+      );
+    }
+
     // Guard clauses
     if (port < 0 || port > 65535) {
       throw new Error('Valid port number is required (0-65535)');
@@ -762,7 +804,35 @@ export class SyntroJS {
    * @returns Fastify instance
    */
   getRawFastify(): FastifyInstance {
+    // Guard clause: validate mode
+    if (!this.isRestMode) {
+      throw new Error('Fastify instance not available in Lambda mode');
+    }
     return this.server as FastifyInstance;
+  }
+
+  /**
+   * Gets Lambda handler function
+   * Only available in Lambda mode (rest: false)
+   *
+   * @returns Lambda handler function
+   * @throws Error if not in Lambda mode
+   */
+  handler(): (event: unknown, context?: unknown) => Promise<LambdaResponse> {
+    // Guard clause: validate mode
+    if (this.isRestMode) {
+      throw new Error(
+        'Lambda handler not available in REST mode. Use listen() method instead.',
+      );
+    }
+
+    // Guard clause: validate handler exists
+    if (!this.lambdaHandler) {
+      throw new Error('Lambda handler not initialized');
+    }
+
+    // Return bound handler function
+    return this.lambdaHandler.handler.bind(this.lambdaHandler);
   }
 
   /**
