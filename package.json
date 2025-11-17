@@ -82,7 +82,7 @@
   },
   "dependencies": {
     "@fastify/formbody": "^7.4.0",
-    "@fastify/multipart": "^8.0.0",
+    "@fastify/multipart": "^9.3.0",
     "@fastify/static": "^7.0.0",
     "@syntrojs/logger": "^0.2.1-alpha",
     "@toon-format/toon": "^0.8.0",
