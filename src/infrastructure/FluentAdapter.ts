@@ -20,6 +20,7 @@ import { ResponseHandler } from '../application/ResponseHandler';
 import type { SerializerRegistry } from '../application/SerializerRegistry';
 import { StreamingResponseHandler } from '../application/StreamingResponseHandler';
 import type { Route } from '../domain/Route';
+import type { CorsOptions } from '../plugins/cors';
 import type {
   DependencyResolverFactory,
   ErrorHandlerFactory,
@@ -45,7 +46,7 @@ export interface FluentAdapterConfig {
   backgroundTasks?: boolean;
   openAPI?: boolean;
   compression?: boolean;
-  cors?: boolean;
+  cors?: boolean | CorsOptions;
   helmet?: boolean;
   rateLimit?: boolean;
   middleware?: boolean; // Nuevo: soporte para middleware
@@ -187,10 +188,10 @@ export class FluentAdapter {
     return this.createWithConfig({ compression: enabled });
   }
 
-  withCors(enabled = true): this {
-    // Guard clause: validate boolean
-    if (typeof enabled !== 'boolean') {
-      throw new Error('CORS enabled must be a boolean');
+  withCors(enabled: boolean | CorsOptions = true): this {
+    // Guard clause: validate type
+    if (typeof enabled !== 'boolean' && typeof enabled !== 'object') {
+      throw new Error('CORS must be a boolean or CorsOptions object');
     }
 
     return this.createWithConfig({ cors: enabled });
@@ -347,7 +348,36 @@ export class FluentAdapter {
 
     if (this.config.cors) {
       try {
-        await fastify.register(import('@fastify/cors'));
+        const corsPlugin = await import('@fastify/cors');
+        // Build CORS options based on configuration
+        const corsOptions =
+          typeof this.config.cors === 'boolean'
+            ? {
+                origin: true,
+                credentials: false,
+                methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+              }
+            : {
+                origin: this.config.cors.origin ?? true,
+                credentials: this.config.cors.credentials ?? false,
+                methods: this.config.cors.methods ?? [
+                  'GET',
+                  'HEAD',
+                  'PUT',
+                  'PATCH',
+                  'POST',
+                  'DELETE',
+                  'OPTIONS',
+                ],
+                allowedHeaders: this.config.cors.allowedHeaders,
+                exposedHeaders: this.config.cors.exposedHeaders,
+                maxAge: this.config.cors.maxAge,
+                preflightContinue: this.config.cors.preflightContinue,
+                strictPreflight: this.config.cors.strictPreflight,
+              };
+
+        // Register CORS plugin with options (type assertion needed for compatibility)
+        await fastify.register(corsPlugin.default, corsOptions as any);
       } catch {
         // Plugin no disponible, continuar sin él
       }

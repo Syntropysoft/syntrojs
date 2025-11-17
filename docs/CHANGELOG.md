@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.4] - 2024-11-17
+
+### Fixed
+
+- 🐛 **CORS Configuration**: Fixed CORS plugin registration to include proper options
+- 🐛 **OPTIONS Requests**: Fixed preflight CORS requests (OPTIONS) handling
+- 🐛 **CORS Headers**: Fixed CORS headers configuration when `cors: true`
+
+### Added
+
+- ✨ **Enhanced CORS**: `cors` now accepts `boolean | CorsOptions` for flexible configuration
+- ✨ **Default CORS Options**: Sensible defaults when `cors: true` (includes OPTIONS method)
+- 🧪 **4 new tests** for CORS configuration
+
+### Changed
+
+- 🔄 **FluentAdapterConfig.cors**: Changed from `boolean` to `boolean | CorsOptions`
+- 🔄 **SyntroJSConfig.fluentConfig.cors**: Changed from `boolean` to `boolean | CorsOptions`
+- 🔄 **FluentAdapter.withCors()**: Now accepts `boolean | CorsOptions`
+
+### Benefits
+
+- ✅ Fixed bug with OPTIONS preflight requests
+- ✅ Better Developer Experience with clear configuration
+- ✅ More flexible CORS configuration support
+- ✅ Backward compatible - existing code works without changes
+
+See [CHANGELOG_v0.6.4.md](./CHANGELOG_v0.6.4.md) for complete details.
+
 ## [0.6.3] - 2024-11-17
 
 ### Added

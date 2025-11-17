@@ -42,6 +42,7 @@ import {
   type LambdaAdaptersConfig,
 } from '../lambda/handlers/LambdaHandler';
 import type { LambdaResponse } from '../lambda/types';
+import type { CorsOptions } from '../plugins/cors';
 
 /**
  * Route definition for object-based API
@@ -94,7 +95,7 @@ export interface SyntroJSConfig {
     backgroundTasks?: boolean;
     openAPI?: boolean;
     compression?: boolean;
-    cors?: boolean;
+    cors?: boolean | CorsOptions;
     helmet?: boolean;
     rateLimit?: boolean;
     middleware?: boolean;
