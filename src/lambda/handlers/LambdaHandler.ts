@@ -9,6 +9,9 @@
 import { RouteRegistry } from '../../application/RouteRegistry';
 import { SchemaValidator } from '../../application/SchemaValidator';
 import { ApiGatewayAdapter } from '../adapters/ApiGatewayAdapter';
+import { SQSAdapter } from '../adapters/SQSAdapter';
+import { S3Adapter } from '../adapters/S3Adapter';
+import { EventBridgeAdapter } from '../adapters/EventBridgeAdapter';
 import { lambdaAdapterFactory } from '../adapters/LambdaAdapterFactory';
 import type { LambdaResponse, LambdaEventType } from '../types';
 import type { ILambdaAdapter } from '../../domain/interfaces/ILambdaAdapter';
@@ -43,6 +46,18 @@ export class LambdaHandler {
     // In the future, adapters can be imported from external package
     const apiGatewayAdapter = new ApiGatewayAdapter(routeRegistry, validator);
     this.adapterFactory.register('api-gateway', apiGatewayAdapter);
+
+    // Register SQS adapter (no handler by default, users can configure)
+    const sqsAdapter = new SQSAdapter();
+    this.adapterFactory.register('sqs', sqsAdapter);
+
+    // Register S3 adapter (no handler by default, users can configure)
+    const s3Adapter = new S3Adapter();
+    this.adapterFactory.register('s3', s3Adapter);
+
+    // Register EventBridge adapter (no handler by default, users can configure)
+    const eventBridgeAdapter = new EventBridgeAdapter();
+    this.adapterFactory.register('eventbridge', eventBridgeAdapter);
   }
 
   /**

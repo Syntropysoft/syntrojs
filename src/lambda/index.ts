@@ -11,6 +11,9 @@
 
 export * from './types';
 export * from './adapters/ApiGatewayAdapter';
+export * from './adapters/SQSAdapter';
+export * from './adapters/S3Adapter';
+export * from './adapters/EventBridgeAdapter';
 export * from './adapters/LambdaAdapterFactory';
 export * from './handlers/LambdaHandler';
 export type { ILambdaAdapter } from '../domain/interfaces/ILambdaAdapter';

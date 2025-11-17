@@ -158,17 +158,18 @@ describe('LambdaHandler', () => {
     });
 
     it('should return 400 for unsupported event types (no adapter registered)', async () => {
-      const sqsEvent = {
+      // Use an event type that doesn't have an adapter registered
+      const unknownEvent = {
         Records: [
           {
-            eventSource: 'aws:sqs',
+            eventSource: 'aws:dynamodb', // Not supported
             body: '{}',
           },
         ],
       };
 
-      // No adapter registered, so returns 400 (unknown event type)
-      const response = await handler.handler(sqsEvent);
+      // No adapter registered for this event type, so returns 400 (unknown event type)
+      const response = await handler.handler(unknownEvent);
       expect(response.statusCode).toBe(400);
       const body = JSON.parse(response.body);
       expect(body.error).toBe('Unknown event type');

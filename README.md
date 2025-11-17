@@ -115,6 +115,12 @@ Write once, run on both Node.js and Bun. Zero code changes required.
 ### ☁️ AWS Lambda Support
 Same code works in REST mode (development) and Lambda mode (production). Just set `rest: false`. Full API Gateway integration with automatic event detection.
 
+**Lambda Adapters Status:**
+- ✅ **API Gateway**: Implemented
+- ✅ **SQS**: Implemented
+- ✅ **S3**: Implemented
+- ✅ **EventBridge**: Implemented
+
 ### 🔥 FastAPI-like Developer Experience
 Automatic validation with Zod, full TypeScript type safety, elegant error handling (`HTTPException`).
 

@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.2] - 2024-11-17
+
+### Added
+
+- ✨ **SQS Adapter**: Full support for AWS SQS events with message processing
+- ✨ **S3 Adapter**: Full support for AWS S3 events with object event processing
+- ✨ **EventBridge Adapter**: Full support for AWS EventBridge events with custom event processing
+- 🧪 **37 unit tests** for new adapters
+- 🧪 **7 integration tests** for LambdaHandler with new adapters
+
+### Changed
+
+- 🔄 **LambdaHandler**: Automatically registers SQS, S3, and EventBridge adapters
+- 📚 **Documentation**: Updated Lambda adapters status in README and usage guides
+
+### Implementation
+
+- ✅ All adapters follow SOLID, DDD, Functional Programming, and Guard Clauses principles
+- ✅ Adapters implement `ILambdaAdapter` interface for easy extraction
+- ✅ Independent unit tests (no dependencies on SyntroJS core)
+- ✅ Factory pattern for adapter management
+
+See [CHANGELOG_v0.6.2.md](./CHANGELOG_v0.6.2.md) for complete details.
+
 ## [0.6.1] - 2024-11-17
 
 ### Changed

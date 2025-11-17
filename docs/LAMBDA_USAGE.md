@@ -3,6 +3,7 @@
 ## 📋 Overview
 
 SyntroJS supports two operation modes:
+
 - **REST Mode** (`rest: true`): Full HTTP server (default)
 - **Lambda Mode** (`rest: false`): Lambda handler for AWS Lambda
 
@@ -239,7 +240,7 @@ const app = new SyntroJS({
 
 ### 1. Project Structure
 
-```
+```text
 my-lambda-function/
 ├── index.ts          # Lambda handler
 ├── package.json
@@ -327,9 +328,21 @@ Resources:
 ### 🚧 Coming Soon
 
 - ⏳ API Gateway HTTP API (v2)
-- ⏳ SQS adapter
-- ⏳ S3 adapter
-- ⏳ EventBridge adapter
+
+---
+
+## 🔌 Lambda Adapters Status
+
+### ✅ Implemented
+
+- ✅ **API Gateway**: Full support for API Gateway REST API (v1) events
+- ✅ **SQS**: SQS event adapter with message processing support
+- ✅ **S3**: S3 event adapter with object event processing support
+- ✅ **EventBridge**: EventBridge event adapter with custom event processing support
+
+### ⏳ Coming Soon
+
+- ⏳ **API Gateway HTTP API (v2)**: HTTP API v2 adapter (planned)
 
 ---
 

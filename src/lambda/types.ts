@@ -89,6 +89,85 @@ export interface LambdaContext {
 }
 
 /**
+ * SQS Event Record
+ */
+export interface SQSEventRecord {
+  messageId: string;
+  receiptHandle: string;
+  body: string;
+  attributes: Record<string, string>;
+  messageAttributes: Record<string, unknown>;
+  md5OfBody: string;
+  eventSource: 'aws:sqs';
+  eventSourceARN: string;
+  awsRegion: string;
+}
+
+/**
+ * SQS Event
+ */
+export interface SQSEvent {
+  Records: SQSEventRecord[];
+}
+
+/**
+ * S3 Event Record
+ */
+export interface S3EventRecord {
+  eventVersion: string;
+  eventSource: 'aws:s3';
+  awsRegion: string;
+  eventTime: string;
+  eventName: string;
+  userIdentity: {
+    principalId: string;
+  };
+  requestParameters: {
+    sourceIPAddress: string;
+  };
+  responseElements: Record<string, string>;
+  s3: {
+    s3SchemaVersion: string;
+    configurationId: string;
+    bucket: {
+      name: string;
+      ownerIdentity: {
+        principalId: string;
+      };
+      arn: string;
+    };
+    object: {
+      key: string;
+      size: number;
+      eTag: string;
+      sequencer: string;
+    };
+  };
+}
+
+/**
+ * S3 Event
+ */
+export interface S3Event {
+  Records: S3EventRecord[];
+}
+
+/**
+ * EventBridge Event
+ */
+export interface EventBridgeEvent {
+  version: string;
+  id: string;
+  'detail-type': string;
+  source: string;
+  account: string;
+  time: string;
+  region: string;
+  resources: string[];
+  detail: Record<string, unknown>;
+}
+
+/**
  * Lambda Event Types
  */
 export type LambdaEventType =
@@ -98,4 +177,3 @@ export type LambdaEventType =
   | 's3'
   | 'eventbridge'
   | 'unknown';
-

@@ -196,12 +196,31 @@ lambdaAdapterFactory.register('api-gateway', new ApiGatewayAdapter(...));
 
 ---
 
+## 🔌 Lambda Adapters Status
+
+### ✅ Implemented
+
+- ✅ **API Gateway**: Full support for API Gateway REST API (v1) events
+- ✅ **SQS**: SQS event adapter with message processing support
+- ✅ **S3**: S3 event adapter with object event processing support
+- ✅ **EventBridge**: EventBridge event adapter with custom event processing support
+
+### ⏳ Coming Soon
+
+- ⏳ **API Gateway HTTP API (v2)**: HTTP API v2 adapter (planned)
+
+---
+
 ## 📝 Extraction Checklist
 
 - [x] `ILambdaAdapter` interface created in domain layer
 - [x] Factory pattern implemented
 - [x] Adapters implement interface
 - [x] Independent unit tests created
+- [x] API Gateway adapter implemented
+- [x] SQS adapter implemented
+- [x] S3 adapter implemented
+- [x] EventBridge adapter implemented
 - [ ] Separate package created
 - [ ] Adapters moved to new package
 - [ ] Migration documentation
