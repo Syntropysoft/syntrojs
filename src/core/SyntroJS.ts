@@ -137,7 +137,7 @@ export interface SyntroJSConfig {
  */
 export class SyntroJS {
   private readonly config: SyntroJSConfig;
-  private readonly server: unknown; // Generic server (FastifyInstance or Bun Server) - null in Lambda mode
+  private server: unknown; // Generic server (FastifyInstance or Bun Server) - null in Lambda mode, created lazily
   private readonly adapter: typeof FluentAdapter | typeof BunAdapter | null;
   private readonly runtime: 'node' | 'bun';
   private readonly optimizer: RuntimeOptimizer;
@@ -175,7 +175,8 @@ export class SyntroJS {
       // REST mode: Initialize HTTP server
       this.runtime = this.detectRuntime();
       this.adapter = this.selectOptimalAdapter();
-      this.server = this.createServerInstance();
+      // Server creation is async, so we initialize lazily when listen() is called
+      this.server = null;
     } else {
       // Lambda mode: Initialize Lambda handler
       this.runtime = 'node'; // Lambda always runs on Node.js
@@ -251,14 +252,14 @@ export class SyntroJS {
    *
    * @returns Configured server instance or null in Lambda mode
    */
-  private createServerInstance(): unknown {
+  private async createServerInstance(): Promise<unknown> {
     // Guard clause: Lambda mode doesn't need server
     if (!this.isRestMode || !this.adapter) {
       return null;
     }
 
     if (this.adapter === FluentAdapter) {
-      return this.createFluentAdapter();
+      return await this.createFluentAdapter();
     }
 
     // Bun: Use BunAdapter
@@ -269,21 +270,23 @@ export class SyntroJS {
     }
 
     // Node.js: Use FluentAdapter (always)
-    return this.createFluentAdapter();
+    return await this.createFluentAdapter();
   }
 
   /**
    * Create FluentAdapter with configuration
+   * Pure function: creates new adapter instance with all configuration applied
    *
-   * @returns Configured FluentAdapter instance
+   * @returns Configured Fastify instance with plugins registered
    */
-  private createFluentAdapter(): unknown {
+  private async createFluentAdapter(): Promise<unknown> {
+    // Create new FluentAdapter instance (immutable creation)
     const fluentAdapter = new FluentAdapter();
 
-    // Apply fluent configuration using functional composition
+    // Apply fluent configuration using functional composition (pure transformation)
     const configuredAdapter = this.applyFluentConfig(fluentAdapter);
 
-    // Configure middleware registry
+    // Configure middleware registry (dependency injection)
     configuredAdapter.withMiddlewareRegistry(this.middlewareRegistry);
 
     // Configure serializer registry (SOLID: Dependency Injection)
@@ -292,7 +295,8 @@ export class SyntroJS {
     // Store the configured instance for later use (CRITICAL for registerRoute)
     this.fluentAdapterInstance = configuredAdapter;
 
-    return configuredAdapter.create();
+    // Create Fastify instance with plugins registered (await ensures plugins are ready)
+    return await configuredAdapter.create();
   }
 
   /**
@@ -705,6 +709,12 @@ export class SyntroJS {
 
     // Validate production configuration
     this.validateProductionConfig();
+
+    // Create server instance if not already created (lazy initialization)
+    // This ensures plugins (including CORS) are registered before routes
+    if (!this.server) {
+      this.server = await this.createServerInstance();
+    }
 
     // Register OpenAPI endpoints only once
     if (!this.openAPIEndpointsRegistered) {

@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.5] - 2024-12-17
+
+### Changed
+
+- 🔄 **Async Server Creation**: `FluentAdapter.create()` is now async to ensure plugins are fully registered
+- 🔄 **Lazy Server Initialization**: Server instance created lazily when `listen()` is called
+- 🔄 **SyntroJS.server**: Changed from `readonly` to mutable for lazy initialization support
+
+### Refactoring
+
+- 🔧 **More Functional Approach**: Server instances created with all configuration applied upfront
+- 🔧 **Better Plugin Initialization Order**: Plugins guaranteed to be registered before routes
+- 🔧 **Improved Code Quality**: Better adherence to functional programming principles
+
+### Fixed
+
+- 🐛 **Plugin Initialization Race Condition**: Fixed potential race where routes could be registered before plugins were ready
+- 🐛 **CORS Plugin Timing**: Ensured CORS plugin is completely registered before routes are added
+
+### Benefits
+
+- ✅ More reliable plugin initialization
+- ✅ Better separation of concerns
+- ✅ Improved testability with explicit async creation
+- ✅ No breaking changes for normal usage
+
+See [CHANGELOG_v0.6.5.md](./CHANGELOG_v0.6.5.md) for complete details.
+
 ## [0.6.4] - 2024-11-17
 
 ### Fixed

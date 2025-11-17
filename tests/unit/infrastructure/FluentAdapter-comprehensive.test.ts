@@ -159,20 +159,20 @@ describe('FluentAdapter - Comprehensive Coverage Tests', () => {
   });
 
   describe('Static Methods (SOLID)', () => {
-    it('should support static create method', () => {
-      const fastifyInstance = FluentAdapter.create();
+    it('should support static create method', async () => {
+      const fastifyInstance = await FluentAdapter.create();
 
       expect(fastifyInstance).toBeDefined();
     });
 
-    it('should support static create with configuration', () => {
-      const fastifyInstance = FluentAdapter.create({ logger: true });
+    it('should support static create with configuration', async () => {
+      const fastifyInstance = await FluentAdapter.create({ logger: true });
 
       expect(fastifyInstance).toBeDefined();
     });
 
     it('should support static registerRoute method', async () => {
-      const fastifyInstance = FluentAdapter.create();
+      const fastifyInstance = await FluentAdapter.create();
 
       // Mock route for testing
       const mockRoute = {
@@ -187,27 +187,27 @@ describe('FluentAdapter - Comprehensive Coverage Tests', () => {
     });
 
     it('should support static listen method', async () => {
-      const fastifyInstance = FluentAdapter.create();
+      const fastifyInstance = await FluentAdapter.create();
 
       await expect(FluentAdapter.listen(fastifyInstance, 0)).resolves.toBeDefined();
     });
 
     it('should support static close method', async () => {
-      const fastifyInstance = FluentAdapter.create();
+      const fastifyInstance = await FluentAdapter.create();
 
       await expect(FluentAdapter.close(fastifyInstance)).resolves.not.toThrow();
     });
   });
 
   describe('Instance Methods (Functional Programming)', () => {
-    it('should create Fastify instance', () => {
-      const fastifyInstance = adapter.create();
+    it('should create Fastify instance', async () => {
+      const fastifyInstance = await adapter.create();
 
       expect(fastifyInstance).toBeDefined();
     });
 
     it('should register route with all features', async () => {
-      const fastifyInstance = adapter.create();
+      const fastifyInstance = await adapter.create();
 
       // Mock route for testing
       const mockRoute = {
@@ -225,7 +225,7 @@ describe('FluentAdapter - Comprehensive Coverage Tests', () => {
       const registry = new MiddlewareRegistry();
       const configuredAdapter = adapter.withMiddlewareRegistry(registry);
 
-      const fastifyInstance = configuredAdapter.create();
+      const fastifyInstance = await configuredAdapter.create();
 
       // Mock route for testing
       const mockRoute = {
@@ -244,7 +244,7 @@ describe('FluentAdapter - Comprehensive Coverage Tests', () => {
     it('should handle route registration with background tasks', async () => {
       const configuredAdapter = adapter.withBackgroundTasks(true);
 
-      const fastifyInstance = configuredAdapter.create();
+      const fastifyInstance = await configuredAdapter.create();
 
       // Mock route for testing
       const mockRoute = {
@@ -263,7 +263,7 @@ describe('FluentAdapter - Comprehensive Coverage Tests', () => {
     it('should handle route registration with dependency injection', async () => {
       const configuredAdapter = adapter.withDependencyInjection(true);
 
-      const fastifyInstance = configuredAdapter.create();
+      const fastifyInstance = await configuredAdapter.create();
 
       // Mock route for testing
       const mockRoute = {
@@ -282,7 +282,7 @@ describe('FluentAdapter - Comprehensive Coverage Tests', () => {
     it('should handle route registration with validation', async () => {
       const configuredAdapter = adapter.withValidation(true);
 
-      const fastifyInstance = configuredAdapter.create();
+      const fastifyInstance = await configuredAdapter.create();
 
       // Mock route for testing
       const mockRoute = {
@@ -301,7 +301,7 @@ describe('FluentAdapter - Comprehensive Coverage Tests', () => {
     it('should handle route registration with error handling', async () => {
       const configuredAdapter = adapter.withErrorHandling(true);
 
-      const fastifyInstance = configuredAdapter.create();
+      const fastifyInstance = await configuredAdapter.create();
 
       // Mock route for testing
       const mockRoute = {
@@ -320,7 +320,7 @@ describe('FluentAdapter - Comprehensive Coverage Tests', () => {
     });
 
     it('should listen on specified port and host', async () => {
-      const fastifyInstance = adapter.create();
+      const fastifyInstance = await adapter.create();
 
       const address = await adapter.listen(fastifyInstance, 0, '127.0.0.1');
 
@@ -328,7 +328,7 @@ describe('FluentAdapter - Comprehensive Coverage Tests', () => {
     });
 
     it('should close Fastify instance', async () => {
-      const fastifyInstance = adapter.create();
+      const fastifyInstance = await adapter.create();
 
       await expect(adapter.close(fastifyInstance)).resolves.not.toThrow();
     });
@@ -363,7 +363,7 @@ describe('FluentAdapter - Comprehensive Coverage Tests', () => {
 
   describe('Error Handling (Guard Clauses)', () => {
     it('should handle invalid route registration gracefully', async () => {
-      const fastifyInstance = adapter.create();
+      const fastifyInstance = await adapter.create();
 
       // Test with null route
       await expect(adapter.registerRoute(fastifyInstance, null as any)).resolves.not.toThrow();

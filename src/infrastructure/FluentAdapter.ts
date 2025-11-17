@@ -81,12 +81,12 @@ export class FluentAdapter {
   }
 
   // Métodos estáticos para compatibilidad con otros adapters
-  static create(config?: Record<string, unknown>): FastifyInstance {
+  static async create(config?: Record<string, unknown>): Promise<FastifyInstance> {
     const adapter = new FluentAdapter();
     if (config?.logger !== undefined) {
       adapter.withLogger(config.logger as boolean);
     }
-    return adapter.create();
+    return await adapter.create();
   }
 
   static async registerRoute(fastify: FastifyInstance, route: Route): Promise<void> {
@@ -284,13 +284,19 @@ export class FluentAdapter {
       .withRateLimit(true);
   }
 
-  // Crear instancia de Fastify con configuración fluida
-  create(): FastifyInstance {
+  /**
+   * Create Fastify instance with plugins registered
+   * Pure function: creates new instance with all configuration applied
+   *
+   * @returns Fastify instance with plugins registered
+   */
+  async create(): Promise<FastifyInstance> {
+    // Create new Fastify instance (immutable creation)
     const fastify = Fastify({
       logger: this.config.logger ?? false,
     });
 
-    // Integrate @syntrojs/logger if enabled
+    // Integrate @syntrojs/logger if enabled (pure configuration)
     if (this.config.syntroLogger) {
       const loggerConfig: LoggerIntegrationConfig =
         typeof this.config.syntroLogger === 'boolean'
@@ -311,8 +317,8 @@ export class FluentAdapter {
       setComponentLoggingEnabled(this.config.componentLogging);
     }
 
-    // Registrar plugins solo si están habilitados
-    this.registerPlugins(fastify);
+    // Register plugins (await to ensure they're ready before returning)
+    await this.registerPlugins(fastify);
 
     return fastify;
   }
@@ -349,13 +355,15 @@ export class FluentAdapter {
     if (this.config.cors) {
       try {
         const corsPlugin = await import('@fastify/cors');
-        // Build CORS options based on configuration
+        // Build CORS options based on configuration (pure function)
         const corsOptions =
           typeof this.config.cors === 'boolean'
             ? {
                 origin: true,
                 credentials: false,
                 methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+                preflightContinue: false, // Let plugin handle preflight automatically
+                strictPreflight: false, // Don't be strict with preflight
               }
             : {
                 origin: this.config.cors.origin ?? true,
@@ -372,11 +380,12 @@ export class FluentAdapter {
                 allowedHeaders: this.config.cors.allowedHeaders,
                 exposedHeaders: this.config.cors.exposedHeaders,
                 maxAge: this.config.cors.maxAge,
-                preflightContinue: this.config.cors.preflightContinue,
-                strictPreflight: this.config.cors.strictPreflight,
+                // Ensure preflight is handled automatically by plugin
+                preflightContinue: this.config.cors.preflightContinue ?? false,
+                strictPreflight: this.config.cors.strictPreflight ?? false,
               };
 
-        // Register CORS plugin with options (type assertion needed for compatibility)
+        // Register CORS plugin with options (plugin handles OPTIONS automatically)
         await fastify.register(corsPlugin.default, corsOptions as any);
       } catch {
         // Plugin no disponible, continuar sin él
