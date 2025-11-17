@@ -102,7 +102,7 @@
     "@stryker-mutator/core": "8.7.1",
     "@stryker-mutator/typescript-checker": "8.7.1",
     "@stryker-mutator/vitest-runner": "8.7.1",
-    "@types/node": "^18.19.0",
+    "@types/node": "^24.10.1",
     "@vitest/coverage-v8": "^1.2.2",
     "@vitest/ui": "^1.2.2",
     "express": "^5.1.0",
