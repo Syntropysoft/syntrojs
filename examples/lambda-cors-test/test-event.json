@@ -1,0 +1,28 @@
+{
+  "httpMethod": "POST",
+  "path": "/orders",
+  "pathParameters": null,
+  "queryStringParameters": null,
+  "multiValueQueryStringParameters": null,
+  "headers": {
+    "Origin": "http://localhost:3000",
+    "Content-Type": "application/json"
+  },
+  "multiValueHeaders": null,
+  "body": "{\"item\":\"test item\",\"quantity\":1}",
+  "isBase64Encoded": false,
+  "requestContext": {
+    "requestId": "test-request-id",
+    "stage": "test",
+    "resourceId": "test-resource",
+    "resourcePath": "/orders",
+    "httpMethod": "POST",
+    "requestTime": "2024-11-18T10:00:00Z",
+    "requestTimeEpoch": 1700304000000,
+    "identity": {
+      "sourceIp": "127.0.0.1",
+      "userAgent": "test-agent"
+    }
+  }
+}
+

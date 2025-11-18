@@ -109,6 +109,94 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
   }
 
   /**
+   * Check if a key exists in an object (case-insensitive) - Pure predicate function
+   * Functional: no side effects, deterministic output
+   * 
+   * @param obj - Object to check
+   * @param key - Key to find (case-insensitive)
+   * @returns true if key exists (case-insensitive), false otherwise
+   */
+  private hasKeyCaseInsensitive(
+    obj: Record<string, string>,
+    key: string,
+  ): boolean {
+    // Guard clause: empty object
+    if (!obj || Object.keys(obj).length === 0) {
+      return false;
+    }
+
+    // Guard clause: empty key
+    if (!key) {
+      return false;
+    }
+
+    // Functional: use Array.some for pure predicate
+    return Object.keys(obj).some((k) => k.toLowerCase() === key.toLowerCase());
+  }
+
+  /**
+   * Merge headers from both headers and multiValueHeaders (pure function)
+   * API Gateway can send headers in either format, so we need to handle both
+   * 
+   * Principles:
+   * - Functional: Pure function, no side effects, immutable return
+   * - Guard Clauses: Early validation
+   * - DDD: Value Object transformation (event headers -> merged headers)
+   * 
+   * Headers are case-insensitive, so we need to check for existing keys
+   * in a case-insensitive way when merging.
+   * 
+   * @param headers - Regular headers object
+   * @param multiValueHeaders - Multi-value headers object
+   * @returns Merged headers object (immutable)
+   */
+  private mergeHeaders(
+    headers: Record<string, string> | undefined,
+    multiValueHeaders: Record<string, string[]> | undefined,
+  ): Record<string, string> {
+    // Guard clause: both undefined, return empty object
+    if (!headers && !multiValueHeaders) {
+      return {};
+    }
+
+    // Functional: create new object (immutability)
+    const merged: Record<string, string> = {};
+
+    // First, add regular headers (pure transformation)
+    if (headers) {
+      for (const [key, value] of Object.entries(headers)) {
+        // Guard clause: skip undefined/null values
+        if (value !== undefined && value !== null) {
+          merged[key] = value;
+        }
+      }
+    }
+
+    // Then, add multi-value headers (take first value if not already present)
+    // This ensures regular headers take precedence (functional composition)
+    if (multiValueHeaders) {
+      for (const [key, values] of Object.entries(multiValueHeaders)) {
+        // Guard clause: validate values array
+        if (!Array.isArray(values) || values.length === 0) {
+          continue;
+        }
+
+        // Guard clause: skip if key already exists (case-insensitive)
+        // This ensures regular headers take precedence
+        if (this.hasKeyCaseInsensitive(merged, key)) {
+          continue;
+        }
+
+        // Functional: take first value (pure transformation)
+        merged[key] = values[0];
+      }
+    }
+
+    // Return immutable object (functional: no mutations after return)
+    return merged;
+  }
+
+  /**
    * Adapts API Gateway event to RequestDTO
    * Pure function: transforms event to DTO (immutable)
    *
@@ -125,14 +213,18 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
       throw new Error('Invalid API Gateway event: missing httpMethod or path');
     }
 
+    // Merge headers from both headers and multiValueHeaders
+    // API Gateway can send headers in either format, so we need to handle both
+    const mergedHeaders = this.mergeHeaders(event.headers, event.multiValueHeaders);
+
     // Extract query parameters (pure function)
     const queryParams = this.extractQueryParameters(event);
 
     // Parse body (pure function)
     const body = this.parseBody(event);
 
-    // Extract cookies from headers (pure function)
-    const cookies = this.extractCookies(event.headers);
+    // Extract cookies from merged headers (pure function)
+    const cookies = this.extractCookies(mergedHeaders);
 
     // Build RequestDTO (immutable)
     return {
@@ -141,7 +233,7 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
       pathParams: event.pathParameters || {},
       queryParams,
       body,
-      headers: event.headers || {},
+      headers: mergedHeaders,
       cookies,
       correlationId: event.requestContext.requestId,
       timestamp: new Date(event.requestContext.requestTimeEpoch),
@@ -420,6 +512,7 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
       const requestDTO = this.toRequestDTO(apiGatewayEvent);
 
       // Extract origin from headers (case-insensitive) - do this once at the start
+      // Use merged headers from requestDTO (which includes multiValueHeaders)
       const requestOrigin = this.extractOrigin(requestDTO.headers);
 
       // Step 1.5: Handle OPTIONS preflight requests (CORS)
@@ -462,8 +555,9 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
       return this.toLambdaResponse(result, route.config.status || 200, requestOrigin);
     } catch (error) {
       // Handle errors using ErrorHandler (error handling logic)
-      // Extract origin from event headers (case-insensitive)
-      const requestOrigin = this.extractOrigin(apiGatewayEvent.headers);
+      // Merge headers first (to include multiValueHeaders), then extract origin
+      const mergedHeaders = this.mergeHeaders(apiGatewayEvent.headers, apiGatewayEvent.multiValueHeaders);
+      const requestOrigin = this.extractOrigin(mergedHeaders);
       return await this.handleError(error as Error, requestOrigin);
     }
   }
@@ -514,13 +608,20 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
   }
 
   /**
-   * Validates request and returns validated data
-   * Pure function: validation logic, returns validated data or error
+   * Validates request and returns validated data (pure function)
+   * Functional: validation logic, returns validated data or error
    * Railway pattern: success or failure with data
+   * 
+   * Principles:
+   * - Functional: Pure function (except for validator calls which are necessary)
+   * - Guard Clauses: Early validation
+   * - DDD: Domain Service delegation (SchemaValidator)
+   * - Railway Pattern: Returns success or failure, never throws
    *
    * @param route - Route with schemas
    * @param requestDTO - Request DTO
    * @param pathParams - Extracted path parameters
+   * @param requestOrigin - Request origin (for CORS headers in error responses)
    * @returns Validation result with validated data or error response
    */
   private async validateAndGetData(
@@ -562,7 +663,7 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
       if (!validationResult.success) {
         return {
           success: false,
-          error: this.createValidationErrorResponse(validationResult.errors),
+          error: this.createValidationErrorResponse(validationResult.errors, requestOrigin),
         };
       }
       validatedBody = validationResult.data;
@@ -756,11 +857,16 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
   }
 
   /**
-   * Extracts query parameters from API Gateway event
-   * Pure function: no side effects, returns new object
+   * Extracts query parameters from API Gateway event (pure function)
+   * Functional: no side effects, returns new object
+   * 
+   * Principles:
+   * - Functional: Pure function, immutable return
+   * - Guard Clauses: Early validation
+   * - DDD: Value Object transformation (event -> query params)
    *
    * @param event - API Gateway event
-   * @returns Query parameters object
+   * @returns Query parameters object (immutable)
    */
   private extractQueryParameters(
     event: APIGatewayProxyEvent,
@@ -771,17 +877,27 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
     }
 
     // Handle multi-value query parameters (preferred)
+    // Functional: use reduce for pure transformation
     if (event.multiValueQueryStringParameters) {
       return Object.entries(event.multiValueQueryStringParameters).reduce(
         (params, [key, values]) => {
-          params[key] = values.length === 1 ? values[0] : values;
-          return params;
+          // Guard clause: validate values array
+          if (!Array.isArray(values) || values.length === 0) {
+            return params;
+          }
+
+          // Functional: return new object (immutability)
+          return {
+            ...params,
+            [key]: values.length === 1 ? values[0] : values,
+          };
         },
         {} as Record<string, string | string[] | undefined>,
       );
     }
 
     // Fallback to single-value query parameters
+    // Functional: spread operator creates new object (immutability)
     if (event.queryStringParameters) {
       return { ...event.queryStringParameters };
     }
@@ -790,11 +906,16 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
   }
 
   /**
-   * Parses request body from API Gateway event
-   * Pure function: no side effects, returns parsed body
+   * Parses request body from API Gateway event (pure function)
+   * Functional: no side effects, returns parsed body
+   * 
+   * Principles:
+   * - Functional: Pure function, immutable return
+   * - Guard Clauses: Early validation
+   * - DDD: Value Object transformation (event body -> parsed body)
    *
    * @param event - API Gateway event
-   * @returns Parsed body or empty object
+   * @returns Parsed body or empty object (immutable)
    */
   private parseBody(event: APIGatewayProxyEvent): unknown {
     // Guard clause: no body
@@ -802,27 +923,42 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
       return {};
     }
 
+    // Guard clause: empty body string
+    if (event.body.trim() === '') {
+      return {};
+    }
+
     try {
-      // Handle base64 encoded body
+      // Handle base64 encoded body (pure transformation)
       if (event.isBase64Encoded) {
         const decoded = Buffer.from(event.body, 'base64').toString('utf-8');
+        // Guard clause: decoded body is empty
+        if (!decoded || decoded.trim() === '') {
+          return {};
+        }
         return JSON.parse(decoded);
       }
 
-      // Parse JSON body
+      // Parse JSON body (pure transformation)
       return JSON.parse(event.body);
     } catch {
       // If parsing fails, return as string (immutable)
+      // This is a graceful degradation - preserves original data
       return event.body;
     }
   }
 
   /**
-   * Extracts cookies from headers
-   * Pure function: no side effects, returns new object
+   * Extracts cookies from headers (pure function)
+   * Functional: no side effects, returns new object
+   * 
+   * Principles:
+   * - Functional: Pure function, immutable return
+   * - Guard Clauses: Early validation
+   * - DDD: Value Object transformation (headers -> cookies)
    *
    * @param headers - Request headers
-   * @returns Cookies object
+   * @returns Cookies object (immutable)
    */
   private extractCookies(
     headers: Record<string, string> | undefined,
@@ -832,32 +968,63 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
       return {};
     }
 
-    // Find cookie header (case-insensitive)
-    const cookieHeader = headers['cookie'] || headers['Cookie'];
+    // Find cookie header (case-insensitive) - use same pattern as extractOrigin
+    const cookieKey = Object.keys(headers).find(
+      (key) => key.toLowerCase() === 'cookie',
+    );
+    
+    // Guard clause: no cookie header found
+    if (!cookieKey) {
+      return {};
+    }
+
+    const cookieHeader = headers[cookieKey];
+    
+    // Guard clause: cookie header is empty
     if (!cookieHeader) {
       return {};
     }
 
-    // Parse cookies (functional: reduce)
+    // Parse cookies (functional: reduce) - pure transformation
     return cookieHeader.split(';').reduce((cookies, cookie) => {
-      const [name, value] = cookie.trim().split('=');
-      if (name && value) {
-        cookies[name] = value;
+      const trimmedCookie = cookie.trim();
+      
+      // Guard clause: skip empty cookies
+      if (!trimmedCookie) {
+        return cookies;
       }
-      return cookies;
+
+      const [name, value] = trimmedCookie.split('=');
+      
+      // Guard clause: skip invalid cookie format
+      if (!name || !value) {
+        return cookies;
+      }
+
+      // Functional: return new object (immutability)
+      return {
+        ...cookies,
+        [name.trim()]: value.trim(),
+      };
     }, {} as Record<string, string>);
   }
 
   /**
-   * Builds RequestContext from RequestDTO with validated data
-   * Pure function: creates new context object (immutable)
-   * Note: Data must be validated before calling this method
+   * Builds RequestContext from RequestDTO with validated data (pure function)
+   * Functional: creates new context object (immutable)
+   * 
+   * Principles:
+   * - Functional: Pure function, immutable return
+   * - Guard Clauses: Early validation
+   * - DDD: Value Object construction (validated data -> RequestContext)
+   * 
+   * Note: Data must be validated before calling this method (Railway pattern)
    *
    * @param requestDTO - Request DTO
    * @param validatedParams - Validated path parameters
    * @param validatedBody - Validated request body
    * @param validatedQuery - Validated query parameters
-   * @returns Request context
+   * @returns RequestContext (immutable)
    */
   private buildRequestContext(
     requestDTO: RequestDTO,
@@ -870,7 +1037,18 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
       throw new Error('RequestDTO is required');
     }
 
-    // Build immutable context object with validated data
+    // Guard clause: validate method
+    if (!requestDTO.method) {
+      throw new Error('Request method is required');
+    }
+
+    // Guard clause: validate path
+    if (!requestDTO.path) {
+      throw new Error('Request path is required');
+    }
+
+    // Functional: Build immutable context object with validated data
+    // All data is already validated at this point (Railway pattern)
     return {
       method: requestDTO.method as any,
       path: requestDTO.path,

@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.8-alpha.2] - 2024-11-18
+
+### Fixed
+
+- 🐛 **Lambda CORS multiValueHeaders**: Fixed bug where CORS headers returned `"*"` when origin was in `multiValueHeaders`
+- 🐛 **Case-Insensitive Headers**: Improved header extraction to handle both `headers` and `multiValueHeaders` formats
+
+### Added
+
+- ✨ **mergeHeaders() Function**: New pure function for merging headers from both API Gateway formats
+- ✨ **hasKeyCaseInsensitive() Function**: New pure predicate function for case-insensitive key checking
+- ✨ **Comprehensive Documentation**: All methods now document applied principles (SOLID, DDD, FP, Guard Clauses)
+
+### Changed
+
+- 🔧 **extractCookies()**: Now case-insensitive (consistent with `extractOrigin`)
+- 🔧 **extractQueryParameters()**: Improved guard clauses and immutability
+- 🔧 **parseBody()**: Additional guard clause for empty body
+- 🔧 **buildRequestContext()**: Additional guard clauses (method, path)
+- 🔧 **validateAndGetData()**: Now passes `requestOrigin` to all validation errors
+- 🔧 **ApiGatewayAdapter**: All methods now fully comply with SOLID, DDD, FP, and Guard Clauses
+
+### Alpha Status
+
+⚠️ **This is an alpha release**. Lambda mode CORS bug fix and code quality improvements. Please test thoroughly before using in production.
+
+See [CHANGELOG_v0.6.8-alpha.2.md](./CHANGELOG_v0.6.8-alpha.2.md) for complete details.
+
 ## [0.6.8-alpha.1] - 2024-11-18
 
 ### Fixed

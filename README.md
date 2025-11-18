@@ -24,7 +24,7 @@
 - ⚠️ **AWS Lambda Support** (Alpha) - CORS bug fix in v0.6.8-alpha.1, requires thorough testing
 - 🎯 **v0.7.0 planned** - Router + Advanced Middleware
 
-**Latest Release**: **v0.6.8-alpha.1** - Lambda CORS Origin Extraction Fix - [CHANGELOG](./docs/CHANGELOG.md)
+**Latest Release**: **v0.6.8-alpha.2** - Lambda CORS multiValueHeaders Support & Code Quality Improvements - [CHANGELOG](./docs/CHANGELOG.md)
 
 > 💡 **Note**: 
 > - **REST Mode**: Production-ready, stable API
