@@ -13,6 +13,7 @@ import type { ILambdaAdapter } from '../../domain/interfaces/ILambdaAdapter';
 import type { Route } from '../../domain/Route';
 import type { RequestContext } from '../../domain/types';
 import type { RequestDTO, LambdaResponse } from '../types';
+import type { CorsOptions } from '../../plugins/cors';
 
 /**
  * API Gateway Proxy Event (v1)
@@ -53,9 +54,12 @@ export interface APIGatewayProxyEvent {
  * Implements ILambdaAdapter for easy extraction to separate package
  */
 export class ApiGatewayAdapter implements ILambdaAdapter {
+  private readonly corsConfig?: boolean | CorsOptions;
+
   constructor(
     private readonly routeRegistry: typeof RouteRegistry,
     private readonly validator: typeof SchemaValidator,
+    corsConfig?: boolean | CorsOptions,
   ) {
     // Guard clause: validate dependencies
     if (!routeRegistry) {
@@ -64,6 +68,9 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
     if (!validator) {
       throw new Error('SchemaValidator is required');
     }
+
+    // Store CORS configuration
+    this.corsConfig = corsConfig;
   }
 
   /**
@@ -142,14 +149,176 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
   }
 
   /**
+   * Extract origin from headers (pure function)
+   * API Gateway headers are case-insensitive, so we need to normalize
+   * 
+   * @param headers - Request headers (may contain undefined values)
+   * @returns Origin header value or undefined
+   */
+  private extractOrigin(
+    headers: Record<string, string | undefined> | undefined,
+  ): string | undefined {
+    // Guard clause: no headers
+    if (!headers) {
+      return undefined;
+    }
+
+    // API Gateway headers are case-insensitive
+    // Try common variations: Origin, origin, ORIGIN
+    const originKey = Object.keys(headers).find(
+      (key) => key.toLowerCase() === 'origin',
+    );
+    
+    if (!originKey) {
+      return undefined;
+    }
+
+    const originValue = headers[originKey];
+    return originValue || undefined;
+  }
+
+  /**
+   * Build CORS headers from configuration (pure function)
+   * Functional: no side effects, deterministic output
+   *
+   * @param origin - Request origin (from event headers)
+   * @returns CORS headers object
+   */
+  private buildCorsHeaders(origin?: string): Record<string, string> {
+    // Guard clause: CORS not configured or explicitly disabled
+    const corsConfig = this.corsConfig;
+    if (corsConfig === false || corsConfig === undefined || corsConfig === null) {
+      return {};
+    }
+
+    // Build CORS headers based on configuration
+    const corsOptions =
+      typeof corsConfig === 'boolean'
+        ? {
+            origin: true,
+            credentials: false,
+            methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+          }
+        : corsConfig;
+
+    // Determine allowed origin (pure function)
+    const allowedOrigin = this.determineAllowedOrigin(corsOptions.origin, origin);
+
+    // Build headers immutably (functional composition)
+    const headers: Record<string, string> = {
+      'Access-Control-Allow-Origin': allowedOrigin,
+    };
+
+    // Add methods header
+    if (corsOptions.methods) {
+      const methods = Array.isArray(corsOptions.methods)
+        ? corsOptions.methods.join(', ')
+        : corsOptions.methods;
+      headers['Access-Control-Allow-Methods'] = methods;
+    }
+
+    // Add allowed headers
+    if (corsOptions.allowedHeaders) {
+      const allowedHeaders = Array.isArray(corsOptions.allowedHeaders)
+        ? corsOptions.allowedHeaders.join(', ')
+        : corsOptions.allowedHeaders;
+      headers['Access-Control-Allow-Headers'] = allowedHeaders;
+    }
+
+    // Add exposed headers
+    if (corsOptions.exposedHeaders) {
+      const exposedHeaders = Array.isArray(corsOptions.exposedHeaders)
+        ? corsOptions.exposedHeaders.join(', ')
+        : corsOptions.exposedHeaders;
+      headers['Access-Control-Expose-Headers'] = exposedHeaders;
+    }
+
+    // Add max age
+    if (corsOptions.maxAge) {
+      headers['Access-Control-Max-Age'] = corsOptions.maxAge.toString();
+    }
+
+    // Add credentials header (only if origin is not '*')
+    if (corsOptions.credentials && allowedOrigin !== '*') {
+      headers['Access-Control-Allow-Credentials'] = 'true';
+    }
+
+    return headers;
+  }
+
+  /**
+   * Determine allowed origin from CORS config (pure function)
+   * Functional: no side effects, deterministic output
+   *
+   * @param originConfig - CORS origin configuration
+   * @param requestOrigin - Request origin header
+   * @returns Allowed origin string
+   */
+  private determineAllowedOrigin(
+    originConfig: CorsOptions['origin'],
+    requestOrigin?: string,
+  ): string {
+    // Guard clause: no origin config
+    if (!originConfig) {
+      return '*';
+    }
+
+    // Handle boolean (true = allow all)
+    if (originConfig === true) {
+      return requestOrigin || '*';
+    }
+
+    // Note: originConfig cannot be false based on CorsOptions type
+    // This check is for type safety only
+
+    // Handle string
+    if (typeof originConfig === 'string') {
+      return originConfig;
+    }
+
+    // Handle array (check if request origin matches)
+    if (Array.isArray(originConfig)) {
+      if (requestOrigin && originConfig.some((o) => o === requestOrigin)) {
+        return requestOrigin;
+      }
+      return '*';
+    }
+
+    // Handle RegExp
+    if (originConfig instanceof RegExp) {
+      if (requestOrigin && originConfig.test(requestOrigin)) {
+        return requestOrigin || '*';
+      }
+      return '*';
+    }
+
+    // Handle function (synchronous check only - Lambda doesn't support async callbacks)
+    if (typeof originConfig === 'function') {
+      // For Lambda, we can't use async callbacks, so default to request origin or '*'
+      return requestOrigin || '*';
+    }
+
+    // Default: allow all
+    return '*';
+  }
+
+  /**
    * Converts handler result to Lambda response format
    * Pure function: transforms result to LambdaResponse (immutable)
    *
    * @param result - Handler result
    * @param statusCode - HTTP status code
+   * @param requestOrigin - Request origin header (for CORS)
    * @returns LambdaResponse
    */
-  toLambdaResponse(result: unknown, statusCode = 200): LambdaResponse {
+  toLambdaResponse(
+    result: unknown,
+    statusCode = 200,
+    requestOrigin?: string,
+  ): LambdaResponse {
+    // Build CORS headers (pure function) - applies to ALL responses
+    const corsHeaders = this.buildCorsHeaders(requestOrigin);
+
     // Guard clause: handle null/undefined
     if (result === null || result === undefined) {
       return {
@@ -157,6 +326,7 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
         body: '',
         headers: {
           'Content-Type': 'application/json',
+          ...corsHeaders,
         },
       };
     }
@@ -177,7 +347,10 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
       if (redirect.statusCode >= 300 && redirect.statusCode < 400) {
         return {
           statusCode: redirect.statusCode,
-          headers: redirect.headers,
+          headers: {
+            ...redirect.headers,
+            ...corsHeaders,
+          },
           body: '',
         };
       }
@@ -199,6 +372,7 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
         statusCode: customResponse.status,
         headers: {
           'Content-Type': 'application/json',
+          ...corsHeaders,
           ...customResponse.headers,
         },
         body: typeof customResponse.body === 'string'
@@ -207,11 +381,12 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
       };
     }
 
-    // Default: serialize to JSON
+    // Default: serialize to JSON with CORS headers
     return {
       statusCode,
       headers: {
         'Content-Type': 'application/json',
+        ...corsHeaders,
       },
       body: typeof result === 'string' ? result : JSON.stringify(result),
     };
@@ -244,17 +419,30 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
       // Step 1: Convert event to RequestDTO (pure transformation)
       const requestDTO = this.toRequestDTO(apiGatewayEvent);
 
+      // Extract origin from headers (case-insensitive) - do this once at the start
+      const requestOrigin = this.extractOrigin(requestDTO.headers);
+
+      // Step 1.5: Handle OPTIONS preflight requests (CORS)
+      if (requestDTO.method === 'OPTIONS') {
+        return this.handleOptionsRequest(requestDTO);
+      }
+
       // Step 2: Find route (routing logic)
       const route = this.findRoute(requestDTO);
       if (!route) {
-        return this.createNotFoundResponse(requestDTO.path);
+        return this.createNotFoundResponse(requestDTO.path, requestOrigin);
       }
 
       // Step 3: Extract path parameters (pure function)
       const pathParams = this.extractPathParameters(route, requestDTO);
 
       // Step 4: Validate request and get validated data (validation logic)
-      const validationResult = await this.validateAndGetData(route, requestDTO, pathParams);
+      const validationResult = await this.validateAndGetData(
+        route,
+        requestDTO,
+        pathParams,
+        requestOrigin,
+      );
       if (!validationResult.success) {
         return validationResult.error;
       }
@@ -270,11 +458,13 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
       // Step 6: Execute handler
       const result = await route.handler(context);
 
-      // Step 7: Convert to Lambda response (pure transformation)
-      return this.toLambdaResponse(result, route.config.status || 200);
+      // Step 7: Convert to Lambda response with CORS headers (pure transformation)
+      return this.toLambdaResponse(result, route.config.status || 200, requestOrigin);
     } catch (error) {
       // Handle errors using ErrorHandler (error handling logic)
-      return await this.handleError(error as Error);
+      // Extract origin from event headers (case-insensitive)
+      const requestOrigin = this.extractOrigin(apiGatewayEvent.headers);
+      return await this.handleError(error as Error, requestOrigin);
     }
   }
 
@@ -337,6 +527,7 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
     route: Route,
     requestDTO: RequestDTO,
     pathParams: Record<string, string>,
+    requestOrigin?: string,
   ): Promise<
     | {
         success: true;
@@ -386,7 +577,7 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
       if (!validationResult.success) {
         return {
           success: false,
-          error: this.createValidationErrorResponse(validationResult.errors),
+          error: this.createValidationErrorResponse(validationResult.errors, requestOrigin),
         };
       }
       validatedParams = validationResult.data as Record<string, string>;
@@ -401,7 +592,7 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
       if (!validationResult.success) {
         return {
           success: false,
-          error: this.createValidationErrorResponse(validationResult.errors),
+          error: this.createValidationErrorResponse(validationResult.errors, requestOrigin),
         };
       }
       validatedQuery = validationResult.data as Record<string, string | string[] | undefined>;
@@ -417,15 +608,63 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
   }
 
   /**
+   * Handle OPTIONS preflight request (pure function)
+   * Functional: creates CORS preflight response
+   *
+   * @param requestDTO - Request DTO
+   * @returns Lambda response with CORS headers
+   */
+  private handleOptionsRequest(requestDTO: RequestDTO): LambdaResponse {
+    // Guard clause: CORS not configured or explicitly disabled
+    const corsConfig = this.corsConfig;
+    if (corsConfig === false || corsConfig === undefined || corsConfig === null) {
+      return {
+        statusCode: 204,
+        body: '',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      };
+    }
+
+    // Extract origin from headers (case-insensitive)
+    const requestOrigin = this.extractOrigin(requestDTO.headers);
+
+    // Build CORS headers (pure function)
+    const corsHeaders = this.buildCorsHeaders(requestOrigin);
+
+    // Find route to determine allowed methods
+    const route = this.findRoute(requestDTO);
+    const allowedMethods = route
+      ? [route.method]
+      : ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'];
+
+    // Build response with CORS headers
+    return {
+      statusCode: 204,
+      body: '',
+      headers: {
+        ...corsHeaders,
+        'Access-Control-Allow-Methods': allowedMethods.join(', '),
+      },
+    };
+  }
+
+  /**
    * Creates validation error response
    * Pure function: creates immutable error response
    *
    * @param errors - Validation errors
+   * @param requestOrigin - Request origin header (for CORS)
    * @returns Lambda error response
    */
   private createValidationErrorResponse(
     errors: Array<{ field: string; message: string }>,
+    requestOrigin?: string,
   ): LambdaResponse {
+    // Build CORS headers (pure function)
+    const corsHeaders = this.buildCorsHeaders(requestOrigin);
+
     // Guard clause: validate errors
     if (!errors || errors.length === 0) {
       return {
@@ -433,6 +672,7 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
         body: JSON.stringify({ error: 'Validation Error' }),
         headers: {
           'Content-Type': 'application/json',
+          ...corsHeaders,
         },
       };
     }
@@ -445,6 +685,7 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
       }),
       headers: {
         'Content-Type': 'application/json',
+        ...corsHeaders,
       },
     };
   }
@@ -454,9 +695,13 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
    * Pure function: creates immutable error response
    *
    * @param path - Request path
+   * @param requestOrigin - Request origin header (for CORS)
    * @returns Lambda error response
    */
-  private createNotFoundResponse(path: string): LambdaResponse {
+  private createNotFoundResponse(path: string, requestOrigin?: string): LambdaResponse {
+    // Build CORS headers (pure function)
+    const corsHeaders = this.buildCorsHeaders(requestOrigin);
+
     // Guard clause: validate path
     if (!path) {
       return {
@@ -464,15 +709,21 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
         body: JSON.stringify({ error: 'Not Found' }),
         headers: {
           'Content-Type': 'application/json',
+          ...corsHeaders,
         },
       };
     }
 
     return {
       statusCode: 404,
-      body: JSON.stringify({ error: 'Not Found', path }),
+      body: JSON.stringify({
+        message: `Route ${path} not found`,
+        error: 'Not Found',
+        statusCode: 404,
+      }),
       headers: {
         'Content-Type': 'application/json',
+        ...corsHeaders,
       },
     };
   }
@@ -482,23 +733,26 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
    * Delegates error handling to domain service
    *
    * @param error - Error to handle
+   * @param requestOrigin - Request origin header (for CORS)
    * @returns Lambda error response
    */
-  private async handleError(error: Error): Promise<LambdaResponse> {
+  private async handleError(error: Error, requestOrigin?: string): Promise<LambdaResponse> {
     // Guard clause: validate error
     if (!error) {
+      const corsHeaders = this.buildCorsHeaders(requestOrigin);
       return {
         statusCode: 500,
         body: JSON.stringify({ error: 'Internal Server Error' }),
         headers: {
           'Content-Type': 'application/json',
+          ...corsHeaders,
         },
       };
     }
 
     // Delegate to ErrorHandler (domain service)
     const errorResponse = await ErrorHandler.handle(error, {} as any);
-    return this.toLambdaResponse(errorResponse.body, errorResponse.status);
+    return this.toLambdaResponse(errorResponse.body, errorResponse.status, requestOrigin);
   }
 
   /**

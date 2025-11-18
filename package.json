@@ -1,6 +1,6 @@
 {
   "name": "syntrojs",
-  "version": "0.6.7",
+  "version": "0.6.8-alpha.1",
   "description": "🔥 DUAL RUNTIME: FastAPI for Node.js AND Bun - Same Code, Maximum Performance | ⚡ 3.8x Faster with Bun",
   "type": "module",
   "main": "./dist/index.js",

@@ -123,6 +123,9 @@ export interface SyntroJSConfig {
 
   /** Lambda adapters configuration (only used in Lambda mode) */
   lambdaAdapters?: LambdaAdaptersConfig;
+
+  /** CORS configuration for Lambda mode (only used in Lambda mode) */
+  lambdaCors?: boolean | CorsOptions;
 }
 
 /**
@@ -186,6 +189,7 @@ export class SyntroJS {
         routeRegistry: RouteRegistry,
         validator: SchemaValidator,
         adapters: this.config.lambdaAdapters,
+        cors: this.config.lambdaCors,
       });
     }
 

@@ -14,19 +14,22 @@
 
 ---
 
-## 🚀 Status: Production Ready (Pre-1.0)
+## 🚀 Status: Stable Core - Lambda Alpha
 
-**SyntroJS is production-ready** with 1,019+ passing tests and 71.55% code coverage. The core API is stable, though we're still adding features before v1.0.0.
+**SyntroJS core is production-ready** with 1,019+ passing tests and 71.55% code coverage. The REST mode API is stable and battle-tested. Lambda mode is in active alpha development.
 
-- ✅ **Battle-tested** - 1,019+ tests across Node.js and Bun (99.3% passing)
-- ✅ **Stable core API** - We follow semantic versioning
+- ✅ **Battle-tested Core** - 1,019+ tests across Node.js and Bun (99.3% passing)
+- ✅ **Stable REST API** - Production-ready for HTTP servers
 - ✅ **Active development** - Regular updates and community support
-- ✅ **AWS Lambda Support** - Same code works in REST and Lambda modes
+- ⚠️ **AWS Lambda Support** (Alpha) - CORS bug fix in v0.6.8-alpha.1, requires thorough testing
 - 🎯 **v0.7.0 planned** - Router + Advanced Middleware
 
-**Latest Release**: **v0.6.x** - AWS Lambda Support - [CHANGELOG](./docs/CHANGELOG.md)
+**Latest Release**: **v0.6.8-alpha.1** - Lambda CORS Origin Extraction Fix - [CHANGELOG](./docs/CHANGELOG.md)
 
-> 💡 **Note**: While the core is stable, we recommend pinning to specific versions until v1.0.0
+> 💡 **Note**: 
+> - **REST Mode**: Production-ready, stable API
+> - **Lambda Mode**: Alpha - Use with caution, test thoroughly before production
+> - We recommend pinning to specific versions until v1.0.0
 
 ---
 
@@ -36,7 +39,7 @@
 
 **Key Highlights:**
 - 🚀 **Dual Runtime**: Same code runs on Node.js and Bun
-- ☁️ **AWS Lambda**: Same code works in REST (dev) and Lambda (prod) modes
+- ⚠️ **AWS Lambda** (Alpha): Same code works in REST (dev) and Lambda (prod) modes
 - 🔥 **FastAPI DX**: Automatic validation, type safety, elegant error handling
 - 🎨 **Auto Docs**: Interactive Swagger UI + ReDoc out of the box
 - 🧪 **Testing**: SmartMutator for mutation testing in seconds
@@ -78,9 +81,11 @@ await app.listen(3000);
 
 **That's it!** 🎉 Visit `http://localhost:3000/docs` for interactive documentation.
 
-### AWS Lambda Mode
+### AWS Lambda Mode ⚠️ (Alpha)
 
 **Same code, Lambda deployment** - Just change one flag:
+
+> ⚠️ **Alpha Status**: Lambda mode with CORS support is currently in alpha (v0.6.8-alpha.1). CORS origin extraction bug fixed. Please test thoroughly before using in production.
 
 ```javascript
 import { SyntroJS } from 'syntrojs';
@@ -112,8 +117,10 @@ See [Lambda Usage Guide](./docs/LAMBDA_USAGE.md) for complete examples.
 ### 🚀 Dual Runtime Support
 Write once, run on both Node.js and Bun. Zero code changes required.
 
-### ☁️ AWS Lambda Support
+### ☁️ AWS Lambda Support ⚠️ (Alpha)
 Same code works in REST mode (development) and Lambda mode (production). Just set `rest: false`. Full API Gateway integration with automatic event detection.
+
+> ⚠️ **Alpha Status**: Lambda mode with CORS support is currently in alpha (v0.6.8-alpha.1). CORS origin extraction bug fixed. Please test thoroughly before using in production.
 
 **Lambda Adapters Status:**
 - ✅ **API Gateway**: Implemented

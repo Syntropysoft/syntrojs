@@ -7,6 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.8-alpha.1] - 2024-11-18
+
+### Fixed
+
+- 🐛 **Lambda CORS Origin Extraction**: Fixed bug where CORS headers returned `'*'` instead of actual request origin
+- 🐛 **Case-Insensitive Headers**: Fixed API Gateway header extraction to handle case-insensitive `Origin` header
+
+### Added
+
+- ✨ **extractOrigin() Function**: New pure function for case-insensitive origin extraction from API Gateway headers
+- ✨ **Lambda CORS Integration Tests**: 8 new integration tests for CORS in Lambda mode
+
+### Changed
+
+- 🔧 **ApiGatewayAdapter**: Now uses `extractOrigin()` for consistent origin extraction throughout
+- 🔧 **CORS Headers**: All Lambda responses now correctly reflect request origin when `origin: true` is configured
+
+### Alpha Status
+
+⚠️ **This is an alpha release**. Lambda mode CORS bug fix. Please test thoroughly before using in production.
+
+See [CHANGELOG_v0.6.8-alpha.1.md](./CHANGELOG_v0.6.8-alpha.1.md) for complete details.
+
+## [0.6.8-alpha.0] - 2024-12-17
+
+### Added
+
+- ✨ **CORS Support for Lambda**: Added `lambdaCors` configuration option for Lambda mode
+- ✨ **Automatic CORS Headers**: All Lambda responses now include CORS headers when configured
+- ✨ **OPTIONS Preflight Support**: Automatic handling of OPTIONS preflight requests
+- ✨ **Pure Functions**: `buildCorsHeaders()` and `determineAllowedOrigin()` for CORS header generation
+- ✨ **OPTIONS Handler**: `handleOptionsRequest()` for preflight request handling
+
+### Changed
+
+- 🔧 **ApiGatewayAdapter**: Now accepts CORS configuration and includes headers in all responses
+- 🔧 **LambdaHandler**: Now accepts and passes CORS configuration to adapters
+- 🔧 **SyntroJS**: Added `lambdaCors` option to `SyntroJSConfig`
+
+### Alpha Status
+
+⚠️ **This is an alpha release**. CORS support for Lambda is still being tested in production environments. Please test thoroughly before using in production.
+
+See [CHANGELOG_v0.6.8.md](./CHANGELOG_v0.6.8.md) for complete details.
+
 ## [0.6.7] - 2024-12-17
 
 ### Fixed

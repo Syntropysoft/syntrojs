@@ -22,6 +22,7 @@ import {
 } from '../adapters/LambdaAdapterFactory';
 import type { LambdaResponse, LambdaEventType } from '../types';
 import type { ILambdaAdapter } from '../../domain/interfaces/ILambdaAdapter';
+import type { CorsOptions } from '../../plugins/cors';
 
 /**
  * Lambda Adapters Configuration
@@ -47,6 +48,8 @@ export interface LambdaHandlerConfig {
   adapterFactory?: LambdaAdapterFactory;
   /** Lambda adapters configuration */
   adapters?: LambdaAdaptersConfig;
+  /** CORS configuration for Lambda responses */
+  cors?: boolean | CorsOptions;
 }
 
 /**
@@ -57,19 +60,27 @@ export interface LambdaHandlerConfig {
  */
 export class LambdaHandler {
   private readonly adapterFactory: LambdaAdapterFactory;
+  private readonly corsConfig?: boolean | CorsOptions;
 
   constructor(config: LambdaHandlerConfig = {}) {
     const routeRegistry = config.routeRegistry || RouteRegistry;
     const validator = config.validator || SchemaValidator;
+
+    // Store CORS configuration
+    this.corsConfig = config.cors;
 
     // Use provided factory or create new instance (for isolation)
     // If no factory provided, use singleton (backward compatibility)
     this.adapterFactory =
       config.adapterFactory || createLambdaAdapterFactory();
 
-    // Register default adapters
+    // Register default adapters with CORS configuration
     // In the future, adapters can be imported from external package
-    const apiGatewayAdapter = new ApiGatewayAdapter(routeRegistry, validator);
+    const apiGatewayAdapter = new ApiGatewayAdapter(
+      routeRegistry,
+      validator,
+      this.corsConfig,
+    );
     this.adapterFactory.registerOrReplace('api-gateway', apiGatewayAdapter);
 
     // Register SQS adapter with optional custom configuration
