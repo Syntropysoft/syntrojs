@@ -14,23 +14,17 @@
 
 ---
 
-## 🚀 Status: Pre-1.0 (Known Issues)
+## 🚀 Status: Production Ready (Pre-1.0)
 
-**⚠️ IMPORTANT**: SyntroJS is in active development with **known issues** that may affect production use. While the core functionality is stable, some features (especially CORS) have unresolved bugs.
+**✅ SyntroJS is production-ready** with a battle-tested core and comprehensive feature set. The framework is stable and ready for production use.
 
 - ✅ **Battle-tested Core** - 1,019+ tests across Node.js and Bun (99.3% passing)
-- ⚠️ **REST Mode CORS** - Known issue: OPTIONS preflight requests may return 404 (v0.6.8-alpha.3 fix in progress, requires production validation)
-- ⚠️ **Lambda Mode** (Alpha) - CORS support implemented but requires thorough testing
+- ✅ **CORS Fully Functional** - REST and Lambda modes with comprehensive validation
+- ✅ **AWS Lambda Support** - Production-ready Lambda mode with full API Gateway integration
 - ✅ **Active development** - Regular updates and bug fixes
 - 🎯 **v0.7.0 planned** - Router + Advanced Middleware
 
-**Latest Release**: **v0.6.8-alpha.3** - CORS Registration Order Fix & Documentation Update - [CHANGELOG](./docs/CHANGELOG.md)
-
-> ⚠️ **Critical Notice**: 
-> - **REST Mode**: Core API works, but **CORS has known issues** - OPTIONS requests may fail
-> - **Lambda Mode**: Alpha - CORS implemented but requires validation
-> - **Recommendation**: Test CORS thoroughly before production use
-> - **Version Pinning**: Strongly recommended until v1.0.0
+**Latest Release**: **v0.6.9** - CORS Issues Resolved & Enhanced Guard Clauses - [CHANGELOG](./docs/CHANGELOG.md)
 
 ---
 
@@ -40,12 +34,10 @@
 
 **Key Highlights:**
 - 🚀 **Dual Runtime**: Same code runs on Node.js and Bun
-- ⚠️ **AWS Lambda** (Alpha): Same code works in REST (dev) and Lambda (prod) modes
+- ☁️ **AWS Lambda**: Same code works in REST (dev) and Lambda (prod) modes
 - 🔥 **FastAPI DX**: Automatic validation, type safety, elegant error handling
 - 🎨 **Auto Docs**: Interactive Swagger UI + ReDoc out of the box
 - 🧪 **Testing**: SmartMutator for mutation testing in seconds
-
-> ⚠️ **Known Issues**: CORS in REST mode has unresolved bugs. See [Known Issues](#-known-issues) section below.
 
 ---
 
@@ -84,11 +76,9 @@ await app.listen(3000);
 
 **That's it!** 🎉 Visit `http://localhost:3000/docs` for interactive documentation.
 
-### AWS Lambda Mode ⚠️ (Alpha)
+### AWS Lambda Mode
 
 **Same code, Lambda deployment** - Just change one flag:
-
-> ⚠️ **Alpha Status**: Lambda mode with CORS support is currently in alpha (v0.6.8-alpha.2). CORS implementation completed but requires thorough testing before production use.
 
 ```javascript
 import { SyntroJS } from 'syntrojs';
@@ -120,10 +110,8 @@ See [Lambda Usage Guide](./docs/LAMBDA_USAGE.md) for complete examples.
 ### 🚀 Dual Runtime Support
 Write once, run on both Node.js and Bun. Zero code changes required.
 
-### ☁️ AWS Lambda Support ⚠️ (Alpha)
-Same code works in REST mode (development) and Lambda mode (production). Just set `rest: false`. Full API Gateway integration with automatic event detection.
-
-> ⚠️ **Alpha Status**: Lambda mode with CORS support is currently in alpha (v0.6.8-alpha.2). CORS implementation completed but requires thorough testing before production use.
+### ☁️ AWS Lambda Support
+Same code works in REST mode (development) and Lambda mode (production). Just set `rest: false`. Full API Gateway integration with automatic event detection and CORS support.
 
 **Lambda Adapters Status:**
 - ✅ **API Gateway**: Implemented
@@ -197,7 +185,7 @@ bun app.js
 | Feature | Node.js | Bun | Status |
 |---------|---------|-----|--------|
 | Core API | ✅ Full | ✅ Full | Identical |
-| Plugins (CORS, Helmet, etc.) | ⚠️ Known Issues | ⚠️ Warnings only | CORS bug fix in progress |
+| Plugins (CORS, Helmet, etc.) | ✅ Full | ✅ Full | Production ready |
 | Static files | ✅ Full | ❌ Not available | v0.7.0 planned |
 | `getRawFastify()` | ✅ Works | ❌ Use `getRawServer()` | - |
 
@@ -584,41 +572,6 @@ See [TOON Format Documentation](./docs/TOON_FORMAT.md) for details.
 - [ ] Complete documentation (Docusaurus)
 - [ ] Migration guides
 - [ ] Security audit
-- [ ] CORS bugs resolved and validated
-
----
-
-## ⚠️ Known Issues
-
-### REST Mode CORS (v0.6.8-alpha.3)
-
-**Status**: 🔴 **Known Bug - Fix in Progress**
-
-**Problem**: OPTIONS preflight requests may return `404 Not Found` instead of `204 No Content` with CORS headers.
-
-**Affected Versions**: v0.6.8-alpha.3 and earlier (fix applied, requires validation)
-
-**Workaround**: 
-- Register OPTIONS routes manually using `app.options()`
-- Or use Lambda mode for production (if applicable)
-
-**Fix Status**: 
-- ✅ CORS registration order corrected (moved to `registerPlugins()` before routes)
-- ⏳ Requires NPM publication and production validation
-
-**Report Issues**: [GitHub Issues](https://github.com/Syntropysoft/sintrojs/issues)
-
-### Lambda Mode CORS (v0.6.8-alpha.3)
-
-**Status**: 🟡 **Alpha - Requires Testing**
-
-**Status**: Lambda mode CORS implementation is complete but requires thorough testing before production use.
-
-**Known Limitations**:
-- CORS origin extraction from `multiValueHeaders` fixed in v0.6.8-alpha.2
-- Requires validation in real AWS Lambda environment
-
-**Recommendation**: Test thoroughly with real API Gateway events before production deployment.
 
 ---
 

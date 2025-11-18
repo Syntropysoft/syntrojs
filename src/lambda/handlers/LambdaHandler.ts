@@ -63,6 +63,14 @@ export class LambdaHandler {
   private readonly corsConfig?: boolean | CorsOptions;
 
   constructor(config: LambdaHandlerConfig = {}) {
+    // Guard clause: validate config is an object if provided
+    if (config !== undefined && config !== null) {
+      // Guard clause: validate config is an object
+      if (typeof config !== 'object') {
+        throw new Error('LambdaHandlerConfig must be an object');
+      }
+    }
+
     const routeRegistry = config.routeRegistry || RouteRegistry;
     const validator = config.validator || SchemaValidator;
 
@@ -106,8 +114,18 @@ export class LambdaHandler {
    * @returns Detected event type or 'unknown'
    */
   detectEventType(event: unknown): LambdaEventType {
-    // Guard clause: validate event
-    if (!event || typeof event !== 'object') {
+    // Guard clause: validate event exists
+    if (!event) {
+      return 'unknown';
+    }
+
+    // Guard clause: validate event is an object
+    if (typeof event !== 'object') {
+      return 'unknown';
+    }
+
+    // Guard clause: validate event is not null
+    if (event === null) {
       return 'unknown';
     }
 
@@ -132,7 +150,7 @@ export class LambdaHandler {
     event: unknown,
     context?: unknown,
   ): Promise<LambdaResponse> {
-    // Guard clause: validate event
+    // Guard clause: validate event exists
     if (!event) {
       return {
         statusCode: 500,

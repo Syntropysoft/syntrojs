@@ -272,7 +272,7 @@ describe('ApiGatewayAdapter - Unit Tests (Isolated)', () => {
     });
 
     it('should throw error for invalid event in toRequestDTO', () => {
-      expect(() => adapter['toRequestDTO']({} as any)).toThrow('Invalid API Gateway event');
+      expect(() => adapter['toRequestDTO']({} as any)).toThrow('API Gateway event must have httpMethod property');
     });
   });
 });

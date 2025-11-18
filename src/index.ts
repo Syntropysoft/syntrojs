@@ -20,4 +20,4 @@ export * from './security';
 /**
  * Current version
  */
-export const VERSION = '0.6.8-alpha.3';
+export const VERSION = '0.6.9';

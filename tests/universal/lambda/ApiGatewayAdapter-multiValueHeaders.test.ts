@@ -9,6 +9,7 @@ import { describe, expect, it, beforeEach } from 'vitest';
 import { ApiGatewayAdapter } from '../../../src/lambda/adapters/ApiGatewayAdapter';
 import { RouteRegistry } from '../../../src/application/RouteRegistry';
 import { SchemaValidator } from '../../../src/application/SchemaValidator';
+import { Route } from '../../../src/domain/Route';
 import type { APIGatewayProxyEvent } from '../../../src/lambda/adapters/ApiGatewayAdapter';
 
 describe('ApiGatewayAdapter - multiValueHeaders Support', () => {
@@ -22,9 +23,10 @@ describe('ApiGatewayAdapter - multiValueHeaders Support', () => {
       credentials: true,
     });
 
-    RouteRegistry.register('POST', '/users', {
+    const route = new Route('POST', '/users', {
       handler: () => ({ success: true }),
     });
+    RouteRegistry.register(route);
 
     const event: APIGatewayProxyEvent = {
       httpMethod: 'POST',
@@ -68,9 +70,10 @@ describe('ApiGatewayAdapter - multiValueHeaders Support', () => {
       credentials: true,
     });
 
-    RouteRegistry.register('POST', '/users', {
+    const route = new Route('POST', '/users', {
       handler: () => ({ success: true }),
     });
+    RouteRegistry.register(route);
 
     const event: APIGatewayProxyEvent = {
       httpMethod: 'POST',
@@ -117,9 +120,10 @@ describe('ApiGatewayAdapter - multiValueHeaders Support', () => {
     });
 
     // Register POST route (OPTIONS will be handled automatically for this route)
-    RouteRegistry.register('POST', '/users', {
+    const route = new Route('POST', '/users', {
       handler: () => ({ success: true }),
     });
+    RouteRegistry.register(route);
 
     const event: APIGatewayProxyEvent = {
       httpMethod: 'OPTIONS',

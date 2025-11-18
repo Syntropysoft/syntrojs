@@ -25,9 +25,19 @@ export class Route<
     path: string,
     config: RouteConfig<TParams, TQuery, TBody, TResponse, TDependencies>,
   ) {
-    // Guard clauses
+    // Guard clauses: validate inputs
     if (!method) {
       throw new Error('Route method is required');
+    }
+
+    // Guard clause: validate method is a string
+    if (typeof method !== 'string') {
+      throw new Error('Route method must be a string');
+    }
+
+    // Guard clause: validate method is not empty after trimming
+    if (method.trim().length === 0) {
+      throw new Error('Route method cannot be empty');
     }
 
     if (!path) {
@@ -47,7 +57,10 @@ export class Route<
       throw new Error('Route path must start with /');
     }
 
-    this.method = method;
+    // Normalize method to uppercase for consistency (case-insensitive comparison)
+    // This ensures all methods are stored consistently regardless of input case
+    // After guard clauses, we know method is a valid non-empty string
+    this.method = method.toUpperCase() as HttpMethod;
     this.path = path;
     this.config = config;
     this.handler = config.handler;

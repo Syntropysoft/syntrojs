@@ -31,6 +31,26 @@ class RouteRegistryImpl {
       throw new Error('Route is required');
     }
 
+    // Guard clause: validate route is an object
+    if (typeof route !== 'object') {
+      throw new Error('Route must be an object');
+    }
+
+    // Guard clause: validate route has id property
+    if (!route.id) {
+      throw new Error('Route must have an id property');
+    }
+
+    // Guard clause: validate route.id is a string
+    if (typeof route.id !== 'string') {
+      throw new Error('Route id must be a string');
+    }
+
+    // Guard clause: validate route.id is not empty
+    if (route.id.trim().length === 0) {
+      throw new Error('Route id cannot be empty');
+    }
+
     const routeId = route.id;
 
     // Guard clause: validate no duplicate
@@ -50,13 +70,34 @@ class RouteRegistryImpl {
    * @returns Route if exists, undefined otherwise
    */
   get(method: HttpMethod, path: string): Route | undefined {
-    // Guard clauses
+    // Guard clause: validate method exists
     if (!method) {
       throw new Error('Method is required');
     }
 
+    // Guard clause: validate method is a string
+    if (typeof method !== 'string') {
+      throw new Error('Method must be a string');
+    }
+
+    // Guard clause: validate method is not empty
+    if (method.trim().length === 0) {
+      throw new Error('Method cannot be empty');
+    }
+
+    // Guard clause: validate path exists
     if (!path) {
       throw new Error('Path is required');
+    }
+
+    // Guard clause: validate path is a string
+    if (typeof path !== 'string') {
+      throw new Error('Path must be a string');
+    }
+
+    // Guard clause: validate path is not empty
+    if (path.trim().length === 0) {
+      throw new Error('Path cannot be empty');
     }
 
     // Happy path
@@ -73,13 +114,34 @@ class RouteRegistryImpl {
    * @returns Route if found, undefined otherwise
    */
   find(method: HttpMethod, path: string): Route | undefined {
-    // Guard clauses
+    // Guard clause: validate method exists
     if (!method) {
       throw new Error('Method is required');
     }
 
+    // Guard clause: validate method is a string
+    if (typeof method !== 'string') {
+      throw new Error('Method must be a string');
+    }
+
+    // Guard clause: validate method is not empty
+    if (method.trim().length === 0) {
+      throw new Error('Method cannot be empty');
+    }
+
+    // Guard clause: validate path exists
     if (!path) {
       throw new Error('Path is required');
+    }
+
+    // Guard clause: validate path is a string
+    if (typeof path !== 'string') {
+      throw new Error('Path must be a string');
+    }
+
+    // Guard clause: validate path is not empty
+    if (path.trim().length === 0) {
+      throw new Error('Path cannot be empty');
     }
 
     // Try exact match first (fast path)
@@ -90,9 +152,17 @@ class RouteRegistryImpl {
 
     // Try pattern matching for dynamic routes
     // Functional: filter + find (doesn't mutate)
+    // Normalize method to uppercase for case-insensitive comparison
+    // (route.method is already normalized in Route constructor)
+    const normalizedMethod = method.toUpperCase();
     const matchingRoute = this.getAll().find((route) => {
-      // Guard clause: method must match
-      if (route.method.toUpperCase() !== method.toUpperCase()) {
+      // Guard clause: route must have method (defensive check)
+      if (!route.method) {
+        return false;
+      }
+      
+      // Compare methods (route.method is already uppercase, normalize input method)
+      if (route.method !== normalizedMethod) {
         return false;
       }
 

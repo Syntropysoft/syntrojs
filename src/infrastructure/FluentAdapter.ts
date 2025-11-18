@@ -493,8 +493,13 @@ export class FluentAdapter {
         
         // Mark as registered to prevent double registration
         this.corsPluginRegistered = true;
-      } catch {
-        // Plugin no disponible, continuar sin él (graceful degradation)
+      } catch (error) {
+        // Plugin not available - warn user if CORS is configured
+        if (this.shouldRegisterCors()) {
+          console.error('\n⚠️  CORS is configured but @fastify/cors is not installed.');
+          console.error('   Install with: npm install @fastify/cors\n');
+        }
+        // Continue without it (graceful degradation)
       }
     }
   }

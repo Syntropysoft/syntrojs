@@ -130,7 +130,7 @@ describe('ApiGatewayAdapter', () => {
 
     it('should throw error for invalid event', () => {
       expect(() => adapter['toRequestDTO'](null as any)).toThrow('API Gateway event is required');
-      expect(() => adapter['toRequestDTO']({} as any)).toThrow('Invalid API Gateway event');
+      expect(() => adapter['toRequestDTO']({} as any)).toThrow('API Gateway event must have httpMethod property');
     });
   });
 

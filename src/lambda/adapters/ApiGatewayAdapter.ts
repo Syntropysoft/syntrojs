@@ -204,13 +204,44 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
    * @returns RequestDTO
    */
   toRequestDTO(event: APIGatewayProxyEvent): RequestDTO {
-    // Guard clause: validate event
+    // Guard clause: validate event exists
     if (!event) {
       throw new Error('API Gateway event is required');
     }
 
-    if (!event.httpMethod || !event.path) {
-      throw new Error('Invalid API Gateway event: missing httpMethod or path');
+    // Guard clause: validate event is an object
+    if (typeof event !== 'object') {
+      throw new Error('API Gateway event must be an object');
+    }
+
+    // Guard clause: validate httpMethod exists
+    if (!event.httpMethod) {
+      throw new Error('API Gateway event must have httpMethod property');
+    }
+
+    // Guard clause: validate httpMethod is a string
+    if (typeof event.httpMethod !== 'string') {
+      throw new Error('API Gateway event httpMethod must be a string');
+    }
+
+    // Guard clause: validate httpMethod is not empty
+    if (event.httpMethod.trim().length === 0) {
+      throw new Error('API Gateway event httpMethod cannot be empty');
+    }
+
+    // Guard clause: validate path exists
+    if (!event.path) {
+      throw new Error('API Gateway event must have path property');
+    }
+
+    // Guard clause: validate path is a string
+    if (typeof event.path !== 'string') {
+      throw new Error('API Gateway event path must be a string');
+    }
+
+    // Guard clause: validate path is not empty
+    if (event.path.trim().length === 0) {
+      throw new Error('API Gateway event path cannot be empty');
     }
 
     // Merge headers from both headers and multiValueHeaders

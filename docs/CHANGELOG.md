@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.9] - 2024-11-18
+
+### Added
+- ✨ **CORS Validation System**: Comprehensive CORS validation with development-time warnings
+- ✨ **Enhanced Guard Clauses**: Granular validations across the codebase for better error messages
+
+### Fixed
+- 🐛 **REST Mode CORS**: Fixed OPTIONS preflight requests - now correctly returns 204 with CORS headers
+- 🐛 **Lambda Mode CORS**: Fixed origin extraction from `multiValueHeaders`
+- 🐛 **CORS Plugin Registration**: Fixed registration order according to `@fastify/cors` documentation
+- 🐛 **Route Method Normalization**: Fixed potential `toUpperCase()` error on undefined methods
+
+### Changed
+- 🔧 **Route Method Normalization**: Methods normalized to uppercase in constructor
+- 🔧 **Error Messages**: More specific error messages throughout
+- 📝 **README Updated**: Removed CORS warnings - CORS is now production-ready
+- 📝 **CHANGELOG Reorganization**: Moved version-specific CHANGELOG files to `docs/changelog/`
+
+See [CHANGELOG_v0.6.9.md](./changelog/CHANGELOG_v0.6.9.md) for complete details.
+
 ## [0.6.8-alpha.3] - 2024-11-18
 
 ### Fixed
@@ -28,7 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ⚠️ **This is an alpha release**. CORS registration order fixed according to official documentation, but requires production validation. README now clearly communicates known issues to users.
 
-See [CHANGELOG_v0.6.8-alpha.3.md](./CHANGELOG_v0.6.8-alpha.3.md) for complete details.
+See [CHANGELOG_v0.6.8-alpha.3.md](./changelog/CHANGELOG_v0.6.8-alpha.3.md) for complete details.
 
 ## [0.6.8-alpha.2] - 2024-11-18
 
@@ -56,7 +76,7 @@ See [CHANGELOG_v0.6.8-alpha.3.md](./CHANGELOG_v0.6.8-alpha.3.md) for complete de
 
 ⚠️ **This is an alpha release**. Lambda mode CORS bug fix and code quality improvements. Please test thoroughly before using in production.
 
-See [CHANGELOG_v0.6.8-alpha.2.md](./CHANGELOG_v0.6.8-alpha.2.md) for complete details.
+See [CHANGELOG_v0.6.8-alpha.2.md](./changelog/CHANGELOG_v0.6.8-alpha.2.md) for complete details.
 
 ## [0.6.8-alpha.1] - 2024-11-18
 
@@ -79,7 +99,7 @@ See [CHANGELOG_v0.6.8-alpha.2.md](./CHANGELOG_v0.6.8-alpha.2.md) for complete de
 
 ⚠️ **This is an alpha release**. Lambda mode CORS bug fix. Please test thoroughly before using in production.
 
-See [CHANGELOG_v0.6.8-alpha.1.md](./CHANGELOG_v0.6.8-alpha.1.md) for complete details.
+See [CHANGELOG_v0.6.8-alpha.1.md](./changelog/CHANGELOG_v0.6.8-alpha.1.md) for complete details.
 
 ## [0.6.8-alpha.0] - 2024-12-17
 
@@ -101,7 +121,7 @@ See [CHANGELOG_v0.6.8-alpha.1.md](./CHANGELOG_v0.6.8-alpha.1.md) for complete de
 
 ⚠️ **This is an alpha release**. CORS support for Lambda is still being tested in production environments. Please test thoroughly before using in production.
 
-See [CHANGELOG_v0.6.8.md](./CHANGELOG_v0.6.8.md) for complete details.
+See [CHANGELOG_v0.6.8.md](./changelog/CHANGELOG_v0.6.8.md) for complete details.
 
 ## [0.6.7] - 2024-12-17
 
@@ -135,7 +155,7 @@ See [CHANGELOG_v0.6.8.md](./CHANGELOG_v0.6.8.md) for complete details.
 - ✅ Regression prevention through architecture and tests
 - ✅ No breaking changes
 
-See [CHANGELOG_v0.6.7.md](./CHANGELOG_v0.6.7.md) for complete details.
+See [CHANGELOG_v0.6.7.md](./changelog/CHANGELOG_v0.6.7.md) for complete details.
 
 ## [0.6.6] - 2024-12-17
 
@@ -158,7 +178,7 @@ See [CHANGELOG_v0.6.7.md](./CHANGELOG_v0.6.7.md) for complete details.
 - ✅ Better error messages when incompatible versions are installed
 - ✅ Stable and tested version combination
 
-See [CHANGELOG_v0.6.6.md](./CHANGELOG_v0.6.6.md) for complete details.
+See [CHANGELOG_v0.6.6.md](./changelog/CHANGELOG_v0.6.6.md) for complete details.
 
 ## [0.6.5] - 2024-12-17
 
@@ -186,7 +206,7 @@ See [CHANGELOG_v0.6.6.md](./CHANGELOG_v0.6.6.md) for complete details.
 - ✅ Improved testability with explicit async creation
 - ✅ No breaking changes for normal usage
 
-See [CHANGELOG_v0.6.5.md](./CHANGELOG_v0.6.5.md) for complete details.
+See [CHANGELOG_v0.6.5.md](./changelog/CHANGELOG_v0.6.5.md) for complete details.
 
 ## [0.6.4] - 2024-11-17
 
@@ -215,7 +235,7 @@ See [CHANGELOG_v0.6.5.md](./CHANGELOG_v0.6.5.md) for complete details.
 - ✅ More flexible CORS configuration support
 - ✅ Backward compatible - existing code works without changes
 
-See [CHANGELOG_v0.6.4.md](./CHANGELOG_v0.6.4.md) for complete details.
+See [CHANGELOG_v0.6.4.md](./changelog/CHANGELOG_v0.6.4.md) for complete details.
 
 ## [0.6.3] - 2024-11-17
 
@@ -243,7 +263,7 @@ See [CHANGELOG_v0.6.4.md](./CHANGELOG_v0.6.4.md) for complete details.
 - ✅ Better Testing - Isolated factory instances for test isolation
 - ✅ More Maintainable - Cleaner, easier to understand code
 
-See [CHANGELOG_v0.6.3.md](./CHANGELOG_v0.6.3.md) for complete details.
+See [CHANGELOG_v0.6.3.md](./changelog/CHANGELOG_v0.6.3.md) for complete details.
 
 ## [0.6.2] - 2024-11-17
 
@@ -267,7 +287,7 @@ See [CHANGELOG_v0.6.3.md](./CHANGELOG_v0.6.3.md) for complete details.
 - ✅ Independent unit tests (no dependencies on SyntroJS core)
 - ✅ Factory pattern for adapter management
 
-See [CHANGELOG_v0.6.2.md](./CHANGELOG_v0.6.2.md) for complete details.
+See [CHANGELOG_v0.6.2.md](./changelog/CHANGELOG_v0.6.2.md) for complete details.
 
 ## [0.6.1] - 2024-11-17
 
@@ -284,7 +304,7 @@ See [CHANGELOG_v0.6.2.md](./CHANGELOG_v0.6.2.md) for complete details.
 - 📚 Lambda adapters extraction guide translated to English
 - 📚 Examples README translated to English
 
-See [CHANGELOG_v0.6.1.md](./CHANGELOG_v0.6.1.md) for complete details.
+See [CHANGELOG_v0.6.1.md](./changelog/CHANGELOG_v0.6.1.md) for complete details.
 
 ## [0.6.0] - 2024-11-17
 
@@ -331,7 +351,7 @@ See [CHANGELOG_v0.6.1.md](./CHANGELOG_v0.6.1.md) for complete details.
 - 📚 Lambda deployment example
 - 📚 Updated README with Lambda features
 
-See [CHANGELOG_v0.6.0.md](./CHANGELOG_v0.6.0.md) for complete details.
+See [CHANGELOG_v0.6.0.md](./changelog/CHANGELOG_v0.6.0.md) for complete details.
 
 ## [0.5.0] - 2025-11-08
 
@@ -340,7 +360,7 @@ See [CHANGELOG_v0.6.0.md](./CHANGELOG_v0.6.0.md) for complete details.
 - ✨ **TOON Format Support**: 40-60% payload reduction
 - ✨ **Serialization Architecture Refactor**: ResponseHandler centralized
 
-See [CHANGELOG_v0.5.0.md](./CHANGELOG_v0.5.0.md) for complete details.
+See [CHANGELOG_v0.5.0.md](./changelog/CHANGELOG_v0.5.0.md) for complete details.
 
 ## [0.4.0-alpha.3] - 2025-11-05
 

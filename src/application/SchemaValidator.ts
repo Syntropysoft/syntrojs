@@ -36,6 +36,16 @@ class SchemaValidatorImpl {
       throw new Error('Schema is required');
     }
 
+    // Guard clause: validate schema is an object
+    if (typeof schema !== 'object') {
+      throw new Error('Schema must be an object');
+    }
+
+    // Guard clause: validate schema has safeParse method
+    if (typeof schema.safeParse !== 'function') {
+      throw new Error('Schema must be a valid Zod schema with safeParse method');
+    }
+
     // Validate with Zod (safeParse doesn't throw)
     const result = schema.safeParse(data);
 

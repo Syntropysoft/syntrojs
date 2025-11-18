@@ -43,6 +43,12 @@ import {
 } from '../lambda/handlers/LambdaHandler';
 import type { LambdaResponse } from '../lambda/types';
 import type { CorsOptions } from '../plugins/cors';
+import {
+  validateCorsConfiguration,
+  displayCorsValidationMessages,
+  formatCorsValidationMessages,
+  type CorsConfigContext,
+} from '../application/CorsValidator';
 
 /**
  * Route definition for object-based API
@@ -210,19 +216,60 @@ export class SyntroJS {
    * @throws Error if configuration is invalid
    */
   private validateConfig(config: SyntroJSConfig): SyntroJSConfig {
-    // Guard clause: config must be an object
-    if (!config || typeof config !== 'object') {
-      throw new Error('Configuration must be a valid object');
+    // Guard clause: validate config exists
+    if (!config) {
+      throw new Error('Configuration is required');
+    }
+
+    // Guard clause: validate config is an object
+    if (typeof config !== 'object') {
+      throw new Error('Configuration must be an object');
+    }
+
+    // Guard clause: validate config is not null
+    if (config === null) {
+      throw new Error('Configuration cannot be null');
     }
 
     // Guard clause: validate runtime if provided
-    if (config.runtime && !['auto', 'node', 'bun'].includes(config.runtime)) {
-      throw new Error('Runtime must be "auto", "node", or "bun"');
+    if (config.runtime !== undefined) {
+      // Guard clause: validate runtime is a string
+      if (typeof config.runtime !== 'string') {
+        throw new Error('Runtime must be a string');
+      }
+
+      // Guard clause: validate runtime is a valid value
+      if (!['auto', 'node', 'bun'].includes(config.runtime)) {
+        throw new Error('Runtime must be "auto", "node", or "bun"');
+      }
     }
 
     // Guard clause: validate fluentConfig if provided
-    if (config.fluentConfig && typeof config.fluentConfig !== 'object') {
-      throw new Error('fluentConfig must be a valid object');
+    if (config.fluentConfig !== undefined) {
+      // Guard clause: validate fluentConfig is an object
+      if (typeof config.fluentConfig !== 'object') {
+        throw new Error('fluentConfig must be an object');
+      }
+
+      // Guard clause: validate fluentConfig is not null
+      if (config.fluentConfig === null) {
+        throw new Error('fluentConfig cannot be null');
+      }
+    }
+
+    // Guard clause: validate CORS configuration structure (synchronous check)
+    // This catches obvious misconfigurations early
+    const isRestMode = config.rest !== false;
+    const hasDirectCors = 'cors' in config && config.cors !== undefined;
+    const hasFluentCors =
+      config.fluentConfig && 'cors' in config.fluentConfig && config.fluentConfig.cors !== undefined;
+
+    if (isRestMode && hasDirectCors && !hasFluentCors) {
+      console.warn(
+        '\n⚠️  CORS Configuration Warning:\n' +
+          '   CORS should be configured in `fluentConfig.cors`, not directly in `cors`.\n' +
+          '   Example: `new SyntroJS({ fluentConfig: { cors: { ... } } })`\n',
+      );
     }
 
     // Return validated config (immutable)
@@ -688,6 +735,47 @@ export class SyntroJS {
   }
 
   /**
+   * Validate CORS configuration and dependencies
+   *
+   * Principles Applied:
+   * - SOLID: Single Responsibility - validates CORS configuration only
+   * - DDD: Domain Service - uses CorsValidator domain service
+   * - Functional: Pure functions compose validation logic
+   * - Guard Clauses: Early return if CORS is not configured
+   *
+   * @private
+   */
+  private async validateCorsConfiguration(): Promise<void> {
+    // Guard clause: only validate in REST mode (Lambda mode uses different CORS handling)
+    if (!this.isRestMode) {
+      return;
+    }
+
+    // Guard clause: only validate if CORS is configured
+    const corsConfig = this.config.fluentConfig?.cors;
+    if (!corsConfig) {
+      return;
+    }
+
+    // Build validation context (pure data structure)
+    const context: CorsConfigContext = {
+      corsConfig,
+      mode: 'rest',
+      isInFluentConfig: true,
+      isDirectConfig: 'cors' in this.config && this.config.cors !== undefined,
+    };
+
+    // Validate using domain service (pure function composition)
+    const result = await validateCorsConfiguration(context);
+
+    // Display warnings/errors if any (side effect only for user feedback)
+    if (result.warnings.length > 0 || result.errors.length > 0) {
+      const messages = formatCorsValidationMessages(result);
+      displayCorsValidationMessages(messages);
+    }
+  }
+
+  /**
    * Starts the server
    *
    * @param port - Port to listen on
@@ -713,6 +801,10 @@ export class SyntroJS {
 
     // Validate production configuration
     this.validateProductionConfig();
+
+    // Validate CORS configuration and dependencies (async)
+    // This ensures developers are warned about CORS issues before server starts
+    await this.validateCorsConfiguration();
 
     // Create server instance if not already created (lazy initialization)
     // This ensures plugins (including CORS) are registered before routes
