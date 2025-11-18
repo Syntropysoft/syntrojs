@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.10] - 2024-11-18
+
+### Changed
+- 🔧 **Version**: Incremented to 0.6.10 for npm publication
+- 📝 **Documentation**: Improved npm badge link and package visibility
+
+See [CHANGELOG_v0.6.10.md](./changelog/CHANGELOG_v0.6.10.md) for complete details.
+
 ## [0.6.9] - 2024-11-18
 
 ### Added
