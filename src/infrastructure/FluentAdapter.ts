@@ -148,46 +148,36 @@ export class FluentAdapter {
   }
 
   /**
-   * Register CORS plugin AFTER routes are registered
-   * This ensures OPTIONS requests are handled correctly for all routes
+   * Register CORS plugin (DEPRECATED: CORS is now registered in registerPlugins())
    * 
-   * Principles:
-   * - Single Responsibility: Only registers CORS plugin
-   * - Guard Clauses: Early validation
-   * - Functional: Uses pure functions for option building
-   *
+   * This method is kept for backward compatibility but is no longer used.
+   * CORS plugin is now registered in registerPlugins() BEFORE routes are registered,
+   * as required by @fastify/cors official documentation.
+   * 
+   * @deprecated Use registerPlugins() instead. CORS is registered automatically there.
    * @param fastify - Fastify instance
    */
   async registerCorsPlugin(fastify: FastifyInstance): Promise<void> {
-    // Guard clause: only register if CORS is enabled (pure predicate)
-    if (!this.shouldRegisterCors()) {
-      return;
-    }
-
-    // Guard clause: prevent double registration (critical for preventing regressions)
-    if (this.corsPluginRegistered) {
-      // CORS already registered - this is a no-op to prevent errors
-      // This prevents the bug from reappearing if someone calls this method multiple times
-      return;
-    }
-
     // Guard clause: validate Fastify instance
     if (!fastify) {
       throw new Error('Fastify instance is required');
     }
 
+    // Guard clause: prevent double registration
+    if (this.corsPluginRegistered) {
+      return; // Already registered in registerPlugins()
+    }
+
+    // Guard clause: only register if CORS is enabled (pure predicate)
+    if (!this.shouldRegisterCors()) {
+      return;
+    }
+
+    // Register CORS plugin (fallback for backward compatibility)
     try {
       const corsPlugin = await import('@fastify/cors');
-      
-      // Pure function: build options from configuration (no side effects)
       const corsOptions = this.buildCorsOptions(this.config.cors!);
-
-      // Register CORS plugin with options AFTER routes
-      // This ensures OPTIONS requests are handled correctly for all registered routes
-      // Note: fastify.register() is a necessary side effect for plugin registration
       await fastify.register(corsPlugin.default, corsOptions as any);
-      
-      // Mark as registered to prevent double registration
       this.corsPluginRegistered = true;
     } catch {
       // Plugin no disponible, continuar sin él (graceful degradation)
@@ -452,21 +442,24 @@ export class FluentAdapter {
       }
     }
 
-    // ⚠️ CRITICAL: CORS plugin MUST NOT be registered here
-    // It MUST be registered AFTER routes are registered to handle OPTIONS correctly
+    // ⚠️ CRITICAL: CORS plugin MUST be registered HERE, BEFORE routes
+    // According to @fastify/cors official documentation, the plugin must be registered
+    // BEFORE routes are registered to properly handle OPTIONS preflight requests.
     // 
     // Architecture (SOLID, DDD, Functional Programming):
-    // - Single Responsibility: registerPlugins() handles core plugins only
-    // - CORS registration is handled separately via registerCorsPlugin() after routes
-    // - Functional: No side effects here, CORS registration is explicit and controlled
-    // - Guard Clauses: registerCorsPlugin() has guard clauses to prevent double registration
+    // - Single Responsibility: registerPlugins() handles all plugins including CORS
+    // - Functional: Uses pure function buildCorsOptions() for configuration
+    // - Guard Clauses: shouldRegisterCors() predicate prevents unnecessary registration
     //
     // Order of operations (enforced by architecture):
-    // 1. registerPlugins() - Core plugins (formbody, multipart, compression, helmet, rateLimit)
-    // 2. registerAllRoutes() - All routes registered
-    // 3. registerCorsPlugin() - CORS registered AFTER routes (handles OPTIONS correctly)
+    // 1. registerPlugins() - All plugins including CORS (formbody, multipart, compression, helmet, rateLimit, CORS)
+    // 2. registerAllRoutes() - All routes registered (CORS plugin can now intercept OPTIONS)
     //
-    // See: registerCorsPlugin() method for CORS registration
+    // Principles Applied:
+    // - SOLID: Single Responsibility - registerPlugins() handles plugin registration
+    // - DDD: Domain Service - FluentAdapter encapsulates plugin registration logic
+    // - Functional: Pure functions (buildCorsOptions, shouldRegisterCors) compose registration
+    // - Guard Clauses: Early validation prevents unnecessary work
 
     if (this.config.helmet) {
       try {
@@ -481,6 +474,27 @@ export class FluentAdapter {
         await fastify.register(import('@fastify/rate-limit'));
       } catch {
         // Plugin no disponible, continuar sin él
+      }
+    }
+
+    // Register CORS plugin BEFORE routes (required by @fastify/cors documentation)
+    // This ensures OPTIONS preflight requests are handled correctly for all routes
+    // Principles: Uses pure functions (shouldRegisterCors, buildCorsOptions) and guard clauses
+    if (this.shouldRegisterCors() && !this.corsPluginRegistered) {
+      try {
+        const corsPlugin = await import('@fastify/cors');
+        
+        // Pure function: build options from configuration (no side effects)
+        const corsOptions = this.buildCorsOptions(this.config.cors!);
+        
+        // Register CORS plugin with options BEFORE routes
+        // This allows the plugin to intercept OPTIONS requests for all routes
+        await fastify.register(corsPlugin.default, corsOptions as any);
+        
+        // Mark as registered to prevent double registration
+        this.corsPluginRegistered = true;
+      } catch {
+        // Plugin no disponible, continuar sin él (graceful degradation)
       }
     }
   }

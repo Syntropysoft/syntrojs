@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.8-alpha.3] - 2024-11-18
+
+### Fixed
+
+- 🐛 **REST Mode CORS Registration Order**: Fixed CORS plugin registration order (now registered BEFORE routes as per @fastify/cors documentation)
+- 🐛 **CORS OPTIONS 404**: CORS plugin now registered in correct order to handle OPTIONS preflight requests
+
+### Changed
+
+- 📝 **README Completely Updated**: Changed status to "Pre-1.0 (Known Issues)" with comprehensive Known Issues section
+- 📝 **Transparency**: Clear warnings about CORS bugs and workarounds documented
+- 📝 **Documentation**: Added Known Issues section with REST Mode and Lambda Mode CORS status
+
+### Deprecated
+
+- ⚠️ **registerCorsPlugin()**: Method deprecated (CORS now registered in registerPlugins())
+
+### Alpha Status
+
+⚠️ **This is an alpha release**. CORS registration order fixed according to official documentation, but requires production validation. README now clearly communicates known issues to users.
+
+See [CHANGELOG_v0.6.8-alpha.3.md](./CHANGELOG_v0.6.8-alpha.3.md) for complete details.
+
 ## [0.6.8-alpha.2] - 2024-11-18
 
 ### Fixed
