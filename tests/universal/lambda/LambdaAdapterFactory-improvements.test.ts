@@ -5,15 +5,15 @@
  * and createLambdaAdapterFactory()
  */
 
-import { describe, expect, it, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { EventBridgeAdapter } from '../../../src/lambda/adapters/EventBridgeAdapter';
 import {
-  LambdaAdapterFactory,
   createLambdaAdapterFactory,
+  LambdaAdapterFactory,
   lambdaAdapterFactory,
 } from '../../../src/lambda/adapters/LambdaAdapterFactory';
-import { SQSAdapter } from '../../../src/lambda/adapters/SQSAdapter';
 import { S3Adapter } from '../../../src/lambda/adapters/S3Adapter';
-import { EventBridgeAdapter } from '../../../src/lambda/adapters/EventBridgeAdapter';
+import { SQSAdapter } from '../../../src/lambda/adapters/SQSAdapter';
 import type { SQSEvent } from '../../../src/lambda/types';
 
 describe('LambdaAdapterFactory - Improvements', () => {
@@ -235,4 +235,3 @@ describe('LambdaAdapterFactory - Improvements', () => {
     });
   });
 });
-

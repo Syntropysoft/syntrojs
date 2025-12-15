@@ -11,9 +11,9 @@
  * - Guard Clauses: Early validation, Fail Fast
  */
 
-import { describe, expect, it, beforeEach } from 'vitest';
-import { LambdaAdapterFactory } from '../../../src/lambda/adapters/LambdaAdapterFactory';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { ILambdaAdapter } from '../../../src/domain/interfaces/ILambdaAdapter';
+import { LambdaAdapterFactory } from '../../../src/lambda/adapters/LambdaAdapterFactory';
 import type { LambdaResponse } from '../../../src/lambda/types';
 
 // Mock adapter for testing
@@ -232,4 +232,3 @@ describe('LambdaAdapterFactory - Unit Tests', () => {
     });
   });
 });
-

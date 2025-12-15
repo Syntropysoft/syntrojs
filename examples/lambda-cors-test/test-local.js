@@ -1,6 +1,6 @@
 /**
  * Local Test Script for Lambda CORS
- * 
+ *
  * Tests the Lambda handler locally with different event configurations
  * to verify CORS origin extraction works correctly
  */
@@ -17,20 +17,20 @@ async function testEvent(eventFile, description) {
   console.log(`\n${'='.repeat(60)}`);
   console.log(`Testing: ${description}`);
   console.log(`${'='.repeat(60)}`);
-  
+
   const event = JSON.parse(readFileSync(join(__dirname, eventFile), 'utf-8'));
-  
+
   console.log('\n📥 Event:');
   console.log(JSON.stringify(event, null, 2));
-  
+
   try {
     const response = await handler(event, {});
-    
+
     console.log('\n📤 Response:');
     console.log(`Status Code: ${response.statusCode}`);
     console.log('\nHeaders:');
     console.log(JSON.stringify(response.headers, null, 2));
-    
+
     if (response.body) {
       console.log('\nBody:');
       try {
@@ -40,12 +40,12 @@ async function testEvent(eventFile, description) {
         console.log(response.body);
       }
     }
-    
+
     // Verify CORS headers
     console.log('\n✅ CORS Headers Check:');
     const origin = event.headers?.Origin || event.headers?.origin || event.headers?.ORIGIN;
     const corsOrigin = response.headers?.['Access-Control-Allow-Origin'];
-    
+
     if (origin && corsOrigin) {
       if (corsOrigin === origin || corsOrigin === '*') {
         console.log(`✅ Access-Control-Allow-Origin: ${corsOrigin}`);
@@ -62,15 +62,18 @@ async function testEvent(eventFile, description) {
     } else {
       console.log('⚠️  No Origin header in request or response');
     }
-    
+
     if (response.headers?.['Access-Control-Allow-Credentials']) {
-      console.log(`✅ Access-Control-Allow-Credentials: ${response.headers['Access-Control-Allow-Credentials']}`);
+      console.log(
+        `✅ Access-Control-Allow-Credentials: ${response.headers['Access-Control-Allow-Credentials']}`,
+      );
     }
-    
+
     if (response.headers?.['Access-Control-Allow-Methods']) {
-      console.log(`✅ Access-Control-Allow-Methods: ${response.headers['Access-Control-Allow-Methods']}`);
+      console.log(
+        `✅ Access-Control-Allow-Methods: ${response.headers['Access-Control-Allow-Methods']}`,
+      );
     }
-    
   } catch (error) {
     console.error('\n❌ Error:', error.message);
     console.error(error.stack);
@@ -80,20 +83,22 @@ async function testEvent(eventFile, description) {
 async function runTests() {
   console.log('\n🧪 Lambda CORS End-to-End Test');
   console.log('Testing CORS origin extraction fix (case-insensitive headers)\n');
-  
+
   // Test 1: Normal POST request with Origin header
   await testEvent('test-event.json', 'POST Request with Origin header');
-  
+
   // Test 2: OPTIONS preflight request
   await testEvent('test-event-options.json', 'OPTIONS Preflight Request');
-  
+
   // Test 3: POST request with uppercase ORIGIN header (case-insensitive test)
-  await testEvent('test-event-case-insensitive.json', 'POST Request with ORIGIN header (uppercase)');
-  
+  await testEvent(
+    'test-event-case-insensitive.json',
+    'POST Request with ORIGIN header (uppercase)',
+  );
+
   console.log('\n' + '='.repeat(60));
   console.log('✅ All tests completed');
   console.log('='.repeat(60) + '\n');
 }
 
 runTests().catch(console.error);
-

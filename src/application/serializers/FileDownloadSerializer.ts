@@ -5,7 +5,11 @@
  * Handles serialization of file download responses
  */
 
-import type { IResponseSerializer, SerializedResponseDTO } from '../../domain/interfaces';
+import type {
+  IResponseSerializer,
+  SerializedResponseDTO,
+  SerializerNext,
+} from '../../domain/interfaces';
 import { isFileDownloadResponse } from '../../infrastructure/FileDownloadHelper';
 
 /**
@@ -32,7 +36,12 @@ export class FileDownloadSerializer implements IResponseSerializer {
    * @param _statusCode - Ignored (uses result.statusCode)
    * @returns HTTP Response with file data
    */
-  serialize(result: any, _statusCode: number, request: Request): SerializedResponseDTO {
+  serialize(
+    result: any,
+    _statusCode: number,
+    request: Request,
+    _next?: SerializerNext,
+  ): SerializedResponseDTO {
     // Extract headers
     const headers: Record<string, string> = {};
     for (const [key, value] of Object.entries(result.headers)) {

@@ -53,9 +53,7 @@ export function isCorsEnabled(corsConfig?: boolean | CorsOptions): boolean {
  * @param context - CORS configuration context
  * @returns Validation result
  */
-export function validateCorsConfigStructure(
-  context: CorsConfigContext,
-): CorsValidationResult {
+export function validateCorsConfigStructure(context: CorsConfigContext): CorsValidationResult {
   // Guard clause: validate context exists
   if (!context) {
     throw new Error('CORS configuration context is required');
@@ -204,9 +202,7 @@ export async function validateCorsDependencies(
   // Check if @fastify/cors is installed
   const isInstalled = await isFastifyCorsInstalled();
   if (!isInstalled) {
-    errors.push(
-      '@fastify/cors is not installed. Install with: npm install @fastify/cors@^9.0.0',
-    );
+    errors.push('@fastify/cors is not installed. Install with: npm install @fastify/cors@^9.0.0');
     return { isValid: false, warnings, errors };
   }
 
@@ -233,9 +229,7 @@ export async function validateCorsDependencies(
  * @param result - Validation result
  * @returns Formatted message array
  */
-export function formatCorsValidationMessages(
-  result: CorsValidationResult,
-): string[] {
+export function formatCorsValidationMessages(result: CorsValidationResult): string[] {
   const messages: string[] = [];
 
   if (result.errors.length > 0) {
@@ -299,4 +293,3 @@ export async function validateCorsConfiguration(
     errors: [...structureResult.errors, ...dependenciesResult.errors],
   };
 }
-

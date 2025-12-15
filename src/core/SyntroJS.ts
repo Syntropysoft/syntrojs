@@ -7,6 +7,12 @@
  */
 
 import type { FastifyInstance } from 'fastify';
+import {
+  type CorsConfigContext,
+  displayCorsValidationMessages,
+  formatCorsValidationMessages,
+  validateCorsConfiguration,
+} from '../application/CorsValidator';
 import { DocsRenderer } from '../application/DocsRenderer';
 import { ErrorHandler } from '../application/ErrorHandler';
 import { MiddlewareRegistry } from '../application/MiddlewareRegistry';
@@ -15,6 +21,7 @@ import { OpenAPIGenerator } from '../application/OpenAPIGenerator';
 import { RouteRegistry } from '../application/RouteRegistry';
 import { SchemaValidator } from '../application/SchemaValidator';
 import { SerializerRegistry } from '../application/SerializerRegistry';
+import { SyntroRouter } from '../application/SyntroRouter';
 import {
   BufferSerializer,
   CustomResponseSerializer,
@@ -24,6 +31,7 @@ import {
   StreamSerializer,
 } from '../application/serializers';
 import { WebSocketRegistry } from '../application/WebSocketRegistry';
+import type { IResponseSerializer } from '../domain/interfaces';
 import { Route } from '../domain/Route';
 import type {
   ExceptionHandler,
@@ -37,18 +45,9 @@ import { BunAdapter } from '../infrastructure/BunAdapter';
 import { FluentAdapter } from '../infrastructure/FluentAdapter';
 import type { LoggerIntegrationConfig } from '../infrastructure/LoggerIntegration';
 import { RuntimeOptimizer } from '../infrastructure/RuntimeOptimizer';
-import {
-  LambdaHandler,
-  type LambdaAdaptersConfig,
-} from '../lambda/handlers/LambdaHandler';
+import { type LambdaAdaptersConfig, LambdaHandler } from '../lambda/handlers/LambdaHandler';
 import type { LambdaResponse } from '../lambda/types';
 import type { CorsOptions } from '../plugins/cors';
-import {
-  validateCorsConfiguration,
-  displayCorsValidationMessages,
-  formatCorsValidationMessages,
-  type CorsConfigContext,
-} from '../application/CorsValidator';
 
 /**
  * Route definition for object-based API
@@ -262,7 +261,9 @@ export class SyntroJS {
     const isRestMode = config.rest !== false;
     const hasDirectCors = 'cors' in config && config.cors !== undefined;
     const hasFluentCors =
-      config.fluentConfig && 'cors' in config.fluentConfig && config.fluentConfig.cors !== undefined;
+      config.fluentConfig &&
+      'cors' in config.fluentConfig &&
+      config.fluentConfig.cors !== undefined;
 
     if (isRestMode && hasDirectCors && !hasFluentCors) {
       console.warn(
@@ -286,13 +287,14 @@ export class SyntroJS {
 
     // Register default serializers in priority order
     // Content-type based serializers include their MIME types for O(1) lookup
+    // Priorities are set via DEFAULT_PRIORITIES in SerializerRegistry
     registry
       .register(new CustomResponseSerializer(), 'CustomResponse')
       .register(new RedirectSerializer(), 'Redirect')
       .register(new FileDownloadSerializer(), 'FileDownload')
       .register(new StreamSerializer(), 'Stream')
       .register(new BufferSerializer(), 'Buffer')
-      .register(new JsonSerializer(), 'Json', ['application/json']); // Last: default fallback
+      .register(new JsonSerializer(), 'Json', { contentTypes: ['application/json'] }); // Last: default fallback
 
     return registry;
   }
@@ -368,7 +370,7 @@ export class SyntroJS {
         .withDependencyInjection(true)
         .withBackgroundTasks(true)
         .withOpenAPI(true);
-      
+
       // Use syntroLogger from main config if available
       if (this.config.syntroLogger) {
         configuredAdapter = configuredAdapter.withSyntroLogger(
@@ -377,7 +379,7 @@ export class SyntroJS {
             : this.config.syntroLogger,
         );
       }
-      
+
       return configuredAdapter;
     }
 
@@ -437,10 +439,7 @@ export class SyntroJS {
    * Pure function: returns adapter type based on runtime
    * Returns null in Lambda mode
    */
-  private selectOptimalAdapter():
-    | typeof FluentAdapter
-    | typeof BunAdapter
-    | null {
+  private selectOptimalAdapter(): typeof FluentAdapter | typeof BunAdapter | null {
     // Guard clause: Lambda mode doesn't need adapter
     if (!this.isRestMode) {
       return null;
@@ -574,6 +573,44 @@ export class SyntroJS {
     config: RouteConfig<TParams, TQuery, TBody, TResponse>,
   ): this {
     return this.registerRoute('OPTIONS', path, config);
+  }
+
+  /**
+   * Include a router in the application
+   *
+   * All routes from the router will be registered with the application.
+   * Router middleware will also be registered.
+   *
+   * @param router - SyntroRouter instance to include
+   * @returns this (for chaining)
+   *
+   * @example
+   * ```typescript
+   * const apiRouter = new SyntroRouter('/api/v1');
+   * apiRouter.get('/users', { handler: () => getUsers() });
+   * apiRouter.post('/users', { handler: (ctx) => createUser(ctx.body) });
+   *
+   * app.include(apiRouter);
+   * // Routes registered: GET /api/v1/users, POST /api/v1/users
+   * ```
+   */
+  include(router: SyntroRouter): this {
+    // Guard clause: validate router exists
+    if (!router) {
+      throw new Error('Router is required');
+    }
+
+    // Guard clause: validate router is an instance of SyntroRouter
+    if (!(router instanceof SyntroRouter)) {
+      throw new Error('Router must be an instance of SyntroRouter');
+    }
+
+    // Routes are already registered by SyntroRouter when created
+    // RouteRegistry is a singleton, so routes are immediately available
+    // This method just validates the router is included in the app
+    // No need to re-register routes - they're already in RouteRegistry
+
+    return this;
   }
 
   /**
@@ -785,9 +822,7 @@ export class SyntroJS {
   async listen(port: number, host = '::'): Promise<string> {
     // Guard clause: validate mode
     if (!this.isRestMode) {
-      throw new Error(
-        'Cannot start HTTP server in Lambda mode. Use handler() method instead.',
-      );
+      throw new Error('Cannot start HTTP server in Lambda mode. Use handler() method instead.');
     }
 
     // Guard clauses
@@ -821,7 +856,7 @@ export class SyntroJS {
     // CORS plugin is already registered in registerPlugins() (called during createServerInstance)
     // According to @fastify/cors official documentation, CORS must be registered BEFORE routes
     // This ensures OPTIONS preflight requests are handled correctly for all routes
-    
+
     // Register all routes (CORS plugin can now intercept OPTIONS for these routes)
     this.registerAllRoutes();
 
@@ -926,12 +961,12 @@ export class SyntroJS {
     if (!this.isRestMode) {
       throw new Error('Fastify instance not available in Lambda mode');
     }
-    
+
     // Lazy initialization: create server if not already created
     if (!this.server) {
       this.server = await this.createServerInstance();
     }
-    
+
     return this.server as FastifyInstance;
   }
 
@@ -945,9 +980,7 @@ export class SyntroJS {
   handler(): (event: unknown, context?: unknown) => Promise<LambdaResponse> {
     // Guard clause: validate mode
     if (this.isRestMode) {
-      throw new Error(
-        'Lambda handler not available in REST mode. Use listen() method instead.',
-      );
+      throw new Error('Lambda handler not available in REST mode. Use listen() method instead.');
     }
 
     // Guard clause: validate handler exists
@@ -999,14 +1032,14 @@ export class SyntroJS {
   /**
    * Registers all routes from RouteRegistry with the appropriate adapter
    * Functional: pure registration, no side effects beyond route registration
-   * 
+   *
    * Note: CORS plugin is registered BEFORE routes (in registerPlugins())
    * This ensures OPTIONS preflight requests are handled correctly
    */
   private registerAllRoutes(): void {
     // Middleware registry already configured via FluentAdapter instance
     if (this.adapter === BunAdapter) {
-      (BunAdapter as any).setMiddlewareRegistry(this.middlewareRegistry);
+      BunAdapter.setMiddlewareRegistry(this.middlewareRegistry);
     }
 
     const routes = RouteRegistry.getAll();
@@ -1160,6 +1193,17 @@ export class SyntroJS {
         },
       });
     }
+  }
+
+  /**
+   * Gets all registered routes
+   * Pure function: returns immutable array of routes
+   * Used by type-safe client for type inference
+   *
+   * @returns Readonly array of registered routes
+   */
+  getRoutes(): ReadonlyArray<Route> {
+    return RouteRegistry.getAll();
   }
 
   /**
@@ -1398,6 +1442,9 @@ export class SyntroJS {
    * @param serializer - Serializer to register
    * @param name - Optional name (defaults to constructor name)
    * @returns this (for chaining)
+   * @param serializer - Serializer instance
+   * @param name - Optional name
+   * @returns this
    *
    * @example
    * ```typescript
@@ -1406,8 +1453,17 @@ export class SyntroJS {
    * app.registerSerializer(new TOONSerializer(), 'TOON')
    * ```
    */
-  registerSerializer(serializer: any, name?: string): this {
-    this.serializerRegistry.register(serializer, name);
+  registerSerializer(
+    serializer: IResponseSerializer,
+    name?: string,
+    options?: { contentTypes?: string[]; priority?: number },
+  ): this {
+    // Guard clause: validate serializer
+    if (!serializer) {
+      throw new Error('Serializer is required');
+    }
+
+    this.serializerRegistry.register(serializer, name, options);
     return this;
   }
 
@@ -1417,8 +1473,8 @@ export class SyntroJS {
    * Useful for customizing default serializers
    *
    * @param name - Name of serializer to replace
-   * @param serializer - New serializer
-   * @returns this (for chaining)
+   * @param serializer - New serializer instance
+   * @returns this
    *
    * @example
    * ```typescript
@@ -1443,6 +1499,106 @@ export class SyntroJS {
    */
   unregisterSerializer(name: string): this {
     this.serializerRegistry.unregister(name);
+    return this;
+  }
+
+  /**
+   * Register serializer before a target serializer
+   *
+   * @param targetName - Name of target serializer to insert before
+   * @param serializer - Serializer to register
+   * @param name - Optional name (defaults to constructor name)
+   * @param options - Optional registration options
+   * @returns this (for chaining)
+   *
+   * @example
+   * ```typescript
+   * // Register OpenTelemetry serializer before JsonSerializer
+   * app.registerSerializerBefore('Json', new OpenTelemetrySerializer());
+   * ```
+   */
+  registerSerializerBefore(
+    targetName: string,
+    serializer: IResponseSerializer,
+    name?: string,
+    options?: { contentTypes?: string[] },
+  ): this {
+    // Guard clause: validate target name
+    if (!targetName || typeof targetName !== 'string') {
+      throw new Error('Target serializer name must be a valid string');
+    }
+
+    // Guard clause: validate serializer
+    if (!serializer) {
+      throw new Error('Serializer is required');
+    }
+
+    this.serializerRegistry.registerBefore(targetName, serializer, name, options);
+    return this;
+  }
+
+  /**
+   * Register serializer after a target serializer
+   *
+   * @param targetName - Name of target serializer to insert after
+   * @param serializer - Serializer to register
+   * @param name - Optional name (defaults to constructor name)
+   * @param options - Optional registration options
+   * @returns this (for chaining)
+   *
+   * @example
+   * ```typescript
+   * // Register compression serializer after TOONSerializer
+   * app.registerSerializerAfter('TOON', new CompressionSerializer());
+   * ```
+   */
+  registerSerializerAfter(
+    targetName: string,
+    serializer: IResponseSerializer,
+    name?: string,
+    options?: { contentTypes?: string[] },
+  ): this {
+    // Guard clause: validate target name
+    if (!targetName || typeof targetName !== 'string') {
+      throw new Error('Target serializer name must be a valid string');
+    }
+
+    // Guard clause: validate serializer
+    if (!serializer) {
+      throw new Error('Serializer is required');
+    }
+
+    this.serializerRegistry.registerAfter(targetName, serializer, name, options);
+    return this;
+  }
+
+  /**
+   * Register serializer with highest priority (first in chain)
+   *
+   * Useful for decorators/interceptors that need to run before all other serializers
+   *
+   * @param serializer - Serializer to register
+   * @param name - Optional name (defaults to constructor name)
+   * @param options - Optional registration options
+   * @returns this (for chaining)
+   *
+   * @example
+   * ```typescript
+   * // Register logging serializer first (intercepts all responses)
+   * app.registerSerializerFirst(new LoggingSerializer());
+   * ```
+   */
+  registerSerializerFirst(
+    serializer: IResponseSerializer,
+    name?: string,
+    options?: { contentTypes?: string[] },
+  ): this {
+    // Guard clause: validate serializer
+    if (!serializer) {
+      throw new Error('Serializer is required');
+    }
+
+    this.serializerRegistry.registerFirst(serializer, name, options);
     return this;
   }
 

@@ -9,27 +9,25 @@
  * - Factory pattern for adapter management
  */
 
-export * from './types';
+export type { ILambdaAdapter } from '../domain/interfaces/ILambdaAdapter';
 export * from './adapters/ApiGatewayAdapter';
-export * from './adapters/SQSAdapter';
-export * from './adapters/S3Adapter';
+export type {
+  EventBridgeAdapterConfig,
+  EventBridgeEventHandler,
+} from './adapters/EventBridgeAdapter';
 export * from './adapters/EventBridgeAdapter';
 export * from './adapters/LambdaAdapterFactory';
-export * from './handlers/LambdaHandler';
-export type { ILambdaAdapter } from '../domain/interfaces/ILambdaAdapter';
-
+export type {
+  S3AdapterConfig,
+  S3ObjectHandler,
+} from './adapters/S3Adapter';
+export * from './adapters/S3Adapter';
 // Re-export adapter configs for convenience
 export type {
   SQSAdapterConfig,
   SQSMessageHandler,
 } from './adapters/SQSAdapter';
-export type {
-  S3AdapterConfig,
-  S3ObjectHandler,
-} from './adapters/S3Adapter';
-export type {
-  EventBridgeAdapterConfig,
-  EventBridgeEventHandler,
-} from './adapters/EventBridgeAdapter';
+export * from './adapters/SQSAdapter';
 export type { LambdaAdaptersConfig } from './handlers/LambdaHandler';
-
+export * from './handlers/LambdaHandler';
+export * from './types';

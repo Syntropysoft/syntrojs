@@ -8,13 +8,13 @@
  * - Guard Clauses: Early validation, Fail Fast
  */
 
-import { describe, expect, it, beforeEach, afterEach } from 'vitest';
-import { LambdaHandler } from '../../../src/lambda/handlers/LambdaHandler';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import { RouteRegistry } from '../../../src/application/RouteRegistry';
 import { SchemaValidator } from '../../../src/application/SchemaValidator';
-import { lambdaAdapterFactory } from '../../../src/lambda/adapters/LambdaAdapterFactory';
 import { Route } from '../../../src/domain/Route';
-import { z } from 'zod';
+import { lambdaAdapterFactory } from '../../../src/lambda/adapters/LambdaAdapterFactory';
+import { LambdaHandler } from '../../../src/lambda/handlers/LambdaHandler';
 
 describe('LambdaHandler', () => {
   let handler: LambdaHandler;
@@ -200,4 +200,3 @@ describe('LambdaHandler', () => {
     });
   });
 });
-

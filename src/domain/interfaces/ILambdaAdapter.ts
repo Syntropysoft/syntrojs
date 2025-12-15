@@ -48,4 +48,3 @@ export interface ILambdaAdapter {
    */
   handle(event: unknown, context?: unknown): Promise<LambdaResponse>;
 }
-

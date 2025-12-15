@@ -8,8 +8,7 @@
 
 import { ErrorHandler } from '../../application/ErrorHandler';
 import type { ILambdaAdapter } from '../../domain/interfaces/ILambdaAdapter';
-import type { LambdaResponse } from '../types';
-import type { S3Event, S3EventRecord } from '../types';
+import type { LambdaResponse, S3Event, S3EventRecord } from '../types';
 
 /**
  * S3 Object Handler
@@ -169,9 +168,7 @@ export class S3Adapter implements ILambdaAdapter {
    * @param object - Standardized object information
    * @returns Processing result
    */
-  private async processObject(
-    object: ReturnType<typeof this.toObject>,
-  ): Promise<unknown> {
+  private async processObject(object: ReturnType<typeof this.toObject>): Promise<unknown> {
     // Guard clause: validate object
     if (!object) {
       throw new Error('Object is required');
@@ -225,10 +222,7 @@ export class S3Adapter implements ILambdaAdapter {
    * @param statusCode - HTTP status code
    * @returns Lambda error response
    */
-  private createErrorResponse(
-    error: string,
-    statusCode = 500,
-  ): LambdaResponse {
+  private createErrorResponse(error: string, statusCode = 500): LambdaResponse {
     // Guard clause: validate error
     if (!error) {
       return {
@@ -280,9 +274,7 @@ export class S3Adapter implements ILambdaAdapter {
 
       // Process objects
       const objects = s3Event.Records.map((record) => this.toObject(record));
-      const results = await Promise.all(
-        objects.map((object) => this.processObject(object)),
-      );
+      const results = await Promise.all(objects.map((object) => this.processObject(object)));
 
       // Return success response
       return this.toLambdaResponse(results);
@@ -319,4 +311,3 @@ export class S3Adapter implements ILambdaAdapter {
     };
   }
 }
-

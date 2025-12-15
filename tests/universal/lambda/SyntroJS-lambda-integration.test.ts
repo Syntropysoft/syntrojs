@@ -11,12 +11,12 @@
  * - Guard Clauses: Early validation, Fail Fast
  */
 
-import { describe, expect, it, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { SyntroJS } from '../../../src/core';
 import { RouteRegistry } from '../../../src/application/RouteRegistry';
-import { lambdaAdapterFactory } from '../../../src/lambda/adapters/LambdaAdapterFactory';
+import { SyntroJS } from '../../../src/core';
 import type { APIGatewayProxyEvent } from '../../../src/lambda/adapters/ApiGatewayAdapter';
+import { lambdaAdapterFactory } from '../../../src/lambda/adapters/LambdaAdapterFactory';
 
 describe('SyntroJS Lambda Mode - Integration Tests', () => {
   beforeEach(() => {
@@ -37,9 +37,7 @@ describe('SyntroJS Lambda Mode - Integration Tests', () => {
 
     it('should throw error when calling listen() in Lambda mode', async () => {
       const app = new SyntroJS({ rest: false });
-      await expect(app.listen(3000)).rejects.toThrow(
-        'Cannot start HTTP server in Lambda mode',
-      );
+      await expect(app.listen(3000)).rejects.toThrow('Cannot start HTTP server in Lambda mode');
     });
 
     it('should throw error when calling handler() in REST mode', () => {
@@ -325,4 +323,3 @@ describe('SyntroJS Lambda Mode - Integration Tests', () => {
     });
   });
 });
-

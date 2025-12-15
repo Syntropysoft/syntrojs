@@ -8,21 +8,18 @@
 
 import { RouteRegistry } from '../../application/RouteRegistry';
 import { SchemaValidator } from '../../application/SchemaValidator';
-import { ApiGatewayAdapter } from '../adapters/ApiGatewayAdapter';
-import { SQSAdapter, type SQSAdapterConfig } from '../adapters/SQSAdapter';
-import { S3Adapter, type S3AdapterConfig } from '../adapters/S3Adapter';
-import {
-  EventBridgeAdapter,
-  type EventBridgeAdapterConfig,
-} from '../adapters/EventBridgeAdapter';
-import {
-  lambdaAdapterFactory,
-  type LambdaAdapterFactory,
-  createLambdaAdapterFactory,
-} from '../adapters/LambdaAdapterFactory';
-import type { LambdaResponse, LambdaEventType } from '../types';
 import type { ILambdaAdapter } from '../../domain/interfaces/ILambdaAdapter';
 import type { CorsOptions } from '../../plugins/cors';
+import { ApiGatewayAdapter } from '../adapters/ApiGatewayAdapter';
+import { EventBridgeAdapter, type EventBridgeAdapterConfig } from '../adapters/EventBridgeAdapter';
+import {
+  createLambdaAdapterFactory,
+  type LambdaAdapterFactory,
+  lambdaAdapterFactory,
+} from '../adapters/LambdaAdapterFactory';
+import { S3Adapter, type S3AdapterConfig } from '../adapters/S3Adapter';
+import { SQSAdapter, type SQSAdapterConfig } from '../adapters/SQSAdapter';
+import type { LambdaEventType, LambdaResponse } from '../types';
 
 /**
  * Lambda Adapters Configuration
@@ -79,16 +76,11 @@ export class LambdaHandler {
 
     // Use provided factory or create new instance (for isolation)
     // If no factory provided, use singleton (backward compatibility)
-    this.adapterFactory =
-      config.adapterFactory || createLambdaAdapterFactory();
+    this.adapterFactory = config.adapterFactory || createLambdaAdapterFactory();
 
     // Register default adapters with CORS configuration
     // In the future, adapters can be imported from external package
-    const apiGatewayAdapter = new ApiGatewayAdapter(
-      routeRegistry,
-      validator,
-      this.corsConfig,
-    );
+    const apiGatewayAdapter = new ApiGatewayAdapter(routeRegistry, validator, this.corsConfig);
     this.adapterFactory.registerOrReplace('api-gateway', apiGatewayAdapter);
 
     // Register SQS adapter with optional custom configuration
@@ -100,9 +92,7 @@ export class LambdaHandler {
     this.adapterFactory.registerOrReplace('s3', s3Adapter);
 
     // Register EventBridge adapter with optional custom configuration
-    const eventBridgeAdapter = new EventBridgeAdapter(
-      config.adapters?.eventbridge || {},
-    );
+    const eventBridgeAdapter = new EventBridgeAdapter(config.adapters?.eventbridge || {});
     this.adapterFactory.registerOrReplace('eventbridge', eventBridgeAdapter);
   }
 
@@ -146,10 +136,7 @@ export class LambdaHandler {
    * @param context - Lambda context (optional)
    * @returns Lambda response
    */
-  async handler(
-    event: unknown,
-    context?: unknown,
-  ): Promise<LambdaResponse> {
+  async handler(event: unknown, context?: unknown): Promise<LambdaResponse> {
     // Guard clause: validate event exists
     if (!event) {
       return {
@@ -208,4 +195,3 @@ export function createLambdaHandler(config?: LambdaHandlerConfig) {
   const handler = new LambdaHandler(config);
   return handler.handler.bind(handler);
 }
-

@@ -18,13 +18,15 @@
 
 **✅ SyntroJS is production-ready** with a battle-tested core and comprehensive feature set. The framework is stable and ready for production use.
 
-- ✅ **Battle-tested Core** - 1,019+ tests across Node.js and Bun (99.3% passing)
+- ✅ **Battle-tested Core** - 980+ tests across Node.js and Bun (100% passing)
 - ✅ **CORS Fully Functional** - REST and Lambda modes with comprehensive validation
 - ✅ **AWS Lambda Support** - Production-ready Lambda mode with full API Gateway integration
+- ✅ **Router System** - Group routes with prefixes and router-level middleware
+- ✅ **Type-Safe Client** - Testing and frontend integration with autocomplete
 - ✅ **Active development** - Regular updates and bug fixes
-- 🎯 **v0.7.0 planned** - Router + Advanced Middleware
+- 🎯 **v0.8.0 planned** - Security & Real-time Features
 
-**Latest Release**: **v0.6.9** - CORS Issues Resolved & Enhanced Guard Clauses - [CHANGELOG](./docs/CHANGELOG.md)
+**Latest Release**: **v0.7.0** - Router System + Type-Safe Client + Serializer Enhancements - [CHANGELOG](./docs/CHANGELOG.md)
 
 ---
 
@@ -126,7 +128,7 @@ Automatic validation with Zod, full TypeScript type safety, elegant error handli
 Beautiful landing page + Swagger UI + ReDoc out of the box at `/docs`.
 
 ### 🧪 Testing Superpower
-`SmartMutator` for mutation testing in seconds. Type-safe client coming in v0.7.0.
+`SmartMutator` for mutation testing in seconds. **Type-safe client** for testing and frontend integration.
 
 ### 🔌 Rich Ecosystem
 Middleware system, WebSockets, dependency injection, background tasks, structured logging.
@@ -186,7 +188,7 @@ bun app.js
 |---------|---------|-----|--------|
 | Core API | ✅ Full | ✅ Full | Identical |
 | Plugins (CORS, Helmet, etc.) | ✅ Full | ✅ Full | Production ready |
-| Static files | ✅ Full | ❌ Not available | v0.7.0 planned |
+| Static files | ✅ Full | ❌ Not available | v0.9.0 planned |
 | `getRawFastify()` | ✅ Works | ❌ Use `getRawServer()` | - |
 
 ---
@@ -472,6 +474,33 @@ describe('API Tests', () => {
 });
 ```
 
+### Type-Safe Client
+
+Test your API without starting a server, or use it in your frontend:
+
+```typescript
+import { createClient } from 'syntrojs';
+import type { App } from './app';
+
+// Local mode (testing) - executes handlers directly
+const client = createClient(app, { mode: 'local' });
+
+// Call routes with autocomplete
+const response = await client.users.get();
+const user = await client.users[':id'].get({ params: { id: '123' } });
+const created = await client.users.post({ 
+  body: { name: 'John', email: 'john@example.com' } 
+});
+
+// Remote mode (frontend) - makes HTTP requests
+const apiClient = createClient(app, { 
+  mode: 'remote', 
+  baseUrl: 'https://api.example.com' 
+});
+```
+
+See [Type-Safe Client Documentation](./docs/CLIENT.md) for complete examples.
+
 ### SmartMutator - Mutation Testing
 
 ```bash
@@ -550,10 +579,21 @@ See [TOON Format Documentation](./docs/TOON_FORMAT.md) for details.
 - [x] Dynamic Routes with pattern matching
 - [x] 82 Lambda tests passing
 
-### 🎨 v0.7.0 - Router + Advanced Middleware
-- [ ] `SyntroRouter` - Group endpoints with prefixes
-- [ ] Router-level middleware
-- [ ] Advanced middleware patterns
+### ✅ v0.7.0 - Router + Advanced Middleware (100% COMPLETE 🎉)
+- [x] `SyntroRouter` - Group endpoints with prefixes
+- [x] Router-level middleware (`router.use()`)
+- [x] `app.include(router)` - Include routers in app
+- [x] Type-Safe Client (`createClient`) - Testing & frontend integration
+- [x] Serializer Chain of Responsibility with `next()`
+- [x] Serializer Priority System
+- [x] Serializer Helper Methods (`registerBefore`, `registerAfter`, `registerFirst`)
+- [x] `SyntroRouter` - Group endpoints with prefixes
+- [x] Router-level middleware (`router.use()`)
+- [x] `app.include(router)` - Include routers in app
+- [x] Type-Safe Client (`createClient`) - Testing & frontend integration
+- [x] Serializer Chain of Responsibility with `next()`
+- [x] Serializer Priority System
+- [x] Serializer Helper Methods (`registerBefore`, `registerAfter`, `registerFirst`)
 
 ### 🎨 v0.8.0 - Security & Real-time Features
 - [ ] CSRF protection
@@ -577,6 +617,8 @@ See [TOON Format Documentation](./docs/TOON_FORMAT.md) for details.
 
 ## 📚 Documentation
 
+- **[Router System](./docs/ROUTER.md)** - Group routes with prefixes and middleware
+- **[Type-Safe Client](./docs/CLIENT.md)** - Testing and frontend integration guide
 - **[Lambda Usage Guide](./docs/LAMBDA_USAGE.md)** - Complete Lambda documentation
 - **[Lambda Architecture](./docs/LAMBDA_ADAPTERS_EXTRACTION.md)** - Adapter architecture guide
 - **[Architecture](./docs/architecture/ARCHITECTURE.md)** - Framework architecture

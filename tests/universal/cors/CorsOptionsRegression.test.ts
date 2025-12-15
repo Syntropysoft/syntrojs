@@ -1,19 +1,19 @@
 /**
  * Regression Tests for CORS OPTIONS Bug
- * 
+ *
  * These tests ensure that the CORS OPTIONS bug does not reappear.
  * The bug occurs when CORS plugin is registered BEFORE routes, causing
  * OPTIONS requests to return 404.
- * 
+ *
  * Principles:
  * - Regression Prevention: Tests that catch the bug early
  * - Functional: Tests verify behavior, not implementation
  * - Guard Clauses: Early validation in test setup
  */
 
-import { describe, expect, it, beforeEach } from 'vitest';
-import { SyntroJS } from '../../../src/core/SyntroJS';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { RouteRegistry } from '../../../src/application/RouteRegistry';
+import { SyntroJS } from '../../../src/core/SyntroJS';
 
 describe('CORS OPTIONS Regression Prevention', () => {
   beforeEach(() => {
@@ -222,4 +222,3 @@ describe('CORS OPTIONS Regression Prevention', () => {
     });
   });
 });
-

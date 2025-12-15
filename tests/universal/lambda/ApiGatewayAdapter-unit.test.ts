@@ -11,10 +11,10 @@
  * - Guard Clauses: Early validation, Fail Fast
  */
 
-import { describe, expect, it, beforeEach } from 'vitest';
-import { ApiGatewayAdapter } from '../../../src/lambda/adapters/ApiGatewayAdapter';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { ILambdaAdapter } from '../../../src/domain/interfaces/ILambdaAdapter';
 import type { APIGatewayProxyEvent } from '../../../src/lambda/adapters/ApiGatewayAdapter';
+import { ApiGatewayAdapter } from '../../../src/lambda/adapters/ApiGatewayAdapter';
 
 // Mock dependencies (can be replaced with real implementations for integration tests)
 class MockRouteRegistry {
@@ -49,7 +49,10 @@ class MockRouteRegistry {
 }
 
 class MockSchemaValidator {
-  validate(schema: unknown, data: unknown): { success: boolean; data?: unknown; errors?: Array<{ field: string; message: string }> } {
+  validate(
+    schema: unknown,
+    data: unknown,
+  ): { success: boolean; data?: unknown; errors?: Array<{ field: string; message: string }> } {
     // Simple mock - always succeeds
     return { success: true, data };
   }
@@ -63,10 +66,7 @@ describe('ApiGatewayAdapter - Unit Tests (Isolated)', () => {
   beforeEach(() => {
     mockRouteRegistry = new MockRouteRegistry();
     mockValidator = new MockSchemaValidator();
-    adapter = new ApiGatewayAdapter(
-      mockRouteRegistry as any,
-      mockValidator as any,
-    );
+    adapter = new ApiGatewayAdapter(mockRouteRegistry as any, mockValidator as any);
   });
 
   describe('ILambdaAdapter Interface Implementation', () => {
@@ -264,7 +264,9 @@ describe('ApiGatewayAdapter - Unit Tests (Isolated)', () => {
     });
 
     it('should throw error for invalid event type in handle', async () => {
-      await expect(adapter.handle({ invalid: 'event' })).rejects.toThrow('Event is not an API Gateway event');
+      await expect(adapter.handle({ invalid: 'event' })).rejects.toThrow(
+        'Event is not an API Gateway event',
+      );
     });
 
     it('should throw error for null event in toRequestDTO', () => {
@@ -272,8 +274,9 @@ describe('ApiGatewayAdapter - Unit Tests (Isolated)', () => {
     });
 
     it('should throw error for invalid event in toRequestDTO', () => {
-      expect(() => adapter['toRequestDTO']({} as any)).toThrow('API Gateway event must have httpMethod property');
+      expect(() => adapter['toRequestDTO']({} as any)).toThrow(
+        'API Gateway event must have httpMethod property',
+      );
     });
   });
 });
-

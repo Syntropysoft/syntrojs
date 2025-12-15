@@ -5,7 +5,11 @@
  * Handles serialization of binary buffer responses
  */
 
-import type { IResponseSerializer, SerializedResponseDTO } from '../../domain/interfaces';
+import type {
+  IResponseSerializer,
+  SerializedResponseDTO,
+  SerializerNext,
+} from '../../domain/interfaces';
 
 /**
  * Buffer Response Serializer
@@ -31,7 +35,12 @@ export class BufferSerializer implements IResponseSerializer {
    * @param statusCode - Default status code
    * @returns HTTP Response with buffer
    */
-  serialize(result: any, statusCode: number, request: Request): SerializedResponseDTO {
+  serialize(
+    result: any,
+    statusCode: number,
+    request: Request,
+    _next?: SerializerNext,
+  ): SerializedResponseDTO {
     return {
       body: result,
       statusCode,

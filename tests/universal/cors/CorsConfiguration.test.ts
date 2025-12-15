@@ -4,9 +4,9 @@
  * Verifies that CORS is configured correctly with options
  */
 
-import { describe, expect, it, beforeEach, afterAll } from 'vitest';
-import { SyntroJS } from '../../../src/core/SyntroJS';
+import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { RouteRegistry } from '../../../src/application/RouteRegistry';
+import { SyntroJS } from '../../../src/core/SyntroJS';
 
 describe('CORS Configuration', () => {
   beforeEach(() => {
@@ -116,8 +116,12 @@ describe('CORS Configuration', () => {
       expect(preflightResponse.status).toBe(204);
       expect(preflightResponse.headers.get('Access-Control-Allow-Origin')).toBeTruthy();
       expect(preflightResponse.headers.get('Access-Control-Allow-Methods')).toContain('POST');
-      expect(preflightResponse.headers.get('Access-Control-Allow-Headers')).toContain('Content-Type');
-      expect(preflightResponse.headers.get('Access-Control-Allow-Headers')).toContain('Authorization');
+      expect(preflightResponse.headers.get('Access-Control-Allow-Headers')).toContain(
+        'Content-Type',
+      );
+      expect(preflightResponse.headers.get('Access-Control-Allow-Headers')).toContain(
+        'Authorization',
+      );
 
       // Test actual POST request
       const postResponse = await fetch(`http://localhost:${port}/users`, {
@@ -165,4 +169,3 @@ describe('CORS Configuration', () => {
     });
   });
 });
-

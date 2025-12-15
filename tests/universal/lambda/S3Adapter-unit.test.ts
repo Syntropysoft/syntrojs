@@ -11,9 +11,9 @@
  * - Guard Clauses: Early validation, Fail Fast
  */
 
-import { describe, expect, it, beforeEach } from 'vitest';
-import { S3Adapter } from '../../../src/lambda/adapters/S3Adapter';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { ILambdaAdapter } from '../../../src/domain/interfaces/ILambdaAdapter';
+import { S3Adapter } from '../../../src/lambda/adapters/S3Adapter';
 import type { S3Event } from '../../../src/lambda/types';
 
 describe('S3Adapter - Unit Tests (Isolated)', () => {
@@ -384,4 +384,3 @@ describe('S3Adapter - Unit Tests (Isolated)', () => {
     });
   });
 });
-

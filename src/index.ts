@@ -5,6 +5,8 @@
 
 // Application exports
 export * from './application';
+// Client exports
+export * from './client';
 // Core exports
 export * from './core';
 // Domain exports
@@ -20,4 +22,4 @@ export * from './security';
 /**
  * Current version
  */
-export const VERSION = '0.6.10';
+export const VERSION = '0.7.0';

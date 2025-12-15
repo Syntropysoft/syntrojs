@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2025-01-XX
+
+### Added
+- ✨ **SyntroRouter**: Group endpoints with prefixes and router-level middleware
+- ✨ **Type-Safe Client**: `createClient()` for testing and frontend integration
+- ✨ **Serializer Chain of Responsibility**: `next()` parameter for decorator pattern
+- ✨ **Serializer Priority System**: Numeric priorities for explicit ordering
+- ✨ **Serializer Helper Methods**: `registerBefore()`, `registerAfter()`, `registerFirst()`
+- ✨ **API Versioning Support**: Maintain multiple API versions simultaneously
+
+### Changed
+- 🔧 **Route Registration**: Routes registered immediately when calling router methods
+- 🔧 **Middleware Execution Order**: Explicit order: global → router → handler
+- 🔧 **Serializer Interface**: Added optional `next` parameter (backward compatible)
+
+### Documentation
+- 📝 **Router Documentation**: Complete guide with 9 examples (`docs/ROUTER.md`)
+- 📝 **Client Documentation**: Complete guide with examples (`docs/CLIENT.md`)
+- 📝 **API Versioning Examples**: Best practices for versioning APIs
+
+### Tests
+- ✅ 980 tests passing (100%)
+- ✅ Router tests: Registration, middleware execution, app.include()
+- ✅ Client tests: Local mode, remote mode, validation, error handling
+- ✅ Serializer tests: Chain of Responsibility, priorities, helper methods
+
+See [CHANGELOG_v0.7.0.md](./changelog/CHANGELOG_v0.7.0.md) for complete details.
+
 ## [0.6.10] - 2024-11-18
 
 ### Changed

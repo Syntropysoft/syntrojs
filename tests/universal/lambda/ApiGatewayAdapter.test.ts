@@ -8,12 +8,15 @@
  * - Guard Clauses: Early validation, Fail Fast
  */
 
-import { describe, expect, it, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { ApiGatewayAdapter, type APIGatewayProxyEvent } from '../../../src/lambda/adapters/ApiGatewayAdapter';
 import { RouteRegistry } from '../../../src/application/RouteRegistry';
 import { SchemaValidator } from '../../../src/application/SchemaValidator';
 import { Route } from '../../../src/domain/Route';
+import {
+  type APIGatewayProxyEvent,
+  ApiGatewayAdapter,
+} from '../../../src/lambda/adapters/ApiGatewayAdapter';
 
 describe('ApiGatewayAdapter', () => {
   let adapter: ApiGatewayAdapter;
@@ -130,7 +133,9 @@ describe('ApiGatewayAdapter', () => {
 
     it('should throw error for invalid event', () => {
       expect(() => adapter['toRequestDTO'](null as any)).toThrow('API Gateway event is required');
-      expect(() => adapter['toRequestDTO']({} as any)).toThrow('API Gateway event must have httpMethod property');
+      expect(() => adapter['toRequestDTO']({} as any)).toThrow(
+        'API Gateway event must have httpMethod property',
+      );
     });
   });
 
@@ -354,4 +359,3 @@ describe('ApiGatewayAdapter', () => {
     });
   });
 });
-

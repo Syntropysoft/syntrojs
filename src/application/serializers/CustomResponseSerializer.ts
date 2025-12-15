@@ -6,7 +6,11 @@
  * Pattern: { status?: number, headers?: Record<string, string>, body: any }
  */
 
-import type { IResponseSerializer, SerializedResponseDTO } from '../../domain/interfaces';
+import type {
+  IResponseSerializer,
+  SerializedResponseDTO,
+  SerializerNext,
+} from '../../domain/interfaces';
 
 /**
  * Custom Response Serializer
@@ -41,7 +45,12 @@ export class CustomResponseSerializer implements IResponseSerializer {
    * @param defaultStatus - Default HTTP status code
    * @returns HTTP Response with custom status/headers
    */
-  serialize(result: any, defaultStatus: number, request: Request): SerializedResponseDTO {
+  serialize(
+    result: any,
+    defaultStatus: number,
+    request: Request,
+    _next?: SerializerNext,
+  ): SerializedResponseDTO {
     // Extract custom fields
     const status = result.status ?? defaultStatus;
     const customHeaders = result.headers ?? {};

@@ -10,9 +10,15 @@
  */
 
 import type { Readable } from 'node:stream';
+import type { FastifyCorsOptions } from '@fastify/cors';
 import formbody from '@fastify/formbody';
 import multipart from '@fastify/multipart';
-import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
+import Fastify, {
+  type FastifyInstance,
+  type FastifyRegisterOptions,
+  type FastifyReply,
+  type FastifyRequest,
+} from 'fastify';
 import { createAcceptsHelper } from '../application/ContentNegotiator';
 import type { MiddlewareRegistry } from '../application/MiddlewareRegistry';
 import { MultipartParser } from '../application/MultipartParser';
@@ -20,14 +26,17 @@ import { ResponseHandler } from '../application/ResponseHandler';
 import type { SerializerRegistry } from '../application/SerializerRegistry';
 import { StreamingResponseHandler } from '../application/StreamingResponseHandler';
 import type { Route } from '../domain/Route';
-import type { CorsOptions } from '../plugins/cors';
 import type {
   DependencyResolverFactory,
   ErrorHandlerFactory,
+  ExceptionHandler,
   HttpMethod,
   RequestContext,
+  RouteConfig,
+  RouteErrorHandlingInterface,
   SchemaFactory,
 } from '../domain/types';
+import type { CorsOptions } from '../plugins/cors';
 import { createFileDownload, isFileDownloadResponse } from './FileDownloadHelper';
 import { setComponentLoggingEnabled } from './LoggerHelper';
 import { integrateLogger, type LoggerIntegrationConfig } from './LoggerIntegration';
@@ -118,15 +127,7 @@ export class FluentAdapter {
     return {
       origin: corsConfig.origin ?? true,
       credentials: corsConfig.credentials ?? false,
-      methods: corsConfig.methods ?? [
-        'GET',
-        'HEAD',
-        'PUT',
-        'PATCH',
-        'POST',
-        'DELETE',
-        'OPTIONS',
-      ],
+      methods: corsConfig.methods ?? ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
       allowedHeaders: corsConfig.allowedHeaders,
       exposedHeaders: corsConfig.exposedHeaders,
       maxAge: corsConfig.maxAge,
@@ -149,11 +150,11 @@ export class FluentAdapter {
 
   /**
    * Register CORS plugin (DEPRECATED: CORS is now registered in registerPlugins())
-   * 
+   *
    * This method is kept for backward compatibility but is no longer used.
    * CORS plugin is now registered in registerPlugins() BEFORE routes are registered,
    * as required by @fastify/cors official documentation.
-   * 
+   *
    * @deprecated Use registerPlugins() instead. CORS is registered automatically there.
    * @param fastify - Fastify instance
    */
@@ -177,7 +178,10 @@ export class FluentAdapter {
     try {
       const corsPlugin = await import('@fastify/cors');
       const corsOptions = this.buildCorsOptions(this.config.cors!);
-      await fastify.register(corsPlugin.default, corsOptions as any);
+      await fastify.register(
+        corsPlugin.default,
+        corsOptions as FastifyRegisterOptions<FastifyCorsOptions>,
+      );
       this.corsPluginRegistered = true;
     } catch {
       // Plugin no disponible, continuar sin él (graceful degradation)
@@ -445,7 +449,7 @@ export class FluentAdapter {
     // ⚠️ CRITICAL: CORS plugin MUST be registered HERE, BEFORE routes
     // According to @fastify/cors official documentation, the plugin must be registered
     // BEFORE routes are registered to properly handle OPTIONS preflight requests.
-    // 
+    //
     // Architecture (SOLID, DDD, Functional Programming):
     // - Single Responsibility: registerPlugins() handles all plugins including CORS
     // - Functional: Uses pure function buildCorsOptions() for configuration
@@ -483,14 +487,17 @@ export class FluentAdapter {
     if (this.shouldRegisterCors() && !this.corsPluginRegistered) {
       try {
         const corsPlugin = await import('@fastify/cors');
-        
+
         // Pure function: build options from configuration (no side effects)
         const corsOptions = this.buildCorsOptions(this.config.cors!);
-        
+
         // Register CORS plugin with options BEFORE routes
         // This allows the plugin to intercept OPTIONS requests for all routes
-        await fastify.register(corsPlugin.default, corsOptions as any);
-        
+        await fastify.register(
+          corsPlugin.default,
+          corsOptions as FastifyRegisterOptions<FastifyCorsOptions>,
+        );
+
         // Mark as registered to prevent double registration
         this.corsPluginRegistered = true;
       } catch (error) {
@@ -586,7 +593,10 @@ export class FluentAdapter {
         if (this.config.dependencyInjection && route.config.dependencies) {
           console.error('[FluentAdapter] Calling injectDependencies...');
           cleanupFn = await this.injectDependencies(context, route);
-          console.error('[FluentAdapter] After DI, context.dependencies:', Object.keys(context.dependencies));
+          console.error(
+            '[FluentAdapter] After DI, context.dependencies:',
+            Object.keys(context.dependencies),
+          );
         }
 
         // BACKGROUND TASKS - Solo si están habilitadas
@@ -725,7 +735,7 @@ export class FluentAdapter {
           if (cleanupFn) {
             setImmediate(() => cleanupFn!());
           }
-          
+
           return reply.send(serialized.body);
         }
 
@@ -733,7 +743,7 @@ export class FluentAdapter {
         if (cleanupFn) {
           setImmediate(() => cleanupFn!());
         }
-        
+
         return reply.status(statusCode).send(finalResult);
       } catch (error) {
         // ERROR HANDLING - Solo si está habilitado
@@ -822,10 +832,12 @@ export class FluentAdapter {
   ): Promise<FastifyReply> {
     try {
       // Error handling personalizado si existe
-      if ((route.config as unknown as { errorHandler?: unknown }).errorHandler) {
-        const errorHandler = (route.config as unknown as { errorHandler: unknown }).errorHandler;
+      // Error handling personalizado si existe
+      const config = route.config as RouteConfig & RouteErrorHandlingInterface;
+      if (config.errorHandler) {
+        const errorHandler = config.errorHandler;
         if (context && typeof errorHandler === 'function') {
-          const response = await (errorHandler as any)(context, error);
+          const response = await errorHandler(context, error as Error);
           return reply.status(response.status).send(response.body);
         }
       }

@@ -1,6 +1,6 @@
 /**
  * Lambda CORS Test Application
- * 
+ *
  * End-to-end test application to verify CORS origin extraction fix
  * This app tests the fix for case-insensitive Origin header extraction
  */
@@ -74,27 +74,32 @@ export const handler = app.handler();
 if (import.meta.url === `file://${process.argv[1]}`) {
   console.log('Lambda handler exported. Use AWS Lambda or SAM Local to test.');
   console.log('Example event:');
-  console.log(JSON.stringify({
-    httpMethod: 'POST',
-    path: '/orders',
-    headers: {
-      Origin: 'http://localhost:3000',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ item: 'test', quantity: 1 }),
-    requestContext: {
-      requestId: 'test-request-id',
-      stage: 'test',
-      resourceId: 'test-resource',
-      resourcePath: '/orders',
-      httpMethod: 'POST',
-      requestTime: new Date().toISOString(),
-      requestTimeEpoch: Date.now(),
-      identity: {
-        sourceIp: '127.0.0.1',
-        userAgent: 'test-agent',
+  console.log(
+    JSON.stringify(
+      {
+        httpMethod: 'POST',
+        path: '/orders',
+        headers: {
+          Origin: 'http://localhost:3000',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ item: 'test', quantity: 1 }),
+        requestContext: {
+          requestId: 'test-request-id',
+          stage: 'test',
+          resourceId: 'test-resource',
+          resourcePath: '/orders',
+          httpMethod: 'POST',
+          requestTime: new Date().toISOString(),
+          requestTimeEpoch: Date.now(),
+          identity: {
+            sourceIp: '127.0.0.1',
+            userAgent: 'test-agent',
+          },
+        },
       },
-    },
-  }, null, 2));
+      null,
+      2,
+    ),
+  );
 }
-

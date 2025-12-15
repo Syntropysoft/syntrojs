@@ -250,10 +250,7 @@ export class LambdaAdapterFactory {
     }
 
     // Check if adapter has getConfig method
-    if (
-      'getConfig' in adapter &&
-      typeof (adapter as any).getConfig === 'function'
-    ) {
+    if ('getConfig' in adapter && typeof (adapter as any).getConfig === 'function') {
       return (adapter as any).getConfig();
     }
 
@@ -279,10 +276,7 @@ export class LambdaAdapterFactory {
     }
 
     // Check if adapter has hasHandler method
-    if (
-      'hasHandler' in adapter &&
-      typeof (adapter as any).hasHandler === 'function'
-    ) {
+    if ('hasHandler' in adapter && typeof (adapter as any).hasHandler === 'function') {
       return (adapter as any).hasHandler();
     }
 
@@ -305,4 +299,3 @@ export function createLambdaAdapterFactory(): LambdaAdapterFactory {
  * Can be replaced for testing or custom configurations
  */
 export const lambdaAdapterFactory = new LambdaAdapterFactory();
-

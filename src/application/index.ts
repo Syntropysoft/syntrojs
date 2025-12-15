@@ -19,4 +19,5 @@ export * from './RouteRegistry';
 export * from './SchemaValidator';
 export * from './SerializerRegistry';
 export * from './StreamingResponseHandler';
+export * from './SyntroRouter';
 export * from './serializers';

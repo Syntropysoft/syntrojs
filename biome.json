@@ -133,12 +133,7 @@
       }
     },
     {
-      "includes": [
-        "src/core/**/*.ts",
-        "src/domain/**/*.ts",
-        "src/infrastructure/FluentAdapter.ts",
-        "src/infrastructure/UltraFastAdapter.ts"
-      ],
+      "includes": ["src/domain/**/*.ts", "src/infrastructure/UltraFastAdapter.ts"],
       "linter": {
         "rules": {
           "suspicious": {

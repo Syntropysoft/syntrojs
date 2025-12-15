@@ -4,13 +4,13 @@
  * Tests adapter configuration and factory isolation
  */
 
-import { describe, expect, it, beforeEach } from 'vitest';
-import { LambdaHandler } from '../../../src/lambda/handlers/LambdaHandler';
-import { createLambdaAdapterFactory } from '../../../src/lambda/adapters/LambdaAdapterFactory';
-import { SQSAdapter } from '../../../src/lambda/adapters/SQSAdapter';
-import { S3Adapter } from '../../../src/lambda/adapters/S3Adapter';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { EventBridgeAdapter } from '../../../src/lambda/adapters/EventBridgeAdapter';
-import type { SQSEvent, S3Event, EventBridgeEvent } from '../../../src/lambda/types';
+import { createLambdaAdapterFactory } from '../../../src/lambda/adapters/LambdaAdapterFactory';
+import { S3Adapter } from '../../../src/lambda/adapters/S3Adapter';
+import { SQSAdapter } from '../../../src/lambda/adapters/SQSAdapter';
+import { LambdaHandler } from '../../../src/lambda/handlers/LambdaHandler';
+import type { EventBridgeEvent, S3Event, SQSEvent } from '../../../src/lambda/types';
 
 describe('LambdaHandler - Configuration Improvements', () => {
   describe('Adapter Configuration', () => {
@@ -150,4 +150,3 @@ describe('LambdaHandler - Configuration Improvements', () => {
     });
   });
 });
-

@@ -1,16 +1,16 @@
 /**
  * ApiGatewayAdapter multiValueHeaders Tests
- * 
+ *
  * Tests that ApiGatewayAdapter correctly handles headers from both
  * event.headers and event.multiValueHeaders
  */
 
-import { describe, expect, it, beforeEach } from 'vitest';
-import { ApiGatewayAdapter } from '../../../src/lambda/adapters/ApiGatewayAdapter';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { RouteRegistry } from '../../../src/application/RouteRegistry';
 import { SchemaValidator } from '../../../src/application/SchemaValidator';
 import { Route } from '../../../src/domain/Route';
 import type { APIGatewayProxyEvent } from '../../../src/lambda/adapters/ApiGatewayAdapter';
+import { ApiGatewayAdapter } from '../../../src/lambda/adapters/ApiGatewayAdapter';
 
 describe('ApiGatewayAdapter - multiValueHeaders Support', () => {
   beforeEach(() => {
@@ -161,4 +161,3 @@ describe('ApiGatewayAdapter - multiValueHeaders Support', () => {
     expect(response.headers!['Access-Control-Allow-Origin']).toBe('http://localhost:3001');
   });
 });
-

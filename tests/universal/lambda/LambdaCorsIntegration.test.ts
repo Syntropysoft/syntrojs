@@ -1,22 +1,22 @@
 /**
  * Lambda CORS Integration Tests
- * 
+ *
  * Tests CORS functionality in Lambda mode, specifically:
  * - OPTIONS preflight requests
  * - CORS headers in all responses
  * - Different CORS configurations
- * 
+ *
  * Principles:
  * - Integration: Tests full Lambda handler flow
  * - Functional: Tests behavior, not implementation
  * - Guard Clauses: Early validation in test setup
  */
 
-import { describe, expect, it, beforeEach } from 'vitest';
-import { SyntroJS } from '../../../src/core/SyntroJS';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { RouteRegistry } from '../../../src/application/RouteRegistry';
-import { LambdaHandler } from '../../../src/lambda/handlers/LambdaHandler';
+import { SyntroJS } from '../../../src/core/SyntroJS';
 import type { APIGatewayProxyEvent } from '../../../src/lambda/adapters/ApiGatewayAdapter';
+import { LambdaHandler } from '../../../src/lambda/handlers/LambdaHandler';
 
 describe('Lambda CORS Integration', () => {
   beforeEach(() => {
@@ -422,4 +422,3 @@ describe('Lambda CORS Integration', () => {
     });
   });
 });
-

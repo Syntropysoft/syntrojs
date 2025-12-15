@@ -4,10 +4,10 @@
  * Tests that LambdaHandler correctly detects and delegates to the new adapters
  */
 
-import { describe, expect, it, beforeEach, afterEach } from 'vitest';
-import { LambdaHandler } from '../../../src/lambda/handlers/LambdaHandler';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { lambdaAdapterFactory } from '../../../src/lambda/adapters/LambdaAdapterFactory';
-import type { SQSEvent, S3Event, EventBridgeEvent } from '../../../src/lambda/types';
+import { LambdaHandler } from '../../../src/lambda/handlers/LambdaHandler';
+import type { EventBridgeEvent, S3Event, SQSEvent } from '../../../src/lambda/types';
 
 describe('LambdaHandler - New Adapters Integration', () => {
   let handler: LambdaHandler;
@@ -268,4 +268,3 @@ describe('LambdaHandler - New Adapters Integration', () => {
     });
   });
 });
-

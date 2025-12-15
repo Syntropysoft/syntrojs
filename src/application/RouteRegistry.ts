@@ -160,7 +160,7 @@ class RouteRegistryImpl {
       if (!route.method) {
         return false;
       }
-      
+
       // Compare methods (route.method is already uppercase, normalize input method)
       if (route.method !== normalizedMethod) {
         return false;
@@ -205,10 +205,13 @@ class RouteRegistryImpl {
     }
 
     // Build params object (functional: reduce)
-    return paramNames.reduce((params, name, index) => {
-      params[name] = match[index + 1] || '';
-      return params;
-    }, {} as Record<string, string>);
+    return paramNames.reduce(
+      (params, name, index) => {
+        params[name] = match[index + 1] || '';
+        return params;
+      },
+      {} as Record<string, string>,
+    );
   }
 
   /**

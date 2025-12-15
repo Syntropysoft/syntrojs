@@ -5,7 +5,11 @@
  * Handles serialization of standard JSON responses (default)
  */
 
-import type { IResponseSerializer, SerializedResponseDTO } from '../../domain/interfaces';
+import type {
+  IResponseSerializer,
+  SerializedResponseDTO,
+  SerializerNext,
+} from '../../domain/interfaces';
 
 /**
  * JSON Response Serializer
@@ -34,7 +38,12 @@ export class JsonSerializer implements IResponseSerializer {
    * @param request - HTTP Request (for content negotiation)
    * @returns HTTP Response with JSON, or null if client wants another format
    */
-  serialize(result: any, statusCode: number, request: Request): SerializedResponseDTO | null {
+  serialize(
+    result: any,
+    statusCode: number,
+    request: Request,
+    next?: SerializerNext,
+  ): SerializedResponseDTO | null {
     // Content Negotiation: Check if client explicitly wants another format
     const acceptHeader = request.headers.get('accept') || '';
 

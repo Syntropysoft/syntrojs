@@ -11,9 +11,9 @@
  * - Guard Clauses: Early validation, Fail Fast
  */
 
-import { describe, expect, it, beforeEach } from 'vitest';
-import { EventBridgeAdapter } from '../../../src/lambda/adapters/EventBridgeAdapter';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { ILambdaAdapter } from '../../../src/domain/interfaces/ILambdaAdapter';
+import { EventBridgeAdapter } from '../../../src/lambda/adapters/EventBridgeAdapter';
 import type { EventBridgeEvent } from '../../../src/lambda/types';
 
 describe('EventBridgeAdapter - Unit Tests (Isolated)', () => {
@@ -244,4 +244,3 @@ describe('EventBridgeAdapter - Unit Tests (Isolated)', () => {
     });
   });
 });
-

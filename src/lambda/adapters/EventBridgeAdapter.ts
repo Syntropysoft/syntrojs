@@ -8,8 +8,7 @@
 
 import { ErrorHandler } from '../../application/ErrorHandler';
 import type { ILambdaAdapter } from '../../domain/interfaces/ILambdaAdapter';
-import type { LambdaResponse } from '../types';
-import type { EventBridgeEvent } from '../types';
+import type { EventBridgeEvent, LambdaResponse } from '../types';
 
 /**
  * EventBridge Event Handler
@@ -198,8 +197,7 @@ export class EventBridgeAdapter implements ILambdaAdapter {
 
     return {
       statusCode: 200,
-      body:
-        typeof result === 'string' ? result : JSON.stringify(result),
+      body: typeof result === 'string' ? result : JSON.stringify(result),
       headers: {
         'Content-Type': 'application/json',
       },
@@ -214,10 +212,7 @@ export class EventBridgeAdapter implements ILambdaAdapter {
    * @param statusCode - HTTP status code
    * @returns Lambda error response
    */
-  private createErrorResponse(
-    error: string,
-    statusCode = 500,
-  ): LambdaResponse {
+  private createErrorResponse(error: string, statusCode = 500): LambdaResponse {
     // Guard clause: validate error
     if (!error) {
       return {
@@ -303,4 +298,3 @@ export class EventBridgeAdapter implements ILambdaAdapter {
     };
   }
 }
-

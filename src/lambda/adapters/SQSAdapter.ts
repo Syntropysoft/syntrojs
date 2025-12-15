@@ -8,8 +8,7 @@
 
 import { ErrorHandler } from '../../application/ErrorHandler';
 import type { ILambdaAdapter } from '../../domain/interfaces/ILambdaAdapter';
-import type { LambdaResponse } from '../types';
-import type { SQSEvent, SQSEventRecord } from '../types';
+import type { LambdaResponse, SQSEvent, SQSEventRecord } from '../types';
 
 /**
  * SQS Message Handler
@@ -183,9 +182,7 @@ export class SQSAdapter implements ILambdaAdapter {
    * @param message - Standardized message object
    * @returns Processing result
    */
-  private async processMessage(
-    message: ReturnType<typeof this.toMessage>,
-  ): Promise<unknown> {
+  private async processMessage(message: ReturnType<typeof this.toMessage>): Promise<unknown> {
     // Guard clause: validate message
     if (!message) {
       throw new Error('Message is required');
@@ -239,10 +236,7 @@ export class SQSAdapter implements ILambdaAdapter {
    * @param statusCode - HTTP status code
    * @returns Lambda error response
    */
-  private createErrorResponse(
-    error: string,
-    statusCode = 500,
-  ): LambdaResponse {
+  private createErrorResponse(error: string, statusCode = 500): LambdaResponse {
     // Guard clause: validate error
     if (!error) {
       return {
@@ -294,9 +288,7 @@ export class SQSAdapter implements ILambdaAdapter {
 
       // Process messages
       const messages = sqsEvent.Records.map((record) => this.toMessage(record));
-      const results = await Promise.all(
-        messages.map((message) => this.processMessage(message)),
-      );
+      const results = await Promise.all(messages.map((message) => this.processMessage(message)));
 
       // Return success response
       return this.toLambdaResponse(results);
@@ -333,4 +325,3 @@ export class SQSAdapter implements ILambdaAdapter {
     };
   }
 }
-

@@ -11,9 +11,9 @@
  * - Guard Clauses: Early validation, Fail Fast
  */
 
-import { describe, expect, it, beforeEach } from 'vitest';
-import { SQSAdapter } from '../../../src/lambda/adapters/SQSAdapter';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { ILambdaAdapter } from '../../../src/domain/interfaces/ILambdaAdapter';
+import { SQSAdapter } from '../../../src/lambda/adapters/SQSAdapter';
 import type { SQSEvent } from '../../../src/lambda/types';
 
 describe('SQSAdapter - Unit Tests (Isolated)', () => {
@@ -249,4 +249,3 @@ describe('SQSAdapter - Unit Tests (Isolated)', () => {
     });
   });
 });
-

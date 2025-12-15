@@ -95,7 +95,8 @@ app.get('/export/users', {
     if (accepts.text() || accepts.type(['text/csv'])) {
       // Generate CSV
       const csv =
-        'ID,Name,Email,Role\n' + users.map((u) => `${u.id},${u.name},${u.email},${u.role}`).join('\n');
+        'ID,Name,Email,Role\n' +
+        users.map((u) => `${u.id},${u.name},${u.email},${u.role}`).join('\n');
 
       return csv;
     }
@@ -385,4 +386,3 @@ Quality Factors:
 
 📚 Interactive Docs: http://localhost:${PORT}/docs
 `);
-

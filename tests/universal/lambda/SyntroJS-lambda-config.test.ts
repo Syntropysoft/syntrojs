@@ -4,9 +4,9 @@
  * Tests lambdaAdapters configuration in SyntroJS
  */
 
-import { describe, expect, it, beforeEach } from 'vitest';
-import { SyntroJS } from '../../../src/core/SyntroJS';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { RouteRegistry } from '../../../src/application/RouteRegistry';
+import { SyntroJS } from '../../../src/core/SyntroJS';
 import type { SQSEvent } from '../../../src/lambda/types';
 
 describe('SyntroJS - Lambda Configuration', () => {
@@ -96,4 +96,3 @@ describe('SyntroJS - Lambda Configuration', () => {
     });
   });
 });
-

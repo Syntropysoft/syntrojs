@@ -356,7 +356,7 @@ export class BunAdapter {
   }
 
   // Static methods for backward compatibility
-  static setMiddlewareRegistry(registry: any): void {
+  static setMiddlewareRegistry(registry: MiddlewareRegistry): void {
     BunAdapter.getInstance().setMiddlewareRegistry(registry);
   }
 
@@ -368,7 +368,7 @@ export class BunAdapter {
     return BunAdapter.getInstance().create();
   }
 
-  static registerRoute(server: unknown, route: any): void {
+  static registerRoute(server: unknown, route: Route): void {
     BunAdapter.getInstance().registerRoute(server, route);
   }
 

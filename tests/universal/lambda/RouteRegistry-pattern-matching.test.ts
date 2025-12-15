@@ -8,7 +8,7 @@
  * - Guard Clauses: Early validation, Fail Fast
  */
 
-import { describe, expect, it, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { RouteRegistry } from '../../../src/application/RouteRegistry';
 import { Route } from '../../../src/domain/Route';
 
@@ -144,4 +144,3 @@ describe('RouteRegistry - Pattern Matching (Lambda Support)', () => {
     });
   });
 });
-

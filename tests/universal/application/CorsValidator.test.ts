@@ -4,17 +4,17 @@
  * Tests for CORS configuration validation and dependency checking
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  isCorsEnabled,
-  validateCorsConfigStructure,
-  isFastifyCorsInstalled,
-  getFastifyCorsVersion,
-  isFastifyCorsVersionCompatible,
-  validateCorsDependencies,
-  formatCorsValidationMessages,
-  validateCorsConfiguration,
   type CorsConfigContext,
+  formatCorsValidationMessages,
+  getFastifyCorsVersion,
+  isCorsEnabled,
+  isFastifyCorsInstalled,
+  isFastifyCorsVersionCompatible,
+  validateCorsConfigStructure,
+  validateCorsConfiguration,
+  validateCorsDependencies,
 } from '../../../src/application/CorsValidator';
 
 describe('CorsValidator', () => {
@@ -245,4 +245,3 @@ describe('CorsValidator', () => {
     });
   });
 });
-

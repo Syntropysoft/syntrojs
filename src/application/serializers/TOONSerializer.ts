@@ -7,7 +7,11 @@
  */
 
 import { encode } from '@toon-format/toon';
-import type { IResponseSerializer, SerializedResponseDTO } from '../../domain/interfaces';
+import type {
+  IResponseSerializer,
+  SerializedResponseDTO,
+  SerializerNext,
+} from '../../domain/interfaces';
 
 // TOON format types (compatible with official package)
 export interface TOONSerializerOptions {
@@ -75,7 +79,12 @@ export class TOONSerializer implements IResponseSerializer {
    * @param request - HTTP Request (for Content Negotiation)
    * @returns HTTP Response with TOON, or null to pass to next serializer
    */
-  serialize(result: any, statusCode: number, request: Request): SerializedResponseDTO | null {
+  serialize(
+    result: any,
+    statusCode: number,
+    request: Request,
+    _next?: SerializerNext,
+  ): SerializedResponseDTO | null {
     // Check Accept header for TOON content type
     const acceptHeader = request.headers.get('accept') || '';
     const wantsTOON = acceptHeader.includes(TOON_CONTENT_TYPE);

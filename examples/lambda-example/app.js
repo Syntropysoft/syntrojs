@@ -55,9 +55,7 @@ app.get('/orders/:id', {
     return {
       id: params.id,
       customerId: '123',
-      items: [
-        { productId: 'prod-1', quantity: 2, price: 50 },
-      ],
+      items: [{ productId: 'prod-1', quantity: 2, price: 50 }],
       total: 100,
       status: 'pending',
     };
@@ -93,4 +91,3 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   console.log('  Handler: index.handler');
   console.log('  Runtime: nodejs18.x');
 }
-

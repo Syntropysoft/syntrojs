@@ -9,12 +9,12 @@
  * through composition, not inheritance or duplication.
  */
 
-import type { SerializedResponseDTO } from '../domain/interfaces';
+import type { SerializedResponseDTO, SerializerNext } from '../domain/interfaces';
 import type { SerializerRegistry } from './SerializerRegistry';
 
 /**
  * ResponseHandler handles response serialization for all adapters
- * 
+ *
  * Design:
  * - Runtime-agnostic (works with Node.js, Bun, any platform)
  * - Uses SerializerRegistry by composition (Dependency Injection)
@@ -28,19 +28,23 @@ export class ResponseHandler {
 
   /**
    * Serialize a handler result (O(1) for content-type based)
-   * 
+   *
    * Optimized flow:
    * 1. Find serializer via registry (O(1) for content-type, O(k) for type-based)
    * 2. Serialize (may return null for content negotiation)
    * 3. If null, try remaining serializers in order
    * 4. Fallback to JSON if needed
-   * 
+   *
    * @param result - Handler result to serialize
    * @param statusCode - HTTP status code
    * @param acceptHeader - Accept header value (for content negotiation)
    * @returns SerializedResponseDTO (simple, runtime-agnostic)
    */
-  async serialize(result: any, statusCode: number, acceptHeader?: string): Promise<SerializedResponseDTO> {
+  async serialize(
+    result: any,
+    statusCode: number,
+    acceptHeader?: string,
+  ): Promise<SerializedResponseDTO> {
     // Guard clause: null/undefined result
     if (result === null || result === undefined) {
       return { body: null, statusCode, headers: {} };
@@ -50,7 +54,7 @@ export class ResponseHandler {
     const request = new Request('http://localhost', {
       headers: acceptHeader ? { Accept: acceptHeader } : {},
     });
-    
+
     // O(1) optimization: Find serializer via registry
     const serializer = this.serializerRegistry.findSerializer(result, request);
 
@@ -63,8 +67,13 @@ export class ResponseHandler {
       };
     }
 
-    // Try primary serializer (now returns DTO directly)
-    const dto = serializer.serialize(result, statusCode, request);
+    // Create next function for Chain of Responsibility
+    const next: SerializerNext = (nextResult, nextStatusCode, nextRequest) => {
+      return this.tryRemainingSerializers(nextResult, nextStatusCode, nextRequest, serializer);
+    };
+
+    // Try primary serializer with next() function (Chain of Responsibility)
+    const dto = serializer.serialize(result, statusCode, request, next);
 
     if (dto !== null) {
       return dto;
@@ -72,7 +81,7 @@ export class ResponseHandler {
 
     // Primary serializer declined - try remaining serializers
     const fallbackDTO = this.tryRemainingSerializers(result, statusCode, request, serializer);
-    
+
     if (fallbackDTO) {
       return fallbackDTO;
     }
@@ -87,26 +96,66 @@ export class ResponseHandler {
 
   /**
    * Try remaining serializers in order (used when primary serializer returns null)
+   * Pure function: Creates next function for Chain of Responsibility
+   *
+   * @param result - Handler result
+   * @param statusCode - HTTP status code
+   * @param request - HTTP Request
+   * @param usedSerializer - Serializer that already tried (skip it)
+   * @returns Serialized DTO or null if no serializer can handle it
    */
   private tryRemainingSerializers(
     result: any,
     statusCode: number,
     request: Request,
-    usedSerializer: any
+    usedSerializer: any,
   ): SerializedResponseDTO | null {
     const serializers = this.serializerRegistry.getAll();
-    
-    for (const serializer of serializers) {
-      if (serializer === usedSerializer) continue;
-      
+    const remainingSerializers = serializers.filter((s) => s !== usedSerializer);
+
+    // Create next function for each serializer in chain
+    for (let i = 0; i < remainingSerializers.length; i++) {
+      const serializer = remainingSerializers[i];
+      const nextSerializers = remainingSerializers.slice(i + 1);
+
+      // Create next function that tries remaining serializers
+      const next: SerializerNext = (nextResult, nextStatusCode, nextRequest) => {
+        if (nextSerializers.length === 0) {
+          return null; // End of chain
+        }
+
+        // Try next serializer in chain
+        for (const nextSerializer of nextSerializers) {
+          if (nextSerializer.canSerialize(nextResult)) {
+            const nextNext: SerializerNext = (nResult, nStatusCode, nRequest) => {
+              const remaining = nextSerializers.filter((s) => s !== nextSerializer);
+              if (remaining.length === 0) return null;
+
+              for (const remSerializer of remaining) {
+                if (remSerializer.canSerialize(nResult)) {
+                  return remSerializer.serialize(nResult, nStatusCode, nRequest);
+                }
+              }
+              return null;
+            };
+
+            const dto = nextSerializer.serialize(nextResult, nextStatusCode, nextRequest, nextNext);
+            if (dto !== null) {
+              return dto;
+            }
+          }
+        }
+        return null;
+      };
+
       if (serializer.canSerialize(result)) {
-        const dto = serializer.serialize(result, statusCode, request);
+        const dto = serializer.serialize(result, statusCode, request, next);
         if (dto !== null) {
           return dto;
         }
       }
     }
-    
+
     return null;
   }
 }

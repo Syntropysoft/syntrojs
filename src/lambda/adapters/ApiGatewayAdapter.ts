@@ -6,14 +6,14 @@
  * Principles: SOLID (Single Responsibility), Guard Clauses, Immutability
  */
 
-import { RouteRegistry } from '../../application/RouteRegistry';
-import { SchemaValidator } from '../../application/SchemaValidator';
 import { ErrorHandler } from '../../application/ErrorHandler';
+import type { RouteRegistry } from '../../application/RouteRegistry';
+import type { SchemaValidator } from '../../application/SchemaValidator';
 import type { ILambdaAdapter } from '../../domain/interfaces/ILambdaAdapter';
 import type { Route } from '../../domain/Route';
 import type { RequestContext } from '../../domain/types';
-import type { RequestDTO, LambdaResponse } from '../types';
 import type { CorsOptions } from '../../plugins/cors';
+import type { LambdaResponse, RequestDTO } from '../types';
 
 /**
  * API Gateway Proxy Event (v1)
@@ -111,15 +111,12 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
   /**
    * Check if a key exists in an object (case-insensitive) - Pure predicate function
    * Functional: no side effects, deterministic output
-   * 
+   *
    * @param obj - Object to check
    * @param key - Key to find (case-insensitive)
    * @returns true if key exists (case-insensitive), false otherwise
    */
-  private hasKeyCaseInsensitive(
-    obj: Record<string, string>,
-    key: string,
-  ): boolean {
+  private hasKeyCaseInsensitive(obj: Record<string, string>, key: string): boolean {
     // Guard clause: empty object
     if (!obj || Object.keys(obj).length === 0) {
       return false;
@@ -137,15 +134,15 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
   /**
    * Merge headers from both headers and multiValueHeaders (pure function)
    * API Gateway can send headers in either format, so we need to handle both
-   * 
+   *
    * Principles:
    * - Functional: Pure function, no side effects, immutable return
    * - Guard Clauses: Early validation
    * - DDD: Value Object transformation (event headers -> merged headers)
-   * 
+   *
    * Headers are case-insensitive, so we need to check for existing keys
    * in a case-insensitive way when merging.
-   * 
+   *
    * @param headers - Regular headers object
    * @param multiValueHeaders - Multi-value headers object
    * @returns Merged headers object (immutable)
@@ -274,7 +271,7 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
   /**
    * Extract origin from headers (pure function)
    * API Gateway headers are case-insensitive, so we need to normalize
-   * 
+   *
    * @param headers - Request headers (may contain undefined values)
    * @returns Origin header value or undefined
    */
@@ -288,10 +285,8 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
 
     // API Gateway headers are case-insensitive
     // Try common variations: Origin, origin, ORIGIN
-    const originKey = Object.keys(headers).find(
-      (key) => key.toLowerCase() === 'origin',
-    );
-    
+    const originKey = Object.keys(headers).find((key) => key.toLowerCase() === 'origin');
+
     if (!originKey) {
       return undefined;
     }
@@ -434,11 +429,7 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
    * @param requestOrigin - Request origin header (for CORS)
    * @returns LambdaResponse
    */
-  toLambdaResponse(
-    result: unknown,
-    statusCode = 200,
-    requestOrigin?: string,
-  ): LambdaResponse {
+  toLambdaResponse(result: unknown, statusCode = 200, requestOrigin?: string): LambdaResponse {
     // Build CORS headers (pure function) - applies to ALL responses
     const corsHeaders = this.buildCorsHeaders(requestOrigin);
 
@@ -480,12 +471,7 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
     }
 
     // Handle custom response objects
-    if (
-      typeof result === 'object' &&
-      result !== null &&
-      'status' in result &&
-      'body' in result
-    ) {
+    if (typeof result === 'object' && result !== null && 'status' in result && 'body' in result) {
       const customResponse = result as {
         status: number;
         body: unknown;
@@ -498,9 +484,10 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
           ...corsHeaders,
           ...customResponse.headers,
         },
-        body: typeof customResponse.body === 'string'
-          ? customResponse.body
-          : JSON.stringify(customResponse.body),
+        body:
+          typeof customResponse.body === 'string'
+            ? customResponse.body
+            : JSON.stringify(customResponse.body),
       };
     }
 
@@ -587,7 +574,10 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
     } catch (error) {
       // Handle errors using ErrorHandler (error handling logic)
       // Merge headers first (to include multiValueHeaders), then extract origin
-      const mergedHeaders = this.mergeHeaders(apiGatewayEvent.headers, apiGatewayEvent.multiValueHeaders);
+      const mergedHeaders = this.mergeHeaders(
+        apiGatewayEvent.headers,
+        apiGatewayEvent.multiValueHeaders,
+      );
       const requestOrigin = this.extractOrigin(mergedHeaders);
       return await this.handleError(error as Error, requestOrigin);
     }
@@ -606,10 +596,7 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
       return undefined;
     }
 
-    return this.routeRegistry.find(
-      requestDTO.method as any,
-      requestDTO.path,
-    );
+    return this.routeRegistry.find(requestDTO.method as any, requestDTO.path);
   }
 
   /**
@@ -620,10 +607,7 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
    * @param requestDTO - Request DTO
    * @returns Path parameters object
    */
-  private extractPathParameters(
-    route: Route,
-    requestDTO: RequestDTO,
-  ): Record<string, string> {
+  private extractPathParameters(route: Route, requestDTO: RequestDTO): Record<string, string> {
     // Guard clause: validate inputs
     if (!route || !requestDTO) {
       return {};
@@ -642,7 +626,7 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
    * Validates request and returns validated data (pure function)
    * Functional: validation logic, returns validated data or error
    * Railway pattern: success or failure with data
-   * 
+   *
    * Principles:
    * - Functional: Pure function (except for validator calls which are necessary)
    * - Guard Clauses: Early validation
@@ -687,10 +671,7 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
 
     // Validate body if schema provided
     if (route.config.body) {
-      const validationResult = this.validator.validate(
-        route.config.body,
-        requestDTO.body,
-      );
+      const validationResult = this.validator.validate(route.config.body, requestDTO.body);
       if (!validationResult.success) {
         return {
           success: false,
@@ -702,10 +683,7 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
 
     // Validate params if schema provided
     if (route.config.params) {
-      const validationResult = this.validator.validate(
-        route.config.params,
-        pathParams,
-      );
+      const validationResult = this.validator.validate(route.config.params, pathParams);
       if (!validationResult.success) {
         return {
           success: false,
@@ -717,10 +695,7 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
 
     // Validate query if schema provided
     if (route.config.query) {
-      const validationResult = this.validator.validate(
-        route.config.query,
-        requestDTO.queryParams,
-      );
+      const validationResult = this.validator.validate(route.config.query, requestDTO.queryParams);
       if (!validationResult.success) {
         return {
           success: false,
@@ -767,9 +742,7 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
 
     // Find route to determine allowed methods
     const route = this.findRoute(requestDTO);
-    const allowedMethods = route
-      ? [route.method]
-      : ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'];
+    const allowedMethods = route ? [route.method] : ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'];
 
     // Build response with CORS headers
     return {
@@ -890,7 +863,7 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
   /**
    * Extracts query parameters from API Gateway event (pure function)
    * Functional: no side effects, returns new object
-   * 
+   *
    * Principles:
    * - Functional: Pure function, immutable return
    * - Guard Clauses: Early validation
@@ -939,7 +912,7 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
   /**
    * Parses request body from API Gateway event (pure function)
    * Functional: no side effects, returns parsed body
-   * 
+   *
    * Principles:
    * - Functional: Pure function, immutable return
    * - Guard Clauses: Early validation
@@ -982,7 +955,7 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
   /**
    * Extracts cookies from headers (pure function)
    * Functional: no side effects, returns new object
-   * 
+   *
    * Principles:
    * - Functional: Pure function, immutable return
    * - Guard Clauses: Early validation
@@ -991,64 +964,63 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
    * @param headers - Request headers
    * @returns Cookies object (immutable)
    */
-  private extractCookies(
-    headers: Record<string, string> | undefined,
-  ): Record<string, string> {
+  private extractCookies(headers: Record<string, string> | undefined): Record<string, string> {
     // Guard clause: no headers
     if (!headers) {
       return {};
     }
 
     // Find cookie header (case-insensitive) - use same pattern as extractOrigin
-    const cookieKey = Object.keys(headers).find(
-      (key) => key.toLowerCase() === 'cookie',
-    );
-    
+    const cookieKey = Object.keys(headers).find((key) => key.toLowerCase() === 'cookie');
+
     // Guard clause: no cookie header found
     if (!cookieKey) {
       return {};
     }
 
     const cookieHeader = headers[cookieKey];
-    
+
     // Guard clause: cookie header is empty
     if (!cookieHeader) {
       return {};
     }
 
     // Parse cookies (functional: reduce) - pure transformation
-    return cookieHeader.split(';').reduce((cookies, cookie) => {
-      const trimmedCookie = cookie.trim();
-      
-      // Guard clause: skip empty cookies
-      if (!trimmedCookie) {
-        return cookies;
-      }
+    return cookieHeader.split(';').reduce(
+      (cookies, cookie) => {
+        const trimmedCookie = cookie.trim();
 
-      const [name, value] = trimmedCookie.split('=');
-      
-      // Guard clause: skip invalid cookie format
-      if (!name || !value) {
-        return cookies;
-      }
+        // Guard clause: skip empty cookies
+        if (!trimmedCookie) {
+          return cookies;
+        }
 
-      // Functional: return new object (immutability)
-      return {
-        ...cookies,
-        [name.trim()]: value.trim(),
-      };
-    }, {} as Record<string, string>);
+        const [name, value] = trimmedCookie.split('=');
+
+        // Guard clause: skip invalid cookie format
+        if (!name || !value) {
+          return cookies;
+        }
+
+        // Functional: return new object (immutability)
+        return {
+          ...cookies,
+          [name.trim()]: value.trim(),
+        };
+      },
+      {} as Record<string, string>,
+    );
   }
 
   /**
    * Builds RequestContext from RequestDTO with validated data (pure function)
    * Functional: creates new context object (immutable)
-   * 
+   *
    * Principles:
    * - Functional: Pure function, immutable return
    * - Guard Clauses: Early validation
    * - DDD: Value Object construction (validated data -> RequestContext)
-   * 
+   *
    * Note: Data must be validated before calling this method (Railway pattern)
    *
    * @param requestDTO - Request DTO
@@ -1116,4 +1088,3 @@ export class ApiGatewayAdapter implements ILambdaAdapter {
     };
   }
 }
-
